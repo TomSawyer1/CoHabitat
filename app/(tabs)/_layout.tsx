@@ -1,43 +1,55 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        headerShown: false, // Masquer l'en-tête pour les écrans des onglets
+        tabBarStyle: {
+          backgroundColor: '#1E1E2D', // Couleur de fond sombre
+          borderTopWidth: 0, // Supprimer la bordure supérieure
+          height: 60, // Ajuster la hauteur si nécessaire
+        },
+        tabBarActiveTintColor: '#6A5ACD', // Couleur de l'icône active (exemple)
+        tabBarInactiveTintColor: '#FFFFFF', // Couleur blanche pour les icônes inactives
+        tabBarShowLabel: false, // Masquer les labels de texte sous les icônes
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="menu"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Menu',
+          tabBarIcon: ({ color }) => <Ionicons name="menu" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="inbox"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Inbox',
+          tabBarIcon: ({ color }) => <Ionicons name="archive-outline" size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="signalement"
+        options={{
+          title: 'Signalement',
+          tabBarIcon: ({ color }) => <Ionicons name="layers" size={32} color="#6A5ACD" />, // Icône centrale plus grande et couleur différente
+        }}
+      />
+      <Tabs.Screen
+        name="layout" // Nom placeholder
+        options={{
+          title: 'Layout',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="gallery" // Nom placeholder
+        options={{
+          title: 'Gallery',
+          tabBarIcon: ({ color }) => <Ionicons name="image-outline" size={28} color={color} />,
         }}
       />
     </Tabs>
