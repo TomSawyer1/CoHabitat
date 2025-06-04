@@ -36,7 +36,7 @@ export default function Notifications() { // Nom du composant changé
       <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)} disabled={!isSidebarVisible}>
         <View style={styles.contentContainer}> 
           {/* Header */}
-          <Header subtitle="Notifications" onBackPress={() => router.back()} />
+          <Header subtitle="Notifications" showBackButton={false} />
 
           {/* Contenu principal - Liste de notifications */}
           <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>

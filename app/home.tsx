@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Dimensions, ImageBackground, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
@@ -12,6 +12,7 @@ const sidebarWidth = 250; // Doit correspondre à la largeur de la sidebar
 
 export default function Home() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const router = useRouter();
 
   const handlePressOutsideSidebar = () => {
     if (isSidebarVisible) {
@@ -37,11 +38,11 @@ export default function Home() {
             {/* Votre contenu ira ici */}
           </View>
 
-          <Navbar isSidebarVisible={isSidebarVisible} setIsSidebarVisible={setIsSidebarVisible} />
+          <Navbar isSidebarVisible={isSidebarVisible} setIsSidebarVisible={setIsSidebarVisible} router={router} />
         </View>
       </TouchableWithoutFeedback>
 
-      <Sidebar isSidebarVisible={isSidebarVisible} />
+      <Sidebar isSidebarVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
 
     </ImageBackground>
   );

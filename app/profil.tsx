@@ -84,7 +84,7 @@ export default function Profil() {
       <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)} disabled={!isSidebarVisible}>
         <View style={styles.contentContainer}>
           {/* Header */}
-          <Header subtitle="Mon Profil" onBackPress={() => router.back()} />
+          <Header subtitle="Mon Profil" showBackButton={false} />
 
           {/* Contenu principal - Profil */}
           <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
@@ -186,14 +186,27 @@ export default function Profil() {
             {expandedSection === 'incidents' && (
               <View style={styles.incidentsContainer}>
                 {incidentsData.map(incident => (
-                  <View key={incident.id} style={styles.incidentItem}>
+                  <TouchableOpacity 
+                    key={incident.id} 
+                    style={styles.incidentItem}
+                    onPress={() => router.push({
+                      pathname: '/suivresignal',
+                      params: {
+                        id: incident.id,
+                        title: incident.title,
+                        date: incident.date,
+                        status: incident.status,
+                        image: incident.image
+                      }
+                    })}
+                  >
                     <View style={styles.incidentImage} />
                     <View style={styles.incidentInfo}>
                       <Text style={styles.incidentTitle}>{incident.title}</Text>
                       <Text style={styles.incidentDate}>{incident.date}</Text>
                       <Text style={styles.incidentStatus}>{incident.status}</Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             )}

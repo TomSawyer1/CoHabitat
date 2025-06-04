@@ -61,7 +61,7 @@ export default function Signalement() {
       <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)} disabled={!isSidebarVisible}>
         <View style={styles.contentContainer}>
           {/* Header */}
-          <Header subtitle="Signalement" />
+          <Header subtitle="Signalement" showBackButton={false} />
 
           {/* Contenu principal */}
           <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
