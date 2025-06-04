@@ -1,9 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import Header from '../components/Header';
+import Navbar from '../components/navbar';
+import Sidebar from '../components/sidebar';
+
+const { width } = Dimensions.get('window');
+const sidebarWidth = 250;
 
 export default function Signalement() {
   const router = useRouter();
@@ -14,11 +20,15 @@ export default function Signalement() {
   const [description, setDescription] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  // Nous allons aussi gérer l'état de la sidebar ici comme dans home.tsx
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+
   const handleSubmit = () => {
     // Logique pour soumettre le signalement
     console.log('Signalement soumis:', { typeSignalement, lieu, dateHeure, description, selectedImage });
     // Rediriger ou afficher un message de succès
     // router.back(); // Exemple de redirection
+    // Après soumission, on pourrait naviguer ou afficher un message
   };
 
   const pickImage = async () => {
@@ -45,123 +55,124 @@ export default function Signalement() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      {/* Header rectangulaire noir */}
-      <View style={styles.headerRect}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>CoHabitat</Text>
-          <Text style={styles.headerSubtitle}>Signalement</Text>
-        </View>
-      </View>
+      <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)} disabled={!isSidebarVisible}>
+        <View style={styles.contentContainer}>
+          {/* Header */}
+          <Header subtitle="Signalement" />
 
-      {/* Contenu principal */}
-      <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
-        {/* Titre et sous-titre de section */}
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
-          <Text style={styles.sectionSubtitle}>Veuillez décrire le problème ou l'incident.</Text>
-        </View>
-
-        {/* Inputs */}
-        <View style={styles.inputsContainer}>
-          {/* Input Type de signalement */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Type de signalement</Text>
-            <View style={styles.inputFieldContainer}>
-              <TextInput
-                style={styles.inputField}
-                placeholder="Ex: Vandalisme, Problème technique"
-                placeholderTextColor="#888"
-                value={typeSignalement}
-                onChangeText={setTypeSignalement}
-              />
+          {/* Contenu principal */}
+          <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
+            {/* Titre et sous-titre de section */}
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
+              <Text style={styles.sectionSubtitle}>Veuillez décrire le problème ou l'incident.</Text>
             </View>
-          </View>
 
-          {/* Input Lieu */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Lieu</Text>
-            <View style={styles.inputFieldContainer}>
-              <TextInput
-                style={styles.inputField}
-                placeholder="Ex: Bâtiment A, Appartement 3B"
-                placeholderTextColor="#888"
-                value={lieu}
-                onChangeText={setLieu}
-              />
+            {/* Inputs */}
+            <View style={styles.inputsContainer}>
+              {/* Input Type de signalement */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Type de signalement</Text>
+                <View style={styles.inputFieldContainer}>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="Ex: Vandalisme, Problème technique"
+                    placeholderTextColor="#888"
+                    value={typeSignalement}
+                    onChangeText={setTypeSignalement}
+                  />
+                </View>
+              </View>
+
+              {/* Input Lieu */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Lieu</Text>
+                <View style={styles.inputFieldContainer}>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="Ex: Bâtiment A, Appartement 3B"
+                    placeholderTextColor="#888"
+                    value={lieu}
+                    onChangeText={setLieu}
+                  />
+                </View>
+              </View>
+
+              {/* Input Date et Heure */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Date et Heure</Text>
+                <View style={styles.inputFieldContainer}>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="Ex: 20/10/2023 14:30"
+                    placeholderTextColor="#888"
+                    value={dateHeure}
+                    onChangeText={setDateHeure}
+                  />
+                </View>
+              </View>
+
+              {/* Input Description */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Description</Text>
+                <View style={[styles.inputFieldContainer, styles.descriptionInputContainer]}>
+                  <TextInput
+                    style={[styles.inputField, styles.descriptionInputField]}
+                    placeholder="Décrivez le problème en détail"
+                    placeholderTextColor="#888"
+                    multiline
+                    textAlignVertical="top"
+                    value={description}
+                    onChangeText={setDescription}
+                  />
+                </View>
+              </View>
+
+              {/* Section Ajout Photo */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Photo (optionnel)</Text>
+                <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+                  <Ionicons name="camera" size={24} color="#000" />
+                  <Text style={styles.imagePickerButtonText}>Choisir une photo</Text>
+                </TouchableOpacity>
+                {selectedImage && (
+                  <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+                )}
+              </View>
+
             </View>
-          </View>
 
-          {/* Input Date et Heure */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date et Heure</Text>
-            <View style={styles.inputFieldContainer}>
-              <TextInput
-                style={styles.inputField}
-                placeholder="Ex: 20/10/2023 14:30"
-                placeholderTextColor="#888"
-                value={dateHeure}
-                onChangeText={setDateHeure}
-              />
+            {/* Boutons */}
+            <View style={styles.buttonsContainerHorizontal}>
+              {/* Secondaire */}
+              <TouchableOpacity 
+                style={[styles.buttonHorizontal, styles.secondaryButtonHorizontal]}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
+              </TouchableOpacity>
+
+              {/* Primaire */}
+              <TouchableOpacity 
+                style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
+                onPress={handleSubmit}
+              >
+                <Text style={styles.primaryButtonHorizontalText}>Soumettre</Text>
+              </TouchableOpacity>
             </View>
-          </View>
+          </ScrollView>
 
-          {/* Input Description */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Description</Text>
-            <View style={[styles.inputFieldContainer, styles.descriptionInputContainer]}>
-              <TextInput
-                style={[styles.inputField, styles.descriptionInputField]}
-                placeholder="Décrivez le problème en détail"
-                placeholderTextColor="#888"
-                multiline
-                textAlignVertical="top"
-                value={description}
-                onChangeText={setDescription}
-              />
-            </View>
-          </View>
-
-          {/* Section Ajout Photo */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Photo (optionnel)</Text>
-            <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-              <Ionicons name="camera" size={24} color="#000" />
-              <Text style={styles.imagePickerButtonText}>Choisir une photo</Text>
-            </TouchableOpacity>
-            {selectedImage && (
-              <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
-            )}
-          </View>
-
+          {/* Ajout de la Navbar en bas */}
+          <Navbar isSidebarVisible={isSidebarVisible} setIsSidebarVisible={setIsSidebarVisible} router={router} />
         </View>
+      </TouchableWithoutFeedback>
 
-        {/* Boutons */}
-        <View style={styles.buttonsContainerHorizontal}>
-          {/* Secondaire */}
-          <TouchableOpacity 
-            style={[styles.buttonHorizontal, styles.secondaryButtonHorizontal]}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
-          </TouchableOpacity>
+      {/* La Sidebar */}
+      <Sidebar isSidebarVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
 
-          {/* Primaire */}
-          <TouchableOpacity 
-            style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
-            onPress={handleSubmit}
-          >
-            <Text style={styles.primaryButtonHorizontalText}>Soumettre</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
     </View>
   );
 }
@@ -171,37 +182,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  headerRect: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#161616',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    position: 'absolute',
-    left: 24,
-    top: 50,
-    padding: 4,
-    zIndex: 1,
-  },
-  headerContent: {
+  contentContainer: {
     flex: 1,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  headerSubtitle: {
-    color: '#fff',
-    fontSize: 16,
-    opacity: 0.8,
+    justifyContent: 'flex-end',
   },
   scrollView: {
     flex: 1,
@@ -209,7 +192,7 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     paddingTop: 20,
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 40 + 70,
   },
   sectionTitleContainer: {
     marginBottom: 30,
@@ -223,17 +206,19 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     color: '#00000080',
     fontSize: 16,
+    opacity: 0.8,
   },
   inputsContainer: {
-    marginBottom: 30,
+    marginBottom: 40,
     gap: 20,
   },
   inputGroup: {
-    gap: 6,
+    marginBottom: 10,
   },
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 8,
     color: '#000',
   },
   inputFieldContainer: {
@@ -252,31 +237,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   descriptionInputContainer: {
-    height: 150,
-    alignItems: 'flex-start',
-    paddingVertical: 12,
+    height: 120,
   },
   descriptionInputField: {
     height: '100%',
+    paddingVertical: 16,
   },
-  inputInfo: {
-    fontSize: 13,
-    color: '#00000080',
-    marginTop: 2,
+  imagePickerButton: {
+    flexDirection: 'row',
+    backgroundColor: '#e0e0e0',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-  eyeIcon: {
-    padding: 4,
+  imagePickerButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  selectedImage: {
+    width: 100,
+    height: 100,
+    marginTop: 10,
+    borderRadius: 8,
+    resizeMode: 'cover',
   },
   buttonsContainerHorizontal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 16,
-    marginTop: 16,
+    gap: 20,
+    marginTop: 30,
+    marginBottom: 20,
   },
   buttonHorizontal: {
     flex: 1,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -297,25 +295,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
-  },
-  imagePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e0e0e0',
-    padding: 10,
-    borderRadius: 8,
-    gap: 8,
-    justifyContent: 'center',
-  },
-  imagePickerButtonText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  selectedImage: {
-    width: '100%',
-    height: 200,
-    marginTop: 10,
-    borderRadius: 8,
-    resizeMode: 'cover',
   },
 }); 
