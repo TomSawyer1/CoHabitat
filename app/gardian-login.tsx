@@ -76,7 +76,7 @@ export default function GardianLogin() {
         {/* Boutons */}
         <View style={styles.buttonsContainer}>
           {/* Primaire */}
-          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleLogin}>
+          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => router.push('/home')}>
             <Text style={styles.primaryButtonText}>Se connecter</Text>
           </TouchableOpacity>
           {/* Secondaire 2 - Peut-être à adapter pour gardiens */}
@@ -104,21 +104,19 @@ const styles = StyleSheet.create({
   ellipseContainer: {
     position: 'absolute',
     width: '100%',
-    top: -60,
+    top: 0,
     left: 0,
     zIndex: 0,
     alignItems: 'center',
   },
   ellipse: {
     width: '100%',
-    height: 185,
+    height: 100,
     backgroundColor: '#000',
-    borderBottomLeftRadius: 200,
-    borderBottomRightRadius: 200,
   },
   headerTitleContainer: {
     position: 'absolute',
-    top: 80,
+    top: 35,
     left: 0,
     width: '100%',
     zIndex: 20,
