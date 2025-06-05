@@ -1,12 +1,20 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import Header from '../components/Header';
-import Navbar from '../components/navbar';
-import Sidebar from '../components/sidebar';
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import Header from "../components/Header";
+import Navbar from "../components/navbar";
+import Sidebar from "../components/sidebar";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const sidebarWidth = 250;
 
 export default function SuivreSignal() {
@@ -60,12 +68,12 @@ export default function SuivreSignal() {
     {
       date: "20/10/2023 15:00",
       text: "Statut mis à jour : En cours de traitement.",
-      subtitle: "par Admin"
+      subtitle: "par Admin",
     },
     {
       date: "20/10/2023 16:30",
       text: "Un technicien a été dépêché sur place.",
-      subtitle: "par Système"
+      subtitle: "par Système",
     },
   ];
 
@@ -74,13 +82,19 @@ export default function SuivreSignal() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)} disabled={!isSidebarVisible}>
+      <TouchableWithoutFeedback
+        onPress={() => setIsSidebarVisible(false)}
+        disabled={!isSidebarVisible}
+      >
         <View style={styles.contentContainer}>
           {/* Header */}
           <Header subtitle="Suivre un incident" showBackButton={false} />
 
           {/* Contenu principal */}
-          <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContent}
+            style={styles.scrollView}
+          >
             {/* Section Avatar (basé sur le Figma) */}
             <View style={styles.avatarContainer}>
               <View style={styles.avatarPlaceholder} />
@@ -110,7 +124,9 @@ export default function SuivreSignal() {
               <Text style={styles.sectionTitle}>Statut de l'incident</Text>
               <View style={styles.statusProgressContainer}>
                 <Text style={styles.statusText}>{incident.status}</Text>
-                <Text style={styles.progressLabel}>Progrès de votre demande</Text>
+                <Text style={styles.progressLabel}>
+                  Progrès de votre demande
+                </Text>
                 {/* Placeholder pour la barre de progression */}
                 <View style={styles.progressBarPlaceholder}></View>
               </View>
@@ -124,10 +140,13 @@ export default function SuivreSignal() {
 
             {/* Section Mises à jour et Commentaires (basé sur le Figma) */}
             <View style={styles.updatesSection}>
-              <Text style={styles.updatesTitle}>Mises à jour et Commentaires</Text>
+              <Text style={styles.updatesTitle}>
+                Mises à jour et Commentaires
+              </Text>
               {updatesData.map((update, index) => (
                 <View key={index} style={styles.updateItem}>
-                  <View style={styles.updateImagePlaceholder} />{/* Placeholder pour icône/image */}
+                  <View style={styles.updateImagePlaceholder} />
+                  {/* Placeholder pour icône/image */}
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{update.date}</Text>
                     <Text style={styles.updateText}>{update.text}</Text>
@@ -139,12 +158,21 @@ export default function SuivreSignal() {
 
             {/* Champ de texte pour ajouter un commentaire (basé sur le Figma) */}
             <View style={styles.commentInputContainer}>
-              <Text style={styles.commentInputLabel}>Ajouter un commentaire</Text>
+              <Text style={styles.commentInputLabel}>
+                Ajouter un commentaire
+              </Text>
               {/* Utiliser un TextInput ici */}
-              <View style={styles.commentTextFieldPlaceholder}></View>{/* Placeholder pour TextInput */}
+              <View style={styles.commentTextFieldPlaceholder}></View>
+              {/* Placeholder pour TextInput */}
             </View>
-            <TouchableOpacity 
-              style={[styles.buttonFigma, styles.primaryButtonFigma, styles.sendButtonFigma] /* Ajusté pour être un bouton plein */}
+            <TouchableOpacity
+              style={
+                [
+                  styles.buttonFigma,
+                  styles.primaryButtonFigma,
+                  styles.sendButtonFigma,
+                ] /* Ajusté pour être un bouton plein */
+              }
               onPress={() => {
                 // Logique pour envoyer le commentaire
                 console.log("Envoyer commentaire");
@@ -154,24 +182,30 @@ export default function SuivreSignal() {
             </TouchableOpacity>
 
             {/* Boutons d'action principaux (basés sur le Figma) */}
-            <View style={styles.buttonsContainerFigma}> {/* Conteneur pour Annuler et Contacter */}
-              <TouchableOpacity 
+            <View style={styles.buttonsContainerFigma}>
+              {" "}
+              {/* Conteneur pour Annuler et Contacter */}
+              <TouchableOpacity
                 style={[styles.buttonFigma, styles.secondaryButtonFigma]}
                 onPress={() => {
                   // Logique pour annuler l'incident
                   console.log("Annuler l'incident");
                 }}
               >
-                <Text style={styles.secondaryButtonTextFigma}>{"Annuler l'incident"}</Text>
+                <Text style={styles.secondaryButtonTextFigma}>
+                  {"Annuler l'incident"}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.buttonFigma, styles.primaryButtonFigma]}
                 onPress={() => {
                   // Logique pour contacter le gardien
                   console.log("Contacter le gardien");
                 }}
               >
-                <Text style={styles.primaryButtonTextFigma}>{"Contacter le gardien"}</Text>
+                <Text style={styles.primaryButtonTextFigma}>
+                  {"Contacter le gardien"}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -188,12 +222,19 @@ export default function SuivreSignal() {
           </ScrollView>
 
           {/* Navbar */}
-          <Navbar isSidebarVisible={isSidebarVisible} setIsSidebarVisible={setIsSidebarVisible} router={router} />
+          <Navbar
+            isSidebarVisible={isSidebarVisible}
+            setIsSidebarVisible={setIsSidebarVisible}
+            router={router}
+          />
         </View>
       </TouchableWithoutFeedback>
 
       {/* Sidebar */}
-      <Sidebar isSidebarVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
+      <Sidebar
+        isSidebarVisible={isSidebarVisible}
+        onClose={() => setIsSidebarVisible(false)}
+      />
     </View>
   );
 }
@@ -201,11 +242,11 @@ export default function SuivreSignal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   scrollView: {
     flex: 1,
@@ -216,19 +257,19 @@ const styles = StyleSheet.create({
     paddingBottom: 40 + 70 + 60, // Garde de l'espace pour la navbar
   },
   avatarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 24, // Espacement vertical basé sur le Figma
     paddingHorizontal: 24, // Espacement horizontal basé sur le Figma
     marginBottom: 30, // Réduit légèrement l'espacement après l'avatar
     borderBottomWidth: 1, // Ajouté pour la ligne séparatrice visible dans le Figma
-    borderBottomColor: 'rgba(0,0,0,0.1)', // Couleur de la ligne séparatrice
+    borderBottomColor: "rgba(0,0,0,0.1)", // Couleur de la ligne séparatrice
   },
   avatarPlaceholder: {
     width: 40,
     height: 40,
     borderRadius: 20, // Cercle
-    backgroundColor: 'rgba(0,0,0,0.1)', // Placeholder grisé
+    backgroundColor: "rgba(0,0,0,0.1)", // Placeholder grisé
     marginRight: 12,
   },
   userInfo: {
@@ -236,17 +277,17 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 20, // Ajusté selon Figma
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
   },
   userRole: {
     fontSize: 14,
-    color: 'rgba(0,0,0,0.5)',
+    color: "rgba(0,0,0,0.5)",
   },
   incidentTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     marginBottom: 30, // Réduit légèrement l'espacement après le titre
     paddingHorizontal: 24, // Ajusté selon l'espacement général dans le Figma
   },
@@ -257,31 +298,31 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     marginBottom: 8,
   },
   statusContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   status: {
     fontSize: 14,
-    color: '#000',
+    color: "#000",
   },
   imageContainer: {
     marginBottom: 24,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   incidentImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    resizeMode: 'cover',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    resizeMode: "cover",
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
   },
   detailsContainer: {
     marginBottom: 24,
@@ -290,16 +331,16 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   detailLabel: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     marginBottom: 4,
   },
   detailValue: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     opacity: 0.8,
   },
   // Styles pour la nouvelle section Mises à jour et Commentaires
@@ -310,23 +351,23 @@ const styles = StyleSheet.create({
   },
   updatesTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
     marginBottom: 20, // Augmenté l'espacement après le titre
   },
   updateItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 16, // Augmenté l'espacement vertical
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-    alignItems: 'flex-start',
+    borderBottomColor: "rgba(0,0,0,0.1)",
+    alignItems: "flex-start",
     gap: 16, // Augmenté l'espacement entre l'icône et le contenu
   },
   updateImagePlaceholder: {
     width: 40,
     height: 40,
     borderRadius: 8, // Augmenté le rayon pour un look plus moderne
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: "rgba(0,0,0,0.1)",
   },
   updateContent: {
     flex: 1,
@@ -334,23 +375,23 @@ const styles = StyleSheet.create({
   },
   updateDate: {
     fontSize: 14,
-    color: 'rgba(0,0,0,0.5)',
+    color: "rgba(0,0,0,0.5)",
     marginBottom: 4,
   },
   updateText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     lineHeight: 22, // Ajouté pour améliorer la lisibilité
     marginBottom: 4,
   },
   updateSubtitle: {
     fontSize: 14,
-    color: 'rgba(0,0,0,0.5)',
-    fontStyle: 'italic', // Ajouté pour distinguer le sous-titre
+    color: "rgba(0,0,0,0.5)",
+    fontStyle: "italic", // Ajouté pour distinguer le sous-titre
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 20,
     marginTop: 30,
     marginBottom: 20,
@@ -359,39 +400,39 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 42,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#fff',
+    borderColor: "#000",
+    backgroundColor: "#fff",
   },
   secondaryButtonText: {
-    color: '#000',
-    fontWeight: '600',
+    color: "#000",
+    fontWeight: "600",
     fontSize: 16,
   },
   primaryButton: {
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   primaryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 16,
   },
   deleteButton: {
-    backgroundColor: '#ff0000',
+    backgroundColor: "#ff0000",
     height: 42,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 20,
   },
   deleteButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   // Nouveaux styles basés sur la structure de liste du Figma
   sectionContainer: {
@@ -400,14 +441,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600', // Poids de police ajusté selon Figma
-    color: '#000', // Couleur du texte
+    fontWeight: "600", // Poids de police ajusté selon Figma
+    color: "#000", // Couleur du texte
     marginBottom: 16, // Espacement sous le titre de section basé sur Figma
     // Padding horizontal géré par le conteneur de section
   },
   declarantText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     paddingHorizontal: 24, // Ajusté selon l'espacement général dans le Figma
   },
   statusProgressContainer: {
@@ -415,12 +456,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     marginBottom: 10,
   },
   progressBarPlaceholder: {
     height: 10,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     borderRadius: 5,
   },
   detailsContent: {
@@ -429,7 +470,7 @@ const styles = StyleSheet.create({
   // Nouveau style pour le texte de progrès
   progressLabel: {
     fontSize: 14,
-    color: '#666', // Couleur légèrement grisée
+    color: "#666", // Couleur légèrement grisée
     marginBottom: 5, // Petit espace en dessous
   },
   // Styles pour la section Métriques (basé sur le Figma)
@@ -439,7 +480,7 @@ const styles = StyleSheet.create({
   },
   metricItem: {
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: "rgba(0,0,0,0.1)",
     borderRadius: 6,
     padding: 16, // Ajusté pour l'espacement interne selon le Figma
     marginBottom: 8, // Espacement entre les éléments métriques selon le Figma (8px entre les 'row')
@@ -447,14 +488,14 @@ const styles = StyleSheet.create({
   },
   metricTitle: {
     fontSize: 14,
-    color: 'rgba(0,0,0,0.5)', // Couleur du titre de métrique
+    color: "rgba(0,0,0,0.5)", // Couleur du titre de métrique
     marginBottom: 4, // Petit espacement sous le titre de métrique
     // Pas de padding horizontal spécifique ici, géré par le conteneur item
   },
   metricData: {
     fontSize: 18,
-    fontWeight: '600', // Poids de police ajusté
-    color: '#000',
+    fontWeight: "600", // Poids de police ajusté
+    color: "#000",
     // Pas de padding ou margin spécifique ici
   },
   // Styles pour le champ de commentaire
@@ -465,22 +506,22 @@ const styles = StyleSheet.create({
   },
   commentInputLabel: {
     fontSize: 18, // Augmenté la taille de la police
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
     marginBottom: 16, // Augmenté l'espacement sous le label
   },
   commentTextFieldPlaceholder: {
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: "rgba(0,0,0,0.1)",
     borderRadius: 12, // Augmenté le rayon pour un look plus moderne
     minHeight: 120, // Augmenté la hauteur minimale
     padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.02)',
+    backgroundColor: "rgba(0,0,0,0.02)",
   },
   // Styles pour les boutons ajustés (basé sur le Figma)
   buttonsContainerFigma: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 8, // Espacement réduit selon le Figma
     marginTop: 30, // Espacement après le bouton Envoyer
     marginBottom: 24, // Espacement avant le bouton Supprimer
@@ -490,45 +531,45 @@ const styles = StyleSheet.create({
     flex: 1, // Permet aux boutons de prendre l'espace disponible
     height: 42,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 20, // Ajouté pour le padding interne du bouton
   },
   secondaryButtonFigma: {
     borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#fff',
+    borderColor: "#000",
+    backgroundColor: "#fff",
   },
   secondaryButtonTextFigma: {
-    color: '#000',
-    fontWeight: '600',
+    color: "#000",
+    fontWeight: "600",
     fontSize: 16,
   },
   primaryButtonFigma: {
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   primaryButtonTextFigma: {
-    color: '#fff',
-    fontWeight: '700', // Augmenté le poids de la police
+    color: "#fff",
+    fontWeight: "700", // Augmenté le poids de la police
     fontSize: 16,
     letterSpacing: 0.5, // Ajouté un espacement entre les lettres
   },
   deleteButtonFigma: {
-    backgroundColor: '#ff0000', // Couleur rouge
+    backgroundColor: "#ff0000", // Couleur rouge
     marginTop: 24, // Espacement après Annuler/Contacter
-    alignSelf: 'stretch', // Prend toute la largeur
+    alignSelf: "stretch", // Prend toute la largeur
     marginHorizontal: 24, // Assure le même espacement horizontal que les sections
   },
   deleteButtonTextFigma: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 16,
   },
   sendButtonFigma: {
     marginTop: 20, // Augmenté l'espacement du haut
     marginBottom: 32, // Augmenté l'espacement du bas
     width: 180, // Augmenté la largeur du bouton
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     paddingHorizontal: 24, // Augmenté le padding horizontal
     height: 48, // Augmenté la hauteur du bouton
     borderRadius: 12, // Augmenté le rayon pour correspondre au champ de texte
@@ -536,7 +577,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     // Ajoutez d'autres styles si nécessaire pour correspondre au Figma
   },
-}); 
+});
