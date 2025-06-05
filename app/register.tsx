@@ -1,8 +1,15 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 export default function Register() {
   const router = useRouter();
@@ -15,7 +22,7 @@ export default function Register() {
 
       {/* Header rectangulaire noir */}
       <View style={styles.headerRect}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
@@ -28,11 +35,16 @@ export default function Register() {
       </View>
 
       {/* Contenu principal */}
-      <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        style={styles.scrollView}
+      >
         {/* Titre et sous-titre de section */}
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>Bienvenue !</Text>
-          <Text style={styles.sectionSubtitle}>Créez votre compte pour commencer.</Text>
+          <Text style={styles.sectionSubtitle}>
+            Créez votre compte pour commencer.
+          </Text>
         </View>
 
         {/* Inputs */}
@@ -84,14 +96,14 @@ export default function Register() {
                 placeholderTextColor="#888"
                 secureTextEntry={!showPassword}
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
               >
-                <Ionicons 
-                  name={showPassword ? "eye-off" : "eye"} 
-                  size={24} 
-                  color="#888" 
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={24}
+                  color="#888"
                 />
               </TouchableOpacity>
             </View>
@@ -108,14 +120,14 @@ export default function Register() {
                 placeholderTextColor="#888"
                 secureTextEntry={!showConfirmPassword}
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={styles.eyeIcon}
               >
-                <Ionicons 
-                  name={showConfirmPassword ? "eye-off" : "eye"} 
-                  size={24} 
-                  color="#888" 
+                <Ionicons
+                  name={showConfirmPassword ? "eye-off" : "eye"}
+                  size={24}
+                  color="#888"
                 />
               </TouchableOpacity>
             </View>
@@ -125,7 +137,7 @@ export default function Register() {
         {/* Boutons */}
         <View style={styles.buttonsContainerHorizontal}>
           {/* Secondaire */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.buttonHorizontal, styles.secondaryButtonHorizontal]}
             onPress={() => router.back()}
           >
@@ -133,8 +145,10 @@ export default function Register() {
           </TouchableOpacity>
 
           {/* Primaire */}
-          <TouchableOpacity style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}>
-            <Text style={styles.primaryButtonHorizontalText}>S'inscrire</Text>
+          <TouchableOpacity
+            style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
+          >
+            <Text style={styles.primaryButtonHorizontalText}>S&apos;inscrire</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -145,19 +159,19 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   headerRect: {
-    width: '100%',
+    width: "100%",
     height: 120,
-    backgroundColor: '#161616',
-    justifyContent: 'center',
+    backgroundColor: "#161616",
+    justifyContent: "center",
     paddingHorizontal: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 24,
     top: 50,
     padding: 4,
@@ -165,17 +179,17 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 6,
   },
   headerSubtitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     opacity: 0.8,
   },
@@ -191,13 +205,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   sectionTitle: {
-    color: '#000',
+    color: "#000",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 12,
   },
   sectionSubtitle: {
-    color: '#00000080',
+    color: "#00000080",
     fontSize: 16,
   },
   inputsContainer: {
@@ -209,35 +223,35 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
   },
   inputFieldContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#0000001A',
+    borderColor: "#0000001A",
     paddingHorizontal: 16,
     height: 48,
-    backgroundColor: '#f9fafb',
+    backgroundColor: "#f9fafb",
   },
   inputField: {
     flex: 1,
-    color: '#000',
+    color: "#000",
     fontSize: 16,
   },
   inputInfo: {
     fontSize: 13,
-    color: '#00000080',
+    color: "#00000080",
     marginTop: 2,
   },
   eyeIcon: {
     padding: 4,
   },
   buttonsContainerHorizontal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 16,
     marginTop: 16,
   },
@@ -245,25 +259,25 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   secondaryButtonHorizontal: {
     borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#fff',
+    borderColor: "#000",
+    backgroundColor: "#fff",
   },
   secondaryButtonHorizontalText: {
-    color: '#000',
-    fontWeight: '600',
+    color: "#000",
+    fontWeight: "600",
     fontSize: 16,
   },
   primaryButtonHorizontal: {
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   primaryButtonHorizontalText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 16,
   },
-}); 
+});
