@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface HeaderProps {
   subtitle: string;
@@ -10,7 +10,11 @@ interface HeaderProps {
   onBackPress?: () => void;
 }
 
-export default function Header({ subtitle, showBackButton = true, onBackPress }: HeaderProps) {
+export default function Header({
+  subtitle,
+  showBackButton = true,
+  onBackPress,
+}: HeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -26,10 +30,7 @@ export default function Header({ subtitle, showBackButton = true, onBackPress }:
     <View style={[styles.headerRect, { paddingTop: insets.top }]}>
       <View style={styles.headerContent}>
         {showBackButton && (
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={handleBackPress}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
         )}
@@ -44,15 +45,15 @@ export default function Header({ subtitle, showBackButton = true, onBackPress }:
 
 const styles = StyleSheet.create({
   headerRect: {
-    width: '100%',
+    width: "100%",
     height: 120,
-    backgroundColor: '#161616',
+    backgroundColor: "#161616",
     paddingHorizontal: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
     left: 0,
@@ -62,17 +63,17 @@ const styles = StyleSheet.create({
   },
   headerTextContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerSubtitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     opacity: 0.8,
   },
-}); 
+});
