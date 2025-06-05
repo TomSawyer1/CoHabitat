@@ -1,44 +1,49 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import Header from '../components/Header';
-import Navbar from '../components/navbar';
-import Sidebar from '../components/sidebar';
-
-const { width } = Dimensions.get('window');
-const sidebarWidth = 250;
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import Header from "../components/Header";
+import Navbar from "../components/navbar";
+import Sidebar from "../components/sidebar";
 
 // Fake data
 const userData = {
-  nom: 'Dupont',
-  prenom: 'Jean',
-  email: 'jean.dupont@example.com',
-  telephone: '06 12 34 56 78',
-  adresse: '123 Rue de la Paix, Paris',
+  nom: "Dupont",
+  prenom: "Jean",
+  email: "jean.dupont@example.com",
+  telephone: "06 12 34 56 78",
+  adresse: "123 Rue de la Paix, Paris",
 };
 
 const incidentsData = [
   {
-    id: '1',
+    id: "1",
     title: "Fuite d'eau",
-    date: '12/03/2024',
-    status: 'En cours de traitement',
+    date: "12/03/2024",
+    status: "En cours de traitement",
     image: null,
   },
   {
-    id: '2',
-    title: 'Problème électrique',
-    date: '10/03/2024',
-    status: 'Résolu',
+    id: "2",
+    title: "Problème électrique",
+    date: "10/03/2024",
+    status: "Résolu",
     image: null,
   },
   {
-    id: '3',
+    id: "3",
     title: "Porte d'entrée bloquée",
-    date: '08/03/2024',
-    status: 'En attente',
+    date: "08/03/2024",
+    status: "En attente",
     image: null,
   },
 ];
@@ -49,26 +54,20 @@ export default function Profil() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [formData, setFormData] = useState(userData);
 
-  const handlePressOutsideSidebar = () => {
-    if (isSidebarVisible) {
-      setIsSidebarVisible(false);
-    }
-  };
-
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleSave = () => {
-    console.log('Données sauvegardées:', formData);
+    console.log("Données sauvegardées:", formData);
     // Ajouter la logique de sauvegarde ici
   };
 
   const handleDelete = () => {
-    console.log('Supprimer le compte');
+    console.log("Supprimer le compte");
     // Ajouter la logique de suppression ici
   };
 
@@ -81,39 +80,51 @@ export default function Profil() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)} disabled={!isSidebarVisible}>
+      <TouchableWithoutFeedback
+        onPress={() => setIsSidebarVisible(false)}
+        disabled={!isSidebarVisible}
+      >
         <View style={styles.contentContainer}>
           {/* Header */}
           <Header subtitle="Mon Profil" showBackButton={false} />
 
           {/* Contenu principal - Profil */}
-          <ScrollView contentContainerStyle={styles.scrollViewContent} style={styles.scrollView}>
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContent}
+            style={styles.scrollView}
+          >
             {/* Section Avatar et Nom */}
             <View style={styles.avatarSection}>
               <View style={styles.avatarPlaceholder} />
-              <Text style={styles.userName}>{`${formData.prenom} ${formData.nom}`}</Text>
+              <Text
+                style={styles.userName}
+              >{`${formData.prenom} ${formData.nom}`}</Text>
             </View>
 
             {/* Section Informations Personnelles */}
-            <TouchableOpacity 
-              style={styles.sectionHeader} 
-              onPress={() => toggleSection('informations')}
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              onPress={() => toggleSection("informations")}
             >
               <Text style={styles.sectionTitle}>Informations Personnelles</Text>
-              <Ionicons 
-                name={expandedSection === 'informations' ? 'chevron-up' : 'chevron-down'} 
-                size={24} 
-                color="rgba(0,0,0,0.7)" 
+              <Ionicons
+                name={
+                  expandedSection === "informations"
+                    ? "chevron-up"
+                    : "chevron-down"
+                }
+                size={24}
+                color="rgba(0,0,0,0.7)"
               />
             </TouchableOpacity>
-            {expandedSection === 'informations' && (
+            {expandedSection === "informations" && (
               <View style={styles.formContainer}>
                 <View style={styles.inputContainer}>
                   <Text style={styles.inputLabel}>Nom</Text>
                   <TextInput
                     style={styles.input}
                     value={formData.nom}
-                    onChangeText={(value) => handleInputChange('nom', value)}
+                    onChangeText={(value) => handleInputChange("nom", value)}
                     placeholder="Entrez votre nom"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                   />
@@ -124,7 +135,7 @@ export default function Profil() {
                   <TextInput
                     style={styles.input}
                     value={formData.prenom}
-                    onChangeText={(value) => handleInputChange('prenom', value)}
+                    onChangeText={(value) => handleInputChange("prenom", value)}
                     placeholder="Entrez votre prénom"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                   />
@@ -135,7 +146,7 @@ export default function Profil() {
                   <TextInput
                     style={styles.input}
                     value={formData.email}
-                    onChangeText={(value) => handleInputChange('email', value)}
+                    onChangeText={(value) => handleInputChange("email", value)}
                     placeholder="Entrez votre email"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                     keyboardType="email-address"
@@ -147,7 +158,9 @@ export default function Profil() {
                   <TextInput
                     style={styles.input}
                     value={formData.telephone}
-                    onChangeText={(value) => handleInputChange('telephone', value)}
+                    onChangeText={(value) =>
+                      handleInputChange("telephone", value)
+                    }
                     placeholder="Entrez votre numéro de téléphone"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                     keyboardType="phone-pad"
@@ -159,52 +172,65 @@ export default function Profil() {
                   <TextInput
                     style={styles.input}
                     value={formData.adresse}
-                    onChangeText={(value) => handleInputChange('adresse', value)}
+                    onChangeText={(value) =>
+                      handleInputChange("adresse", value)
+                    }
                     placeholder="Entrez votre adresse"
                     placeholderTextColor="rgba(0,0,0,0.5)"
                   />
                 </View>
 
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleSave}
+                >
                   <Text style={styles.saveButtonText}>Sauvegarder</Text>
                 </TouchableOpacity>
               </View>
             )}
 
             {/* Section Vos Incidents */}
-            <TouchableOpacity 
-              style={styles.sectionHeader} 
-              onPress={() => toggleSection('incidents')}
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              onPress={() => toggleSection("incidents")}
             >
               <Text style={styles.sectionTitle}>Vos Incidents</Text>
-              <Ionicons 
-                name={expandedSection === 'incidents' ? 'chevron-up' : 'chevron-down'} 
-                size={24} 
-                color="rgba(0,0,0,0.7)" 
+              <Ionicons
+                name={
+                  expandedSection === "incidents"
+                    ? "chevron-up"
+                    : "chevron-down"
+                }
+                size={24}
+                color="rgba(0,0,0,0.7)"
               />
             </TouchableOpacity>
-            {expandedSection === 'incidents' && (
+            {expandedSection === "incidents" && (
               <View style={styles.incidentsContainer}>
-                {incidentsData.map(incident => (
-                  <TouchableOpacity 
-                    key={incident.id} 
+                {incidentsData.map((incident) => (
+                  <TouchableOpacity
+                    key={incident.id}
                     style={styles.incidentItem}
-                    onPress={() => router.push({
-                      pathname: '/suivresignal',
-                      params: {
-                        id: incident.id,
-                        title: incident.title,
-                        date: incident.date,
-                        status: incident.status,
-                        image: incident.image
-                      }
-                    })}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/suivresignal",
+                        params: {
+                          id: incident.id,
+                          title: incident.title,
+                          date: incident.date,
+                          status: incident.status,
+                          image: incident.image,
+                        },
+                      })
+                    }
                   >
                     <View style={styles.incidentImage} />
                     <View style={styles.incidentInfo}>
                       <Text style={styles.incidentTitle}>{incident.title}</Text>
                       <Text style={styles.incidentDate}>{incident.date}</Text>
-                      <Text style={styles.incidentStatus}>{incident.status}</Text>
+                      <Text style={styles.incidentStatus}>
+                        {incident.status}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -212,18 +238,28 @@ export default function Profil() {
             )}
 
             {/* Bouton Supprimer */}
-            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleDelete}
+            >
               <Text style={styles.deleteButtonText}>Supprimer mon compte</Text>
             </TouchableOpacity>
           </ScrollView>
 
           {/* Navbar */}
-          <Navbar isSidebarVisible={isSidebarVisible} setIsSidebarVisible={setIsSidebarVisible} router={router} />
+          <Navbar
+            isSidebarVisible={isSidebarVisible}
+            setIsSidebarVisible={setIsSidebarVisible}
+            router={router}
+          />
         </View>
       </TouchableWithoutFeedback>
 
       {/* Sidebar */}
-      <Sidebar isSidebarVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
+      <Sidebar
+        isSidebarVisible={isSidebarVisible}
+        onClose={() => setIsSidebarVisible(false)}
+      />
     </View>
   );
 }
@@ -231,11 +267,11 @@ export default function Profil() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   scrollView: {
     flex: 1,
@@ -246,7 +282,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40 + 70,
   },
   avatarSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
     marginTop: 20,
   },
@@ -254,25 +290,25 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 40,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: "rgba(0,0,0,0.1)",
     marginBottom: 10,
   },
   userName: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   sectionTitle: {
     fontSize: 18,
-    color: '#000',
+    color: "#000",
   },
   formContainer: {
     marginTop: 20,
@@ -282,76 +318,76 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     marginBottom: 8,
   },
   input: {
     height: 40,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: "rgba(0,0,0,0.1)",
     borderRadius: 6,
     paddingHorizontal: 12,
     fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#34c759',
+    backgroundColor: "#34c759",
     height: 42,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 20,
   },
   saveButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   incidentsContainer: {
     marginTop: 20,
   },
   incidentItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   incidentImage: {
     width: 80,
     height: 80,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: "rgba(0,0,0,0.2)",
     borderRadius: 4,
   },
   incidentInfo: {
     flex: 1,
     marginLeft: 12,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   incidentTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
   },
   incidentDate: {
     fontSize: 14,
-    color: 'rgba(0,0,0,0.5)',
+    color: "rgba(0,0,0,0.5)",
     marginTop: 4,
   },
   incidentStatus: {
     fontSize: 14,
-    color: '#000',
+    color: "#000",
     marginTop: 4,
   },
   deleteButton: {
-    backgroundColor: '#ff0000',
+    backgroundColor: "#ff0000",
     height: 42,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 20,
   },
   deleteButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
-}); 
+});
