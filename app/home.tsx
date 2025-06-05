@@ -1,14 +1,17 @@
-import { Stack, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { Dimensions, ImageBackground, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-import Navbar from '../components/navbar';
-import Sidebar from '../components/sidebar';
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
+import {
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import Navbar from "../components/navbar";
+import Sidebar from "../components/sidebar";
 
-const backgroundImage = require('../assets/images/SpeedOnana.jpg');
-
-const { width } = Dimensions.get('window');
-const sidebarWidth = 250; // Doit correspondre à la largeur de la sidebar
+const backgroundImage = require("../assets/images/SpeedOnana.jpg");
 
 export default function Home() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -25,7 +28,10 @@ export default function Home() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      <TouchableWithoutFeedback onPress={handlePressOutsideSidebar} disabled={!isSidebarVisible}>
+      <TouchableWithoutFeedback
+        onPress={handlePressOutsideSidebar}
+        disabled={!isSidebarVisible}
+      >
         <View style={styles.contentContainer}>
           <View style={styles.barContainer}>
             <View style={styles.bar} />
@@ -34,16 +40,20 @@ export default function Home() {
             <Text style={styles.headerTitle}>CoHabitat</Text>
           </View>
 
-          <View style={styles.mainContent}>
-            {/* Votre contenu ira ici */}
-          </View>
+          <View style={styles.mainContent}>{/* Votre contenu ira ici */}</View>
 
-          <Navbar isSidebarVisible={isSidebarVisible} setIsSidebarVisible={setIsSidebarVisible} router={router} />
+          <Navbar
+            isSidebarVisible={isSidebarVisible}
+            setIsSidebarVisible={setIsSidebarVisible}
+            router={router}
+          />
         </View>
       </TouchableWithoutFeedback>
 
-      <Sidebar isSidebarVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
-
+      <Sidebar
+        isSidebarVisible={isSidebarVisible}
+        onClose={() => setIsSidebarVisible(false)}
+      />
     </ImageBackground>
   );
 }
@@ -51,11 +61,11 @@ export default function Home() {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    resizeMode: 'cover', // ou 'contain', 'stretch'
+    resizeMode: "cover", // ou 'contain', 'stretch'
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   mainContent: {
     flex: 1,
@@ -64,29 +74,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   barContainer: {
-    position: 'absolute',
-    width: '100%',
+    position: "absolute",
+    width: "100%",
     top: 0,
     left: 0,
     zIndex: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   bar: {
-    width: '100%',
+    width: "100%",
     height: 100,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   headerTitleContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 35,
     left: 0,
-    width: '100%',
+    width: "100%",
     zIndex: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
