@@ -9,7 +9,9 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.guardconnect.app",
+      "associatedDomains": ["applinks:guardconnect.com"]
     },
     "android": {
       "adaptiveIcon": {
