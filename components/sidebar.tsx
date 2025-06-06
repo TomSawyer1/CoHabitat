@@ -30,19 +30,42 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
   const menuItems = [
     {
       id: 1,
+      text: "Mon Bâtiment",
+      icon: "business-outline",
+      activeIcon: "business",
+    },
+    {
+      id: 2,
+      text: "Mon Gardien",
+      icon: "shield-outline",
+      activeIcon: "shield",
+    },
+    {
+      id: 3,
+      text: "Incidents",
+      icon: "warning-outline",
+      activeIcon: "warning",
+    },
+    {
+      id: 4,
+      text: "Rapports",
+      icon: "document-text-outline",
+      activeIcon: "document-text",
+    },
+    { 
+      id: 5, 
+      text: "Profil", 
+      icon: "person-outline", 
+      activeIcon: "person" 
+    },
+    {
+      id: 6,
       text: "Paramètres",
       icon: "settings-outline",
       activeIcon: "settings",
     },
     {
-      id: 2,
-      text: "Mon Bâtiment",
-      icon: "business-outline",
-      activeIcon: "business",
-    },
-    { id: 3, text: "Profil", icon: "person-outline", activeIcon: "person" },
-    {
-      id: 4,
+      id: 7,
       text: "Déconnexion",
       icon: "log-out-outline",
       activeIcon: "log-out",
