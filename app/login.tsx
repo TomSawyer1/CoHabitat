@@ -21,7 +21,7 @@ export default function Login() {
     // Vérifie si l'email et le mot de passe correspondent aux valeurs spécifiques
     if (email === "test@test.com" && password === "test") {
       // Redirige vers la page de signalement
-      router.push("/accueil");
+      router.push("/home");
     } else {
       // Ici, vous pourriez ajouter une logique pour afficher un message d'erreur à l'utilisateur
       console.log("Identifiants incorrects");
