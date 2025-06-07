@@ -42,4 +42,4 @@ export const useSidebarStyle = () => {
   });
 
   return styles;
-}; 
+};

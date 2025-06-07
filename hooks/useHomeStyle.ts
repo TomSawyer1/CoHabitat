@@ -1,7 +1,12 @@
 import { StyleSheet } from 'react-native';
+import { EdgeInsets } from "react-native-safe-area-context";
 
-export const useHomeStyle = () => {
+export const useHomeStyle = (insets: EdgeInsets) => {
   const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#fff",
+    },
     backgroundImage: {
       flex: 1,
       resizeMode: "cover",
@@ -9,38 +14,13 @@ export const useHomeStyle = () => {
     contentContainer: {
       flex: 1,
       justifyContent: "flex-end",
+      // Le paddingTop pour la safe area sera géré par le Header lui-même
     },
     mainContent: {
       flex: 1,
-      paddingTop: 100,
+      paddingTop: 0, // Ajusté si nécessaire, car le Header occupe déjà de l'espace
       paddingBottom: 0,
       paddingHorizontal: 20,
-    },
-    barContainer: {
-      position: "absolute",
-      width: "100%",
-      top: 0,
-      left: 0,
-      zIndex: 10,
-      alignItems: "center",
-    },
-    bar: {
-      width: "100%",
-      height: 100,
-      backgroundColor: "#000",
-    },
-    headerTitleContainer: {
-      position: "absolute",
-      top: 35,
-      left: 0,
-      width: "100%",
-      zIndex: 20,
-      alignItems: "center",
-    },
-    headerTitle: {
-      color: "#fff",
-      fontSize: 24,
-      fontWeight: "bold",
     },
   });
 

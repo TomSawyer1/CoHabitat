@@ -2,11 +2,12 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ImageBackground,
-    Text,
-    TouchableWithoutFeedback,
-    View,
+  ImageBackground,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Header from "../components/Header";
 import Navbar from "../components/navbar";
 import Sidebar from "../components/sidebar";
 import { useHomeStyle } from "../hooks/useHomeStyle";
@@ -16,7 +17,8 @@ const backgroundImage = require("../assets/images/SpeedOnana.jpg");
 export default function Home() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const router = useRouter();
-  const styles = useHomeStyle();
+  const insets = useSafeAreaInsets();
+  const styles = useHomeStyle(insets);
 
   const handlePressOutsideSidebar = () => {
     if (isSidebarVisible) {
@@ -34,12 +36,7 @@ export default function Home() {
         disabled={!isSidebarVisible}
       >
         <View style={styles.contentContainer}>
-          <View style={styles.barContainer}>
-            <View style={styles.bar} />
-          </View>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>CoHabitat</Text>
-          </View>
+          <Header subtitle="Accueil" showBackButton={false} transparentBackground={true} />
 
           <View style={styles.mainContent}>{/* Votre contenu ira ici */}</View>
 
