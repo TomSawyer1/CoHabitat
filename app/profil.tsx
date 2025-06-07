@@ -3,17 +3,17 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import Header from "../components/Header";
 import Navbar from "../components/navbar";
 import Sidebar from "../components/sidebar";
+import { useProfilStyle } from "../hooks/useProfilStyle";
 
 // Fake data
 const userData = {
@@ -53,6 +53,7 @@ export default function Profil() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [formData, setFormData] = useState(userData);
+  const styles = useProfilStyle();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -263,131 +264,3 @@ export default function Profil() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingTop: 20,
-    paddingHorizontal: 24,
-    paddingBottom: 40 + 70,
-  },
-  avatarSection: {
-    alignItems: "center",
-    marginBottom: 40,
-    marginTop: 20,
-  },
-  avatarPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 40,
-    backgroundColor: "rgba(0,0,0,0.1)",
-    marginBottom: 10,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    color: "#000",
-  },
-  formContainer: {
-    marginTop: 20,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 16,
-    color: "#000",
-    marginBottom: 8,
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    fontSize: 16,
-  },
-  saveButton: {
-    backgroundColor: "#34c759",
-    height: 42,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  incidentsContainer: {
-    marginTop: 20,
-  },
-  incidentItem: {
-    flexDirection: "row",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
-  },
-  incidentImage: {
-    width: 80,
-    height: 80,
-    backgroundColor: "rgba(0,0,0,0.2)",
-    borderRadius: 4,
-  },
-  incidentInfo: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: "center",
-  },
-  incidentTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  incidentDate: {
-    fontSize: 14,
-    color: "rgba(0,0,0,0.5)",
-    marginTop: 4,
-  },
-  incidentStatus: {
-    fontSize: 14,
-    color: "#000",
-    marginTop: 4,
-  },
-  deleteButton: {
-    backgroundColor: "#ff0000",
-    height: 42,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});

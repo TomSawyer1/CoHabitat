@@ -2,21 +2,20 @@ import { Ionicons } from "@expo/vector-icons"; // Import des icônes
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { sidebarWidth, useSidebarStyle } from "../hooks/useSidebarStyle";
 
 interface SidebarProps {
   isSidebarVisible: boolean;
   onClose: () => void;
 }
 
-const sidebarWidth = 250; // Doit correspondre à la largeur définie dans les styles
-
 export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
   const slideAnim = useRef(new Animated.Value(-sidebarWidth)).current; // Initialiser la position hors écran (-largeur)
+  const styles = useSidebarStyle();
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -112,44 +111,3 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  sidebar: {
-    position: "absolute",
-    top: 0,
-    left: 0, // Laisser à 0, l'animation translateX gère la position
-    bottom: 0,
-    width: sidebarWidth, // Utiliser la variable pour la largeur
-    backgroundColor: "#000", // Couleur de fond noire
-    paddingTop: 50, // Padding en haut pour le titre
-    paddingHorizontal: 20,
-    zIndex: 50, // Assurez-vous qu'elle est au-dessus des autres éléments
-    // Ajoutez des ombres ou d'autres styles si nécessaire
-    shadowColor: "#000",
-    shadowOffset: { width: 2, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5, // Pour Android
-  },
-  appTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 30, // Espacement sous le titre
-    color: "#fff", // Couleur du titre blanche
-  },
-  menuContainer: {
-    // Styles pour le conteneur des éléments de menu
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    // borderBottomWidth: 1, // Ligne séparatrice optionnelle
-    // borderBottomColor: '#eee',
-  },
-  menuItemText: {
-    fontSize: 18,
-    marginLeft: 15, // Espacement entre l'icône et le texte
-    color: "#fff", // Couleur du texte des éléments de menu blanche
-  },
-});

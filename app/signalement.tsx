@@ -2,12 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
   Image,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -17,12 +16,14 @@ import {
 import Header from "../components/Header";
 import Navbar from "../components/navbar";
 import Sidebar from "../components/sidebar";
+import { useSignalementStyle } from "../hooks/useSignalementStyle";
 
 const { width } = Dimensions.get("window");
 const sidebarWidth = 250;
 
 export default function Signalement() {
   const router = useRouter();
+  const styles = useSignalementStyle();
   // Vous pouvez ajouter des états ici pour gérer les valeurs des inputs
   const [typeSignalement, setTypeSignalement] = useState("");
   const [lieu, setLieu] = useState("");
@@ -230,124 +231,3 @@ export default function Signalement() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingTop: 20,
-    paddingHorizontal: 24,
-    paddingBottom: 40 + 70,
-  },
-  sectionTitleContainer: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    color: "#000",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  sectionSubtitle: {
-    color: "#00000080",
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  inputsContainer: {
-    marginBottom: 40,
-    gap: 20,
-  },
-  inputGroup: {
-    marginBottom: 10,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#000",
-  },
-  inputFieldContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#0000001A",
-    paddingHorizontal: 16,
-    height: 48,
-    backgroundColor: "#f9fafb",
-  },
-  inputField: {
-    flex: 1,
-    color: "#000",
-    fontSize: 16,
-  },
-  descriptionInputContainer: {
-    height: 120,
-  },
-  descriptionInputField: {
-    height: "100%",
-    paddingVertical: 16,
-  },
-  imagePickerButton: {
-    flexDirection: "row",
-    backgroundColor: "#e0e0e0",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  imagePickerButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  selectedImage: {
-    width: 100,
-    height: 100,
-    marginTop: 10,
-    borderRadius: 8,
-    resizeMode: "cover",
-  },
-  buttonsContainerHorizontal: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 20,
-    marginTop: 30,
-    marginBottom: 20,
-  },
-  buttonHorizontal: {
-    flex: 1,
-    height: 48,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  secondaryButtonHorizontal: {
-    borderWidth: 1,
-    borderColor: "#000",
-    backgroundColor: "#fff",
-  },
-  secondaryButtonHorizontalText: {
-    color: "#000",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  primaryButtonHorizontal: {
-    backgroundColor: "#000",
-  },
-  primaryButtonHorizontalText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-});

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useHeaderStyle } from "../hooks/useHeaderStyle";
 
 interface HeaderProps {
   subtitle: string;
@@ -17,6 +18,7 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const styles = useHeaderStyle();
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -42,38 +44,3 @@ export default function Header({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerRect: {
-    width: "100%",
-    height: 120,
-    backgroundColor: "#161616",
-    paddingHorizontal: 24,
-    justifyContent: "center",
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButton: {
-    left: 0,
-    padding: 4,
-    zIndex: 1,
-    marginRight: 16,
-  },
-  headerTextContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "bold",
-  },
-  headerSubtitle: {
-    color: "#fff",
-    fontSize: 16,
-    opacity: 0.8,
-  },
-});

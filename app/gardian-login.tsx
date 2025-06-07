@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -10,12 +10,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useGardianLoginStyle } from "../hooks/useGardianLoginStyle";
 
 export default function GardianLogin() {
   const router = useRouter();
+  const styles = useGardianLoginStyle();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   return (
     <View style={styles.container}>
@@ -26,14 +26,11 @@ export default function GardianLogin() {
       </View>
       {/* Titre blanc centré sur l'ellipse */}
       <View style={styles.headerTitleContainer}>
-        <Text style={styles.headerTitle}>CoHabitat</Text>
+        <Text style={styles.headerTitle}>Guardian</Text>
       </View>
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        style={styles.scrollView}
-      >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
         {/* Titre de section */}
-        <Text style={styles.sectionTitle}>Connexion Gardien</Text>
+        <Text style={styles.sectionTitle}>Connexion</Text>
         {/* Inputs */}
         <View style={styles.inputsContainer}>
           {/* Input Email */}
@@ -43,13 +40,11 @@ export default function GardianLogin() {
               <TextInput
                 style={styles.inputField}
                 placeholder="Entrez votre email"
-                placeholderTextColor="#888"
+                placeholderTextColor="#00000080"
                 keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
+                autoCapitalize="none"
               />
             </View>
-            <Text style={styles.inputInfo}>Votre email professionnel</Text>
           </View>
           {/* Input Mot de passe */}
           <View>
@@ -58,51 +53,44 @@ export default function GardianLogin() {
               <TextInput
                 style={styles.inputField}
                 placeholder="Entrez votre mot de passe"
-                placeholderTextColor="#888"
+                placeholderTextColor="#00000080"
                 secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
               />
               <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
               >
                 <Ionicons
                   name={showPassword ? "eye-off" : "eye"}
                   size={24}
-                  color="#888"
+                  color="#00000080"
                 />
               </TouchableOpacity>
             </View>
-            <Text style={styles.inputInfo}>Minimum 8 caractères</Text>
           </View>
         </View>
         {/* Boutons */}
         <View style={styles.buttonsContainer}>
           {/* Primaire */}
           <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
+            onPress={() => router.push("/gardian-register")}
+          >
+            <Text style={styles.secondaryButtonText}>Créer un compte</Text>
+          </TouchableOpacity>
+          {/* Secondaire 2 - Peut-être à adapter pour gardiens */}
+          <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
             onPress={() => router.push("/home")}
           >
             <Text style={styles.primaryButtonText}>Se connecter</Text>
           </TouchableOpacity>
-          {/* Secondaire 2 - Peut-être à adapter pour gardiens */}
-          <TouchableOpacity
-            style={[styles.button, styles.secondaryButtonBlack]}
-            onPress={() => router.push("/gardian-register")}
-          >
-            <Text style={styles.secondaryButtonBlackText}>
-              Créer un compte Gardien
-            </Text>
-          </TouchableOpacity>
           {/* Mot de passe oublié */}
           <TouchableOpacity
-            style={[styles.button, styles.secondaryButton]}
+            style={[styles.button, styles.secondaryButtonBlack]}
             onPress={() => router.push("/forgot-password")}
           >
-            <Text style={styles.secondaryButtonText}>
-              Mot de passe oublié ?
-            </Text>
+            <Text style={styles.secondaryButtonBlackText}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
