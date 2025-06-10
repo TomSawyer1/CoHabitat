@@ -1,14 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import Header from "../components/Header";
 import { useRegisterStyle } from "../hooks/useRegisterStyle";
 
 export default function Register() {
@@ -16,31 +18,26 @@ export default function Register() {
   const styles = useRegisterStyle();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [telephone, setTelephone] = useState("");
+  const [selectedBuilding, setSelectedBuilding] = useState("");
+
+  // Données fictives des bâtiments
+  const buildings = [
+    { id: "1", name: "Résidence Les Alpes" },
+    { id: "2", name: "Résidence Le Parc" },
+    { id: "3", name: "Résidence Les Tilleuls" },
+  ];
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Header rectangulaire noir */}
-      <View style={styles.headerRect}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>CoHabitat</Text>
-          <Text style={styles.headerSubtitle}>Créer un compte</Text>
-        </View>
-      </View>
+      <Header subtitle="Créer un compte" showBackButton={true} />
 
-      {/* Contenu principal */}
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         style={styles.scrollView}
       >
-        {/* Titre et sous-titre de section */}
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>Bienvenue !</Text>
           <Text style={styles.sectionSubtitle}>
@@ -48,9 +45,7 @@ export default function Register() {
           </Text>
         </View>
 
-        {/* Inputs */}
         <View style={styles.inputsContainer}>
-          {/* Input Email */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Email</Text>
             <View style={styles.inputFieldContainer}>
@@ -63,7 +58,6 @@ export default function Register() {
             </View>
           </View>
 
-          {/* Input Nom */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Nom</Text>
             <View style={styles.inputFieldContainer}>
@@ -75,7 +69,6 @@ export default function Register() {
             </View>
           </View>
 
-          {/* Input Prénom */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Prénom</Text>
             <View style={styles.inputFieldContainer}>
@@ -87,7 +80,21 @@ export default function Register() {
             </View>
           </View>
 
-          {/* Input Mot de passe */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Téléphone</Text>
+            <View style={styles.inputFieldContainer}>
+              <TextInput
+                style={styles.inputField}
+                placeholder="Entrez votre numéro de téléphone"
+                placeholderTextColor="#888"
+                keyboardType="phone-pad"
+                value={telephone}
+                onChangeText={setTelephone}
+              />
+            </View>
+            <Text style={styles.inputInfo}>Votre numéro de téléphone</Text>
+          </View>
+
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Mot de passe</Text>
             <View style={styles.inputFieldContainer}>
@@ -111,7 +118,6 @@ export default function Register() {
             <Text style={styles.inputInfo}>Minimum 8 caractères</Text>
           </View>
 
-          {/* Input Confirmer mot de passe */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Confirmer mot de passe</Text>
             <View style={styles.inputFieldContainer}>
@@ -133,11 +139,30 @@ export default function Register() {
               </TouchableOpacity>
             </View>
           </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Bâtiment</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedBuilding}
+                onValueChange={(itemValue) => setSelectedBuilding(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Sélectionnez votre bâtiment" value="" />
+                {buildings.map((building) => (
+                  <Picker.Item
+                    key={building.id}
+                    label={building.name}
+                    value={building.id}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <Text style={styles.inputInfo}>Votre lieu de résidence</Text>
+          </View>
         </View>
 
-        {/* Boutons */}
         <View style={styles.buttonsContainerHorizontal}>
-          {/* Secondaire */}
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.secondaryButtonHorizontal]}
             onPress={() => router.back()}
@@ -145,7 +170,6 @@ export default function Register() {
             <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
           </TouchableOpacity>
 
-          {/* Primaire */}
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
           >
