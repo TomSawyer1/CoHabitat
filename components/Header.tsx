@@ -9,12 +9,14 @@ interface HeaderProps {
   subtitle: string;
   showBackButton?: boolean;
   onBackPress?: () => void;
+  transparentBackground?: boolean;
 }
 
 export default function Header({
   subtitle,
   showBackButton = true,
   onBackPress,
+  transparentBackground = false,
 }: HeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -29,7 +31,13 @@ export default function Header({
   };
 
   return (
-    <View style={[styles.headerRect, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.headerRect,
+        { paddingTop: insets.top },
+        transparentBackground && { backgroundColor: "transparent" },
+      ]}
+    >
       <View style={styles.headerContent}>
         {showBackButton && (
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
