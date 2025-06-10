@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"; // Import des icônes
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
@@ -16,6 +17,7 @@ interface SidebarProps {
 export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
   const slideAnim = useRef(new Animated.Value(-sidebarWidth)).current; // Initialiser la position hors écran (-largeur)
   const styles = useSidebarStyle();
+  const router = useRouter();
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -73,6 +75,17 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
 
   const handleItemPress = (itemId: number) => {
     // Ici, vous ajouteriez la logique pour naviguer vers la page correspondante
+    if (itemId === 1) {
+      router.push("/mon-batiment");
+    } else if (itemId === 2) {
+      router.push("/mon-gardien");
+    } else if (itemId === 3) {
+      router.push("/incidents");
+    } else if (itemId === 5) {
+      router.push("/profil");
+    } else if (itemId === 6) {
+      router.push("/parametres");
+    }
     console.log("Menu item pressed:", itemId);
     onClose(); // Fermer la sidebar après avoir cliqué sur un élément
   };
