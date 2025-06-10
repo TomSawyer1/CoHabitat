@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -30,6 +29,7 @@ export default function Signalement() {
   const [dateHeure, setDateHeure] = useState("");
   const [description, setDescription] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
 
   // Nous allons aussi gérer l'état de la sidebar ici comme dans home.tsx
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -42,6 +42,7 @@ export default function Signalement() {
       dateHeure,
       description,
       selectedImage,
+      title,
     });
     // Rediriger ou afficher un message de succès
     // router.back(); // Exemple de redirection
@@ -100,6 +101,20 @@ export default function Signalement() {
 
             {/* Inputs */}
             <View style={styles.inputsContainer}>
+              {/* Input Titre */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Titre de l'incident</Text>
+                <View style={styles.inputFieldContainer}>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="Ex: Fuite d'eau, Problème de chauffage"
+                    placeholderTextColor="#888"
+                    value={title}
+                    onChangeText={setTitle}
+                  />
+                </View>
+              </View>
+
               {/* Input Type de signalement */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Type de signalement</Text>
@@ -170,15 +185,15 @@ export default function Signalement() {
                   style={styles.imagePickerButton}
                   onPress={pickImage}
                 >
-                  <Ionicons name="camera" size={24} color="#000" />
                   <Text style={styles.imagePickerButtonText}>
-                    Choisir une photo
+                    {selectedImage ? "Changer la photo" : "Choisir une photo"}
                   </Text>
                 </TouchableOpacity>
                 {selectedImage && (
                   <Image
                     source={{ uri: selectedImage }}
                     style={styles.selectedImage}
+                    resizeMode="cover"
                   />
                 )}
               </View>

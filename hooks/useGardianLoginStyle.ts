@@ -6,32 +6,6 @@ export const useGardianLoginStyle = () => {
       flex: 1,
       backgroundColor: "#fff",
     },
-    ellipseContainer: {
-      position: "absolute",
-      width: "100%",
-      top: 0,
-      left: 0,
-      zIndex: 0,
-      alignItems: "center",
-    },
-    ellipse: {
-      width: "100%",
-      height: 100,
-      backgroundColor: "#000",
-    },
-    headerTitleContainer: {
-      position: "absolute",
-      top: 35,
-      left: 0,
-      width: "100%",
-      zIndex: 20,
-      alignItems: "center",
-    },
-    headerTitle: {
-      color: "#fff",
-      fontSize: 24,
-      fontWeight: "bold",
-    },
     scrollView: {
       flex: 1,
       zIndex: 30,
@@ -108,8 +82,6 @@ export const useGardianLoginStyle = () => {
       fontSize: 16,
     },
     secondaryButtonBlack: {
-      borderWidth: 1,
-      borderColor: "#000",
       backgroundColor: "#000",
     },
     secondaryButtonBlackText: {
@@ -118,7 +90,7 @@ export const useGardianLoginStyle = () => {
       fontSize: 16,
     },
     eyeIcon: {
-      padding: 4,
+      paddingLeft: 10,
     },
   });
 

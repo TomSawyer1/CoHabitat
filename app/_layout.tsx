@@ -1,6 +1,6 @@
 import {
-  DefaultTheme,
-  ThemeProvider
+    DefaultTheme,
+    ThemeProvider
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as Linking from "expo-linking";
@@ -10,9 +10,6 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from 'react';
 import { View } from "react-native";
 import "react-native-reanimated";
-
-// NOTE: remove this when done with the splash screen logic
-// import CustomSplashScreen from '@/components/CustomSplashScreen';
 import Splash from "./splash";
 
 // Prevent the native splash screen from auto-hiding before asset loading is complete.
@@ -115,6 +112,10 @@ export default function RootLayout() {
           <Stack.Screen name="profil" options={{ headerShown: false }} />
           <Stack.Screen name="notifications" options={{ headerShown: false }} />
           <Stack.Screen name="home" options={{ headerShown: false }} />
+          <Stack.Screen name="batiments" options={{ headerShown: false }} />
+          <Stack.Screen name="mon-batiment" options={{ headerShown: false }} />
+          <Stack.Screen name="mon-gardien" options={{ headerShown: false }} />
+          <Stack.Screen name="parametres" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="light" />
       </View>

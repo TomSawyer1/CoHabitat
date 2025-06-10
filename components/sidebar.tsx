@@ -81,6 +81,8 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
       router.push("/mon-gardien");
     } else if (itemId === 3) {
       router.push("/incidents");
+    } else if (itemId === 4) {
+      router.push("/gerer-incidents");
     } else if (itemId === 5) {
       router.push("/profil");
     } else if (itemId === 6) {

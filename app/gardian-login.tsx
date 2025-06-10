@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Header from "../components/Header";
 import { useGardianLoginStyle } from "../hooks/useGardianLoginStyle";
 
 export default function GardianLogin() {
@@ -20,14 +21,7 @@ export default function GardianLogin() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* Ellipse décorative noire */}
-      <View style={styles.ellipseContainer}>
-        <View style={styles.ellipse} />
-      </View>
-      {/* Titre blanc centré sur l'ellipse */}
-      <View style={styles.headerTitleContainer}>
-        <Text style={styles.headerTitle}>Guardian</Text>
-      </View>
+      <Header subtitle="Connexion" showBackButton={false} />
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
         {/* Titre de section */}
         <Text style={styles.sectionTitle}>Connexion</Text>
@@ -102,32 +96,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-  },
-  ellipseContainer: {
-    position: "absolute",
-    width: "100%",
-    top: 0,
-    left: 0,
-    zIndex: 0,
-    alignItems: "center",
-  },
-  ellipse: {
-    width: "100%",
-    height: 100,
-    backgroundColor: "#000",
-  },
-  headerTitleContainer: {
-    position: "absolute",
-    top: 35,
-    left: 0,
-    width: "100%",
-    zIndex: 20,
-    alignItems: "center",
-  },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
   },
   scrollView: {
     flex: 1,

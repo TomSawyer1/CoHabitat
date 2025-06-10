@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from 'react';
 import { Text, TouchableOpacity, View } from "react-native";
+import Header from "../components/Header";
 import { useAccueilStyle } from "../hooks/useAccueilStyle";
 
 export default function Accueil() {
@@ -11,14 +12,7 @@ export default function Accueil() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* Ellipse décorative noire */}
-      <View style={styles.ellipseContainer}>
-        <View style={styles.ellipse} />
-        {/* Titre blanc centré sur l'ellipse */}
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>CoHabitat</Text>
-        </View>
-      </View>
+      <Header subtitle="Accueil" showBackButton={false} />
 
       {/* Contenu principal - Boutons */}
       <View style={styles.contentContainer}>

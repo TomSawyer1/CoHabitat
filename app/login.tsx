@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import Header from "../components/Header";
 import { useLoginStyle } from "../hooks/useLoginStyle";
 
 export default function Login() {
@@ -32,14 +33,7 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* Ellipse décorative noire */}
-      <View style={styles.ellipseContainer}>
-        <View style={styles.ellipse} />
-      </View>
-      {/* Titre blanc centré sur l'ellipse */}
-      <View style={styles.headerTitleContainer}>
-        <Text style={styles.headerTitle}>CoHabitat</Text>
-      </View>
+      <Header subtitle="Connexion" showBackButton={false} />
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         style={styles.scrollView}

@@ -91,7 +91,7 @@ export default function Incidents() {
         style={styles.incidentItem}
         onPress={() =>
           router.push({
-            pathname: "/suivresignal",
+            pathname: "/gerer-incidents",
             params: {
               id: incident.id,
               title: incident.title,
