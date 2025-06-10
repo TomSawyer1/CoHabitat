@@ -47,18 +47,6 @@ export default function Register() {
 
         <View style={styles.inputsContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
-            <View style={styles.inputFieldContainer}>
-              <TextInput
-                style={styles.inputField}
-                placeholder="Entrez votre email"
-                placeholderTextColor="#888"
-                keyboardType="email-address"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Nom</Text>
             <View style={styles.inputFieldContainer}>
               <TextInput
@@ -81,6 +69,18 @@ export default function Register() {
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <View style={styles.inputFieldContainer}>
+              <TextInput
+                style={styles.inputField}
+                placeholder="Entrez votre email"
+                placeholderTextColor="#888"
+                keyboardType="email-address"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Téléphone</Text>
             <View style={styles.inputFieldContainer}>
               <TextInput
@@ -93,6 +93,27 @@ export default function Register() {
               />
             </View>
             <Text style={styles.inputInfo}>Votre numéro de téléphone</Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Bâtiment</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedBuilding}
+                onValueChange={(itemValue) => setSelectedBuilding(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Sélectionnez votre bâtiment" value="" />
+                {buildings.map((building) => (
+                  <Picker.Item
+                    key={building.id}
+                    label={building.name}
+                    value={building.id}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <Text style={styles.inputInfo}>Votre lieu de résidence</Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -138,27 +159,6 @@ export default function Register() {
                 />
               </TouchableOpacity>
             </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Bâtiment</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={selectedBuilding}
-                onValueChange={(itemValue) => setSelectedBuilding(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Sélectionnez votre bâtiment" value="" />
-                {buildings.map((building) => (
-                  <Picker.Item
-                    key={building.id}
-                    label={building.name}
-                    value={building.id}
-                  />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.inputInfo}>Votre lieu de résidence</Text>
           </View>
         </View>
 
