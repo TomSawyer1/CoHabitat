@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from "react";
 import {
     ScrollView,
     Text,
@@ -15,15 +17,7 @@ import Navbar from "../components/navbar";
 import Sidebar from "../components/sidebar";
 import { useProfilStyle } from "../hooks/useProfilStyle";
 
-// Fake data
-const userData = {
-  nom: "Dupont",
-  prenom: "Jean",
-  email: "jean.dupont@example.com",
-  telephone: "06 12 34 56 78",
-  adresse: "123 Rue de la Paix, Paris",
-};
-
+// Données fictives (seront remplacées par les données de l'API)
 const incidentsData = [
   {
     id: "1",
@@ -52,8 +46,59 @@ export default function Profil() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [formData, setFormData] = useState(userData);
+  const [formData, setFormData] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    telephone: "",
+    batiment_nom: "", // Pour afficher le nom du bâtiment
+  });
   const styles = useProfilStyle();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          router.replace('/login'); // Rediriger si pas de token
+          return;
+        }
+
+        const decodedToken: any = jwtDecode(token);
+        const userId = decodedToken.id;
+
+        const response = await fetch(`http://10.0.2.2:3000/auth/locataire/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setFormData({
+            nom: data.nom || "",
+            prenom: data.prenom || "",
+            email: data.email || "",
+            telephone: data.telephone || "",
+            batiment_nom: data.batiment_nom || "",
+          });
+        } else {
+          console.error("Erreur lors de la récupération du profil:", data.message);
+          alert(data.message || "Erreur lors de la récupération du profil.");
+          // Optionnel: Déconnecter l'utilisateur si le token est invalide
+          // await AsyncStorage.removeItem('userToken');
+          // router.replace('/login');
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération du profil:", error);
+        alert("Impossible de charger le profil. Veuillez réessayer plus tard.");
+        router.replace('/login'); // Rediriger en cas d'erreur majeure (ex: réseau)
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -62,9 +107,45 @@ export default function Profil() {
     }));
   };
 
-  const handleSave = () => {
-    console.log("Données sauvegardées:", formData);
-    // Ajouter la logique de sauvegarde ici
+  const handleSave = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        alert("Non autorisé. Veuillez vous reconnecter.");
+        router.replace('/login');
+        return;
+      }
+      
+      const decodedToken: any = jwtDecode(token);
+      const userId = decodedToken.id;
+
+      const response = await fetch(`http://10.0.2.2:3000/auth/locataire/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nom: formData.nom,
+          prenom: formData.prenom,
+          email: formData.email,
+          telephone: formData.telephone,
+          // L'adresse n'est pas dans votre schéma de base de données pour les locataires
+          // Si vous voulez la mettre à jour, vous devrez l'ajouter au backend et au schéma DB.
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Profil mis à jour avec succès !");
+      } else {
+        alert(data.message || "Erreur lors de la mise à jour du profil.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde:", error);
+      alert("Impossible de sauvegarder le profil. Veuillez réessayer plus tard.");
+    }
   };
 
   const handleDelete = () => {
@@ -100,6 +181,9 @@ export default function Profil() {
               <Text
                 style={styles.userName}
               >{`${formData.prenom} ${formData.nom}`}</Text>
+              {formData.batiment_nom && (
+                <Text style={styles.userBuilding}>{formData.batiment_nom}</Text>
+              )}
             </View>
 
             {/* Section Informations Personnelles */}
@@ -168,6 +252,8 @@ export default function Profil() {
                   />
                 </View>
 
+                {/* L'adresse n'est pas dans le schéma de la table locataire, donc nous la retirons pour l'instant */}
+                {/*
                 <View style={styles.inputContainer}>
                   <Text style={styles.inputLabel}>Adresse</Text>
                   <TextInput
@@ -180,6 +266,7 @@ export default function Profil() {
                     placeholderTextColor="rgba(0,0,0,0.5)"
                   />
                 </View>
+                */}
 
                 <TouchableOpacity
                   style={styles.saveButton}
@@ -256,7 +343,6 @@ export default function Profil() {
         </View>
       </TouchableWithoutFeedback>
 
-      {/* Sidebar */}
       <Sidebar
         isSidebarVisible={isSidebarVisible}
         onClose={() => setIsSidebarVisible(false)}

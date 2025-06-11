@@ -18,6 +18,11 @@ export default function Register() {
   const styles = useRegisterStyle();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [telephone, setTelephone] = useState("");
   const [selectedBuilding, setSelectedBuilding] = useState("");
 
@@ -27,6 +32,48 @@ export default function Register() {
     { id: "2", name: "Résidence Le Parc" },
     { id: "3", name: "Résidence Les Tilleuls" },
   ];
+
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      alert("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    // Vérification des champs requis
+    if (!email || !nom || !prenom || !telephone || !selectedBuilding || !password) {
+      alert("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+
+    try {
+      const response = await fetch('http://10.0.2.2:3000/auth/register/locataire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          nom,
+          prenom,
+          telephone,
+          batiment: selectedBuilding, // building_id attendu par le backend
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Inscription réussie");
+        router.push("/home"); // Rediriger vers la page d'accueil après une inscription réussie
+      } else {
+        alert(data.message || "Erreur lors de l\'inscription.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l\'inscription:", error);
+      alert("Impossible de se connecter au serveur. Veuillez réessayer plus tard.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -53,6 +100,8 @@ export default function Register() {
                 style={styles.inputField}
                 placeholder="Entrez votre nom"
                 placeholderTextColor="#888"
+                value={nom}
+                onChangeText={setNom}
               />
             </View>
           </View>
@@ -64,6 +113,8 @@ export default function Register() {
                 style={styles.inputField}
                 placeholder="Entrez votre prénom"
                 placeholderTextColor="#888"
+                value={prenom}
+                onChangeText={setPrenom}
               />
             </View>
           </View>
@@ -76,6 +127,8 @@ export default function Register() {
                 placeholder="Entrez votre email"
                 placeholderTextColor="#888"
                 keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
               />
             </View>
           </View>
@@ -124,6 +177,8 @@ export default function Register() {
                 placeholder="Entrez votre mot de passe"
                 placeholderTextColor="#888"
                 secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -147,6 +202,8 @@ export default function Register() {
                 placeholder="Confirmez votre mot de passe"
                 placeholderTextColor="#888"
                 secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
               />
               <TouchableOpacity
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -172,6 +229,7 @@ export default function Register() {
 
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
+            onPress={handleRegister}
           >
             <Text style={styles.primaryButtonHorizontalText}>S&apos;inscrire</Text>
           </TouchableOpacity>

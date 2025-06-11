@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from 'react';
@@ -19,14 +20,41 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const styles = useLoginStyle();
 
-  const handleLogin = () => {
-    // Vérifie si l'email et le mot de passe correspondent aux valeurs spécifiques
-    if (email === "test@test.com" && password === "test") {
-      // Redirige vers la page de signalement
-      router.push("/home");
-    } else {
-      // Ici, vous pourriez ajouter une logique pour afficher un message d'erreur à l'utilisateur
-      console.log("Identifiants incorrects");
+  const handleLogin = async () => {
+    // Vérification des champs requis
+    if (!email || !password) {
+      alert("Veuillez entrer votre email et votre mot de passe.");
+      return;
+    }
+
+    try {
+      const response = await fetch('http://10.0.2.2:3000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role: 'locataire', // Spécifier le rôle pour la connexion
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Connexion réussie !");
+        // Stocker le token et les informations utilisateur
+        await AsyncStorage.setItem('userToken', data.token);
+        // Vous pouvez également stocker d'autres informations utilisateur si nécessaire, par exemple: 
+        // await AsyncStorage.setItem('userId', data.user.id.toString());
+        router.push("/home"); // Rediriger vers la page d'accueil
+      } else {
+        alert(data.message || "Identifiants incorrects.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la connexion:", error);
+      alert("Impossible de se connecter au serveur. Veuillez réessayer plus tard.");
     }
   };
 

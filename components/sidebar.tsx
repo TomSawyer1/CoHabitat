@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons"; // Import des icônes
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
-  Animated,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { sidebarWidth, useSidebarStyle } from "../hooks/useSidebarStyle";
 
@@ -26,6 +27,18 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
       useNativeDriver: true, // Utiliser le driver natif pour de meilleures performances
     }).start();
   }, [isSidebarVisible, slideAnim]);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken'); // Supprimer le token d'authentification
+      // Vous pouvez également supprimer d'autres informations utilisateur si nécessaire
+      router.replace('/accueil'); // Rediriger vers l'écran d'accueil/connexion
+      onClose(); // Fermer la sidebar
+    } catch (e) {
+      console.error("Erreur lors de la déconnexion:", e);
+      alert("Erreur lors de la déconnexion.");
+    }
+  };
 
   // Exemple d'éléments de menu pour la sidebar
   const menuItems = [
@@ -87,6 +100,8 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
       router.push("/profil");
     } else if (itemId === 6) {
       router.push("/parametres");
+    } else if (itemId === 7) {
+      handleLogout(); // Appeler la fonction de déconnexion
     }
     console.log("Menu item pressed:", itemId);
     onClose(); // Fermer la sidebar après avoir cliqué sur un élément

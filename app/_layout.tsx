@@ -1,6 +1,6 @@
 import {
-    DefaultTheme,
-    ThemeProvider
+  DefaultTheme,
+  ThemeProvider
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as Linking from "expo-linking";

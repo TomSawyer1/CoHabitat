@@ -31,6 +31,11 @@ export const useProfilStyle = () => {
       fontWeight: "bold",
       color: "#000",
     },
+    userBuilding: {
+      fontSize: 16,
+      color: "#666",
+      marginTop: 4,
+    },
     sectionHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
