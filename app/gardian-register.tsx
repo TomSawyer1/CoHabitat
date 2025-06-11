@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -24,16 +24,73 @@ export default function GardianRegister() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [street, setStreet] = useState("");
   const [building, setBuilding] = useState("");
   const [guardNumber, setGuardNumber] = useState("");
 
-  // Données fictives des bâtiments
-  const buildings = [
-    { id: "1", name: "Bâtiment A" },
-    { id: "2", name: "Bâtiment B" },
-    { id: "3", name: "Bâtiment C" },
-  ];
+  // Données fictives des bâtiments (sera remplacé par l'API)
+  const [buildings, setBuildings] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:3000/api/buildings');
+        const data = await response.json();
+        if (response.ok) {
+          setBuildings(data);
+        } else {
+          console.error("Erreur lors de la récupération des bâtiments:", data.message);
+          alert(data.message || "Erreur lors du chargement des bâtiments.");
+        }
+      } catch (error) {
+        console.error("Erreur réseau lors de la récupération des bâtiments:", error);
+        alert("Impossible de se connecter au serveur pour les bâtiments.");
+      }
+    };
+    fetchBuildings();
+  }, []);
+
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      alert("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    // Vérification des champs requis
+    if (!email || !lastName || !firstName || !phoneNumber || !building || !guardNumber || !password) {
+      alert("Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+
+    try {
+      const response = await fetch('http://10.0.2.2:3000/auth/register/guardian', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          nom: lastName,
+          prenom: firstName,
+          telephone: phoneNumber,
+          batiment: building, // building_id attendu par le backend
+          numeroGardien: guardNumber,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Inscription du gardien réussie !");
+        router.push("/gardian-login"); // Rediriger vers la page de connexion du gardien
+      } else {
+        alert(data.message || "Erreur lors de l\'inscription du gardien.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l\'inscription du gardien:", error);
+      alert("Impossible de se connecter au serveur. Veuillez réessayer plus tard.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -78,19 +135,6 @@ export default function GardianRegister() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Rue</Text>
-          <View style={styles.inputField}>
-            <TextInput
-              style={styles.input}
-              placeholder="Entrez le nom de la rue"
-              placeholderTextColor="#00000080"
-              value={street}
-              onChangeText={setStreet}
-            />
-          </View>
-        </View>
-
-        <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Bâtiment</Text>
           <View style={styles.pickerContainer}>
             <Picker
@@ -100,7 +144,7 @@ export default function GardianRegister() {
             >
               <Picker.Item label="Sélectionnez le bâtiment" value="" />
               {buildings.map((b) => (
-                <Picker.Item key={b.id} label={b.name} value={b.id} />
+                <Picker.Item key={b.id} label={b.nom} value={b.id ? b.id.toString() : ""} />
               ))}
             </Picker>
           </View>
@@ -208,7 +252,7 @@ export default function GardianRegister() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
-            onPress={() => router.push("/gardian-home")}
+            onPress={handleRegister}
           >
             <Text style={styles.primaryButtonHorizontalText}>Créer un compte</Text>
           </TouchableOpacity>
