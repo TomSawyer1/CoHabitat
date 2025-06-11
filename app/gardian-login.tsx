@@ -21,10 +21,10 @@ export default function GardianLogin() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <Header subtitle="Connexion" showBackButton={false} />
+      <Header subtitle="Connexion Gardien" showBackButton={false} />
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
         {/* Titre de section */}
-        <Text style={styles.sectionTitle}>Connexion</Text>
+        <Text style={styles.sectionTitle}>Connexion Gardien</Text>
         {/* Inputs */}
         <View style={styles.inputsContainer}>
           {/* Input Email */}

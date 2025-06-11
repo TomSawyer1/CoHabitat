@@ -33,13 +33,13 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <Header subtitle="Connexion" showBackButton={false} />
+      <Header subtitle="Connexion Locataire" showBackButton={false} />
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         style={styles.scrollView}
       >
         {/* Titre de section */}
-        <Text style={styles.sectionTitle}>Connexion</Text>
+        <Text style={styles.sectionTitle}>Connexion Locataire</Text>
         {/* Inputs */}
         <View style={styles.inputsContainer}>
           {/* Input Email */}

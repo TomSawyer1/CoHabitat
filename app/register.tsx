@@ -32,7 +32,7 @@ export default function Register() {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      <Header subtitle="Créer un compte" showBackButton={true} />
+      <Header subtitle="Créer un compte locataire" showBackButton={false} />
 
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}

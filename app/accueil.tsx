@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from 'react';
 import { Text, TouchableOpacity, View } from "react-native";
-// import Header from "../components/Header";
+import Header from "../components/Header";
 import { useAccueilStyle } from "../hooks/useAccueilStyle";
 
 export default function Accueil() {
@@ -12,7 +12,7 @@ export default function Accueil() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* <Header subtitle="Accueil" showBackButton={false} /> */}
+       <Header subtitle="Accueil" showBackButton={false} />
 
       {/* Contenu principal - Boutons */}
       <View style={styles.contentContainer}>
