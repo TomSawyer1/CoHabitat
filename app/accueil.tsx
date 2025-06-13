@@ -11,7 +11,7 @@ export default function Accueil() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-       <Header subtitle="Accueil !" showBackButton={false} />
+       <Header subtitle="Accueil " showBackButton={false} />
 
       {/* Contenu principal - Boutons */}
       <View style={styles.contentContainer}>
