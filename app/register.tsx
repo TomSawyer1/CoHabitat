@@ -4,11 +4,11 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Header from "../components/Header";
 import { useRegisterStyle } from "../hooks/useRegisterStyle";
@@ -65,7 +65,7 @@ export default function Register() {
 
       if (response.ok) {
         alert("Inscription réussie");
-        router.push("/home"); // Rediriger vers la page d'accueil après une inscription réussie
+        router.push("/login"); // Rediriger vers la page de connexion du locataire
       } else {
         alert(data.message || "Erreur lors de l\'inscription.");
       }
