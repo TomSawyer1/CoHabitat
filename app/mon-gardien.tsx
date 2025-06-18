@@ -3,11 +3,11 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import Header from "../components/Header";
 import Navbar from "../components/navbar";
@@ -16,14 +16,14 @@ import { useMonGardienStyle } from "../hooks/useMonGardienStyle";
 
 // Données fictives pour le gardien
 const gardianData = {
-  name: "Amadou Diallo",
+  name: "Spencer Thomas",
   role: "Gardien de l'immeuble",
-  phone: "06 98 76 54 32",
-  email: "amadou.diallo@cohabitat.fr",
+  phone: "06 24 71 61 67",
+  email: "ts@cohabitat.com",
   officeHours: "Lun-Ven: 9h-12h et 14h-17h",
   buildingsManaged: [
-    { id: 1, name: "Résidence Les Jardins" },
-    { id: 2, name: "Immeuble Le Parc" },
+    
+    { id: 2, name: "Résidence Le Parc" },
   ],
 };
 

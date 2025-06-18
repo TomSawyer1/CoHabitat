@@ -3,49 +3,74 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TouchableWithoutFeedback,
-    View
+  ScrollView,
+  Text,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import Header from "../components/Header";
 import Navbar from "../components/navbar";
 import Sidebar from "../components/sidebar";
 import { useMonBatimentStyle } from "../hooks/useMonBatimentStyle";
 
-// Données fictives pour le bâtiment du locataire
-const buildingData = {
-  name: "Résidence Les Jardins",
-  address: "123 Avenue des Fleurs, 75001 Paris",
-  buildingInfo: {
-    floors: 8,
-    totalApartments: 24,
-    yearBuilt: 2010,
-    lastRenovation: "2022",
-  },
-  guardian: {
-    name: "Pierre Martin",
-    phone: "06 12 34 56 78",
-    email: "pierre.martin@cohabitat.fr",
-    schedule: "Lun-Ven: 8h-18h, Sam: 9h-12h",
-  },
-  facilities: [
-    "Ascenseur",
-    "Parking souterrain",
-    "Local à vélos",
-    "Interphone",
-    "Digicode",
-  ],
-  emergency: {
-    guardian: "06 12 34 56 78",
-    security: "01 23 45 67 89",
-  },
-};
+interface BuildingData {
+  id: number;
+  nom: string;
+  adresse: string;
+  nombre_etage: number;
+  nombre_appartement: number;
+  annee_construction: number;
+  derniere_renovation: string; // Ou number si c'est une année
+  // Ajouter d'autres propriétés si l'API les retourne, comme facilities, emergency
+}
+
+interface GuardianData {
+  id: number;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  // Ajouter d'autres propriétés si l'API les retourne, comme schedule
+}
 
 export default function MonBatiment() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const styles = useMonBatimentStyle();
+
+  const [buildingData, setBuildingData] = useState<BuildingData | null>({
+    id: 1,
+    nom: "Résidence Le Parc",
+    adresse: "456 Avenue du Lac",
+    nombre_etage: 3,
+    nombre_appartement: 15,
+    annee_construction: 1995,
+    derniere_renovation: "2018",
+  });
+  const [guardianData, setGuardianData] = useState<GuardianData | null>({
+    id: 101,
+    nom: "Spencer",
+    prenom: "Thomas",
+    telephone: "0624716167",
+    email: "ts@cohabitat.com",
+  });
+  const [loading, setLoading] = useState(false);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Chargement des informations du bâtiment...</Text>
+      </View>
+    );
+  }
+
+  if (!buildingData) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Aucune donnée de bâtiment disponible.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -71,8 +96,8 @@ export default function MonBatiment() {
             </View>
 
             <View style={styles.buildingCard}>
-              <Text style={styles.buildingName}>{buildingData.name}</Text>
-              <Text style={styles.buildingAddress}>{buildingData.address}</Text>
+              <Text style={styles.buildingName}>{buildingData.nom}</Text>
+              <Text style={styles.buildingAddress}>{buildingData.adresse}</Text>
 
               {/* Informations générales */}
               <View style={styles.infoSection}>
@@ -83,7 +108,7 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Nombre d'étages</Text>
-                    <Text style={styles.infoValue}>{buildingData.buildingInfo.floors}</Text>
+                    <Text style={styles.infoValue}>{buildingData.nombre_etage}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -92,7 +117,7 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Nombre d'appartements</Text>
-                    <Text style={styles.infoValue}>{buildingData.buildingInfo.totalApartments}</Text>
+                    <Text style={styles.infoValue}>{buildingData.nombre_appartement}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -101,7 +126,7 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Année de construction</Text>
-                    <Text style={styles.infoValue}>{buildingData.buildingInfo.yearBuilt}</Text>
+                    <Text style={styles.infoValue}>{buildingData.annee_construction}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -110,15 +135,17 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Dernière rénovation</Text>
-                    <Text style={styles.infoValue}>{buildingData.buildingInfo.lastRenovation}</Text>
+                    <Text style={styles.infoValue}>{buildingData.derniere_renovation}</Text>
                   </View>
                 </View>
               </View>
 
-              {/* Équipements */}
-              <View style={styles.infoSection}>
+              {/* Équipements (si disponible dans les données de l'API) */}
+              {/* J'ai commenté cette section car les données de l'API n'incluent pas 'facilities' directement.
+                  Si votre API renvoie les équipements, vous pouvez décommenter et adapter. */}
+              {/* <View style={styles.infoSection}>
                 <Text style={styles.infoTitle}>Équipements</Text>
-                {buildingData.facilities.map((facility, index) => (
+                {buildingData.facilities && buildingData.facilities.map((facility, index) => (
                   <View key={index} style={styles.infoItem}>
                     <View style={styles.infoIcon}>
                       <Ionicons name="checkmark-circle-outline" size={24} color="#666" />
@@ -128,37 +155,40 @@ export default function MonBatiment() {
                     </View>
                   </View>
                 ))}
-              </View>
+              </View> */}
 
               {/* Gardien */}
-              <View style={styles.contactSection}>
-                <Text style={styles.contactTitle}>Gardien</Text>
-                <View style={styles.contactItem}>
-                  <Ionicons name="person-outline" size={20} color="#666" />
-                  <Text style={styles.contactText}>{buildingData.guardian.name}</Text>
+              {guardianData && (
+                <View style={styles.contactSection}>
+                  <Text style={styles.contactTitle}>Gardien</Text>
+                  <View style={styles.contactItem}>
+                    <Ionicons name="person-outline" size={20} color="#666" />
+                    <Text style={styles.contactText}>{guardianData.nom} {guardianData.prenom}</Text>
+                  </View>
+                  <View style={styles.contactItem}>
+                    <Ionicons name="call-outline" size={20} color="#666" />
+                    <Text style={styles.contactText}>{guardianData.telephone}</Text>
+                  </View>
+                  <View style={styles.contactItem}>
+                    <Ionicons name="mail-outline" size={20} color="#666" />
+                    <Text style={styles.contactText}>{guardianData.email}</Text>
+                  </View>
+                  {/* Si l'API retourne l'horaire, décommentez ceci */}
+                  {/* <View style={styles.contactItem}>
+                    <Ionicons name="time-outline" size={20} color="#666" />
+                    <Text style={styles.contactText}>{guardianData.schedule}</Text>
+                  </View> */}
                 </View>
-                <View style={styles.contactItem}>
-                  <Ionicons name="call-outline" size={20} color="#666" />
-                  <Text style={styles.contactText}>{buildingData.guardian.phone}</Text>
-                </View>
-                <View style={styles.contactItem}>
-                  <Ionicons name="mail-outline" size={20} color="#666" />
-                  <Text style={styles.contactText}>{buildingData.guardian.email}</Text>
-                </View>
-                <View style={styles.contactItem}>
-                  <Ionicons name="time-outline" size={20} color="#666" />
-                  <Text style={styles.contactText}>{buildingData.guardian.schedule}</Text>
-                </View>
-              </View>
+              )}
 
-              {/* Urgences */}
-              <View style={styles.emergencySection}>
+              {/* Urgences (si disponible dans les données de l'API) */}
+              {/* <View style={styles.emergencySection}>
                 <Text style={styles.emergencyTitle}>En cas d'urgence</Text>
                 <Text style={styles.emergencyText}>Gardien de service :</Text>
                 <Text style={styles.emergencyNumber}>{buildingData.emergency.guardian}</Text>
                 <Text style={styles.emergencyText}>Sécurité :</Text>
                 <Text style={styles.emergencyNumber}>{buildingData.emergency.security}</Text>
-              </View>
+              </View> */}
             </View>
           </ScrollView>
 
