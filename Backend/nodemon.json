@@ -1,0 +1,12 @@
+{
+  "ignore": [
+    "node_modules",
+    "cohabitat.db",
+    "*.test.js"
+  ],
+  "watch": [
+    "src",
+    "server.js"
+  ],
+  "ext": "js,json"
+} 
