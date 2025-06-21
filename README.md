@@ -15,25 +15,31 @@ Ce projet est développé avec des technologies modernes pour offrir une expéri
 *   **TypeScript:** Un sur-ensemble de JavaScript qui ajoute le typage statique, améliorant la robustesse et la maintenabilité du code.
 *   **Expo Router:** Pour la gestion de la navigation basée sur les fichiers, simplifiant la création et la gestion des routes de l'application.
 
-## Fonctionnalités Principales
+## Fonctionnalités
 
-CoHabitat propose une gamme de fonctionnalités pensées pour les gardiens et les locataires:
+L'application propose des fonctionnalités adaptées à chaque profil :
 
-### Pour les Gardiens:
+### Gardiens
 
-*   **Gestion des Bâtiments:** Une vue d'ensemble des bâtiments gérés, avec des détails sur chacun (nombre d'appartements, statut de maintenance, incidents, taux d'occupation).
-*   **Suivi des Signalements:** Possibilité de voir, de suivre et de mettre à jour le statut des incidents signalés par les locataires.
+- **Gestion des bâtiments** : Vue d'ensemble et gestion des bâtiments, avec détails et maintenance.
+- **Suivi des signalements** : Consultation et mise à jour du statut des incidents signalés.
+- **Informations sur le bâtiment** : Accès aux informations détaillées sur chaque bâtiment.
+- **Coordonnées des locataires** : Visualisation des informations de contact des locataires.
+- **Profil** : Gestion des informations personnelles du gardien.
+- **Notifications** : Réception et consultation des notifications importantes.
+- **Paramètres** : Configuration des préférences de l'application.
 
-### Pour les Locataires:
+### Locataires
 
-*   **Informations sur le Bâtiment:** Accès facile aux détails de leur bâtiment (adresse, nombre d'étages, équipements, etc.).
-*   **Coordonnées du Gardien:** Informations de contact et horaires du gardien de leur bâtiment.
-*   **Signalement d'Incidents:** Un formulaire simple pour signaler des problèmes ou des requêtes, avec la possibilité d'ajouter des images.
-*   **Page "Mon Profil":** Gestion des informations personnelles et aperçu des incidents signalés.
-*   **Page "Notifications":** Consultation des notifications importantes du bâtiment ou du gardien.
-*   **Page "Paramètres":** Configuration des préférences de l'application, comme la langue.
+- **Signalement d'incidents** : Formulaire simple pour signaler un problème ou une requête.
+- **Suivi des signalements** : Suivi de l'avancement des incidents signalés.
+- **Informations sur le bâtiment** : Accès aux détails et équipements du bâtiment.
+- **Coordonnées du gardien** : Informations de contact et horaires du gardien.
+- **Profil** : Gestion des informations personnelles du locataire.
+- **Notifications** : Consultation des notifications du bâtiment ou du gardien.
+- **Paramètres** : Personnalisation des préférences de l'application.
 
-### Fonctionnalités Transversales (Front-end):
+## Fonctionnalités Transversales (Front-end):
 
 *   **Navigation Cohérente:** Implémentation d'une barre latérale (Sidebar) et d'une barre de navigation (Navbar) pour une navigation intuitive.
 *   **En-têtes Uniformisés:** Un composant d'en-tête générique utilisé sur toutes les pages pour une cohérence visuelle et une gestion correcte de la "safe area" (zones de sécurité des appareils).
