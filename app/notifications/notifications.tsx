@@ -2,15 +2,15 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TouchableWithoutFeedback,
-    View,
+  ScrollView,
+  Text,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import Header from "../components/Header";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import { useNotificationsStyle } from "../hooks/useNotificationsStyle";
+import Header from "../../components/Header";
+import Navbar from "../../components/navbar";
+import Sidebar from "../../components/sidebar";
+import { useNotificationsStyle } from "../../hooks/useNotificationsStyle";
 
 export default function Notifications() {
   const router = useRouter();

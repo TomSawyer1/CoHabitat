@@ -3,13 +3,13 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useForgotPasswordStyle } from "../hooks/useForgotPasswordStyle";
+import { useForgotPasswordStyle } from "../../hooks/useForgotPasswordStyle";
 
 export default function ForgotPassword() {
   const router = useRouter();

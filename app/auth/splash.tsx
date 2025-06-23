@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
-import { useSplashStyle } from "../hooks/useSplashStyle";
+import { useSplashStyle } from "../../hooks/useSplashStyle";
 
 export default function Splash() {
   const styles = useSplashStyle();

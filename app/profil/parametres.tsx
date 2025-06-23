@@ -3,17 +3,17 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    Switch,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import Header from "../components/Header";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import { useParametresStyle } from "../hooks/useParametresStyle";
+import Header from "../../components/Header";
+import Navbar from "../../components/navbar";
+import Sidebar from "../../components/sidebar";
+import { useParametresStyle } from "../../hooks/useParametresStyle";
 
 export default function Parametres() {
   const router = useRouter();

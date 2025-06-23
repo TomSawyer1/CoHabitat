@@ -5,17 +5,17 @@ import { StatusBar } from "expo-status-bar";
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import Header from "../components/Header";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import { useProfilStyle } from "../hooks/useProfilStyle";
+import Header from "../../components/Header";
+import Navbar from "../../components/navbar";
+import Sidebar from "../../components/sidebar";
+import { useProfilStyle } from "../../hooks/useProfilStyle";
 
 // Données fictives (seront remplacées par les données de l'API)
 const incidentsData = [
