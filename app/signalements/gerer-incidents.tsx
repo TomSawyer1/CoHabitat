@@ -3,19 +3,19 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    Dimensions,
-    Image,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Dimensions,
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import Header from "../components/Header";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import { useGererIncidentsStyle } from "../hooks/useGererIncidentsStyle";
+import Header from "../../components/Header";
+import Navbar from "../../components/navbar";
+import Sidebar from "../../components/sidebar";
+import { useGererIncidentsStyle } from "../../hooks/useGererIncidentsStyle";
 
 const { width } = Dimensions.get("window");
 

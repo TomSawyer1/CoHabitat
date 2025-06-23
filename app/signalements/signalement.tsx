@@ -12,10 +12,10 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import Header from "../components/Header";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import { useSignalementStyle } from "../hooks/useSignalementStyle";
+import Header from "../../components/Header";
+import Navbar from "../../components/navbar";
+import Sidebar from "../../components/sidebar";
+import { useSignalementStyle } from "../../hooks/useSignalementStyle";
 
 const { width } = Dimensions.get("window");
 const sidebarWidth = 250;
