@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Header from "../components/Header";
-import { useGuardianRegisterStyle } from "../hooks/useGuardianRegisterStyle";
+import Header from "../../components/Header";
+import { useGuardianRegisterStyle } from "../../hooks/useGuardianRegisterStyle";
 
 export default function GardianRegister() {
   const router = useRouter();
@@ -82,7 +82,7 @@ export default function GardianRegister() {
 
       if (response.ok) {
         alert("Inscription du gardien réussie !");
-        router.push("/gardian-login"); // Rediriger vers la page de connexion du gardien
+        router.push("/auth/gardian-login"); // Rediriger vers la page de connexion du gardien
       } else {
         alert(data.message || "Erreur lors de l\'inscription du gardien.");
       }

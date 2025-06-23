@@ -11,8 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Header from "../components/Header";
-import { useGardianLoginStyle } from "../hooks/useGardianLoginStyle";
+import Header from "../../components/Header";
+import { useGardianLoginStyle } from "../../hooks/useGardianLoginStyle";
 
 export default function GardianLogin() {
   const router = useRouter();
@@ -111,7 +111,7 @@ export default function GardianLogin() {
           {/* Primaire */}
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
-            onPress={() => router.push("/gardian-register")}
+            onPress={() => router.push("/auth/gardian-register")}
           >
             <Text style={styles.secondaryButtonText}>Créer un compte</Text>
           </TouchableOpacity>
@@ -125,7 +125,7 @@ export default function GardianLogin() {
           {/* Mot de passe oublié */}
           <TouchableOpacity
             style={[styles.button, styles.secondaryButtonBlack]}
-            onPress={() => router.push("/forgot-password")}
+            onPress={() => router.push("/auth/forgot-password")}
           >
             <Text style={styles.secondaryButtonBlackText}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
