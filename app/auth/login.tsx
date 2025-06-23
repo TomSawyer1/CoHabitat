@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Header from "../components/Header";
-import { useLoginStyle } from "../hooks/useLoginStyle";
+import Header from "../../components/Header";
+import { useLoginStyle } from "../../hooks/useLoginStyle";
 
 export default function Login() {
   const router = useRouter();
@@ -123,14 +123,14 @@ export default function Login() {
           {/* Secondaire 2 */}
           <TouchableOpacity
             style={[styles.button, styles.secondaryButtonBlack]}
-            onPress={() => router.push("/register")}
+            onPress={() => router.push("/auth/register")}
           >
             <Text style={styles.secondaryButtonBlackText}>Créer un compte</Text>
           </TouchableOpacity>
           {/* Mot de passe oublié */}
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
-            onPress={() => router.push("/forgot-password")}
+            onPress={() => router.push("/auth/forgot-password")}
           >
             <Text style={styles.secondaryButtonText}>
               Mot de passe oublié ?

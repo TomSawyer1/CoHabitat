@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Text, TouchableOpacity, View } from "react-native";
-import Header from "../components/Header";
-import { useAccueilStyle } from "../hooks/useAccueilStyle";
+import Header from "../../components/Header";
+import { useAccueilStyle } from "../../hooks/useAccueilStyle";
 
 export default function Accueil() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function Accueil() {
         {/* Bouton Locataire */}
         <TouchableOpacity
           style={[styles.button, styles.primaryButton]}
-          onPress={() => router.push("/login")}
+          onPress={() => router.push("/auth/login")}
         >
           <Text style={styles.primaryButtonText}>Locataire</Text>
         </TouchableOpacity>
@@ -26,7 +26,7 @@ export default function Accueil() {
         {/* Bouton Gardien */}
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
-          onPress={() => router.push("/gardian-login")}
+          onPress={() => router.push("/auth/gardian-login")}
         >
           <Text style={styles.secondaryButtonText}>Gardien</Text>
         </TouchableOpacity>

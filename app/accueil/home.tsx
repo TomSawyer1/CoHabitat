@@ -7,10 +7,10 @@ import {
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Header from "../components/Header";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import { useHomeStyle } from "../hooks/useHomeStyle";
+import Header from "../../components/Header";
+import Navbar from "../../components/navbar";
+import Sidebar from "../../components/sidebar";
+import { useHomeStyle } from "../../hooks/useHomeStyle";
 
 const backgroundImage = require("../assets/images/SpeedOnana.jpg");
 
