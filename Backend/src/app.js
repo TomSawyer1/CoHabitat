@@ -3,6 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan'); // Pour le logging des requêtes
 const authRoutes = require('./routes/authRoutes');
 const buildingRoutes = require('./routes/buildingRoutes'); // Importation des routes des bâtiments
+const incidentsRoutes = require('./routes/incidentsRoutes');
 
 const app = express();
 
@@ -30,6 +31,8 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 // Utilisation des routes des bâtiments
 app.use('/api', buildingRoutes);
+// Utilisation des routes des incidents
+app.use('/api', incidentsRoutes);
 
 // Middleware de gestion des erreurs
 app.use((err, req, res, next) => {

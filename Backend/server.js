@@ -1,4 +1,5 @@
 const app = require('./src/app');
+require('dotenv').config();
 const db = require('./src/db/database'); // S'assurer que la base de données est initialisée
 
 const PORT = 3000;

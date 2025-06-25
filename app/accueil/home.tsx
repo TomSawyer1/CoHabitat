@@ -12,7 +12,7 @@ import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { useHomeStyle } from "../../hooks/useHomeStyle";
 
-const backgroundImage = require("../assets/images/SpeedOnana.jpg");
+const backgroundImage = require("../../assets/images/SpeedOnana.jpg");
 
 export default function Home() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
