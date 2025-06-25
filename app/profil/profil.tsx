@@ -5,12 +5,12 @@ import { StatusBar } from "expo-status-bar";
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -53,28 +53,25 @@ export default function Profil() {
     telephone: "",
     batiment_nom: "", // Pour afficher le nom du bâtiment
   });
+  const [incidents, setIncidents] = useState<any[]>([]);
   const styles = useProfilStyle();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserProfileAndIncidents = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
         if (!token) {
-          router.replace('/login'); // Rediriger si pas de token
+          router.replace('/login');
           return;
         }
-
         const decodedToken: any = jwtDecode(token);
         const userId = decodedToken.id;
 
+        // Profil
         const response = await fetch(`http://10.0.2.2:3000/auth/locataire/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          headers: { 'Authorization': `Bearer ${token}` },
         });
-
         const data = await response.json();
-
         if (response.ok) {
           setFormData({
             nom: data.nom || "",
@@ -83,21 +80,23 @@ export default function Profil() {
             telephone: data.telephone || "",
             batiment_nom: data.batiment_nom || "",
           });
+        }
+
+        // Incidents
+        const incidentsRes = await fetch(`http://10.0.2.2:3000/api/incidents/user/${userId}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (incidentsRes.ok) {
+          const incidentsData = await incidentsRes.json();
+          setIncidents(incidentsData);
         } else {
-          console.error("Erreur lors de la récupération du profil:", data.message);
-          alert(data.message || "Erreur lors de la récupération du profil.");
-          // Optionnel: Déconnecter l'utilisateur si le token est invalide
-          // await AsyncStorage.removeItem('userToken');
-          // router.replace('/login');
+          setIncidents([]);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération du profil:", error);
-        alert("Impossible de charger le profil. Veuillez réessayer plus tard.");
-        router.replace('/login'); // Rediriger en cas d'erreur majeure (ex: réseau)
+        setIncidents([]);
       }
     };
-
-    fetchUserProfile();
+    fetchUserProfileAndIncidents();
   }, []);
 
   const handleInputChange = (field: string, value: string) => {
@@ -295,33 +294,38 @@ export default function Profil() {
             </TouchableOpacity>
             {expandedSection === "incidents" && (
               <View style={styles.incidentsContainer}>
-                {incidentsData.map((incident) => (
-                  <TouchableOpacity
-                    key={incident.id}
-                    style={styles.incidentItem}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/suivresignal",
-                        params: {
-                          id: incident.id,
-                          title: incident.title,
-                          date: incident.date,
-                          status: incident.status,
-                          image: incident.image,
-                        },
-                      })
-                    }
-                  >
-                    <View style={styles.incidentImage} />
-                    <View style={styles.incidentInfo}>
-                      <Text style={styles.incidentTitle}>{incident.title}</Text>
-                      <Text style={styles.incidentDate}>{incident.date}</Text>
-                      <Text style={styles.incidentStatus}>
-                        {incident.status}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                {incidents.length === 0 ? (
+                  <Text style={{ color: "#666" }}>Aucun incident signalé.</Text>
+                ) : (
+                  incidents.map((incident) => (
+                    <TouchableOpacity
+                      key={incident.id}
+                      style={styles.incidentItem}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/signalements/suivresignal",
+                          params: {
+                            id: incident.id,
+                            title: incident.type,
+                            date: incident.date,
+                            status: incident.status || "En attente",
+                            description: incident.description,
+                            image: incident.image,
+                          },
+                        })
+                      }
+                    >
+                      <View style={styles.incidentImage} />
+                      <View style={styles.incidentInfo}>
+                        <Text style={styles.incidentTitle}>{incident.type}</Text>
+                        <Text style={styles.incidentDate}>{incident.date}</Text>
+                        <Text style={styles.incidentStatus}>
+                          {incident.status || "En attente"}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
             )}
 

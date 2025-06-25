@@ -4,11 +4,11 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from 'react';
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Header from "../../components/Header";
 import { useLoginStyle } from "../../hooks/useLoginStyle";
@@ -48,7 +48,7 @@ export default function Login() {
         await AsyncStorage.setItem('userToken', data.token);
         // Vous pouvez également stocker d'autres informations utilisateur si nécessaire, par exemple: 
         // await AsyncStorage.setItem('userId', data.user.id.toString());
-        router.push("/home"); // Rediriger vers la page d'accueil
+        router.push("/accueil"); // Rediriger vers la page d'accueil
       } else {
         alert(data.message || "Identifiants incorrects.");
       }

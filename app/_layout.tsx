@@ -15,7 +15,7 @@ export default function RootLayout() {
     <ThemeProvider value={DefaultTheme}>
       <View style={{ flex: 1 }}>
         <Stack>
-          <Stack.Screen name="accueil" options={{ headerShown: false }} />
+          <Stack.Screen name="accueil/index" options={{ headerShown: false }} />
           <Stack.Screen name="auth/login" options={{ headerShown: false }} />
           <Stack.Screen name="auth/register" options={{ headerShown: false }} />
           <Stack.Screen name="auth/gardian-login" options={{ headerShown: false }} />
