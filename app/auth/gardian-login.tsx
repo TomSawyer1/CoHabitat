@@ -61,6 +61,21 @@ export default function GardianLogin() {
         await AsyncStorage.setItem('userId', data.user.id.toString());
         await AsyncStorage.setItem('userRole', data.user.role);
         await AsyncStorage.setItem('userEmail', data.user.email);
+        await AsyncStorage.setItem('userName', `${data.user.prenom} ${data.user.nom}`);
+        
+        // Stocker les informations du bâtiment si disponibles
+        if (data.user.building_id) {
+          await AsyncStorage.setItem('userBuildingId', data.user.building_id.toString());
+          await AsyncStorage.setItem('userBuildingName', data.user.building_name || '');
+          await AsyncStorage.setItem('userBuildingAddress', data.user.building_address || '');
+        }
+        
+        console.log('✅ [GARDIEN LOGIN] Données stockées:', {
+          userId: data.user.id,
+          userRole: data.user.role,
+          buildingId: data.user.building_id,
+          buildingName: data.user.building_name
+        });
         
         Alert.alert(
           "Succès", 
