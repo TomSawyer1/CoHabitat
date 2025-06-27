@@ -13,8 +13,11 @@ app.use(morgan('dev')); // Utilisez 'dev' pour un format de log concis
 // Middleware pour parser le JSON
 app.use(express.json());
 
-// Middleware CORS
-app.use(cors());
+// Middleware CORS amélioré pour le développement
+app.use(cors({
+    origin: ['http://localhost:19006', 'http://localhost:8081', 'exp://localhost:19000'],
+    credentials: true
+}));
 
 // Middleware de logging détaillé des requêtes
 app.use((req, res, next) => {
@@ -25,6 +28,16 @@ app.use((req, res, next) => {
     console.log('Body:', req.body);
     console.log('=====================\n');
     next();
+});
+
+// Route de santé pour vérifier que l'API fonctionne
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'GuardConnect API is running',
+        timestamp: new Date().toISOString(),
+        port: process.env.PORT || 3000
+    });
 });
 
 // Utilisation des routes d'authentification

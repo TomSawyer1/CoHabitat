@@ -135,8 +135,14 @@ export const useRegisterStyle = () => {
     },
     primaryButtonHorizontalText: {
       color: "#fff",
-      fontSize: 16,
       fontWeight: "600",
+      fontSize: 16,
+    },
+    loadingText: {
+      padding: 16,
+      textAlign: 'center',
+      color: '#888',
+      fontStyle: 'italic',
     },
   });
 
