@@ -87,19 +87,19 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
   ];
 
   const handleItemPress = (itemId: number) => {
-    // Ici, vous ajouteriez la logique pour naviguer vers la page correspondante
+    // Navigation selon la structure des fichiers
     if (itemId === 1) {
-      router.push("/mon-batiment");
+      router.push("/batiments/mon-batiment");
     } else if (itemId === 2) {
-      router.push("/mon-gardien");
+      router.push("/batiments/mon-gardien");
     } else if (itemId === 3) {
-      router.push("/incidents");
+      router.push("/signalements/incidents");
     } else if (itemId === 4) {
-      router.push("/gerer-incidents");
+      router.push("/signalements/gerer-incidents");
     } else if (itemId === 5) {
-      router.push("/profil");
+      router.push("/profil/profil");
     } else if (itemId === 6) {
-      router.push("/parametres");
+      router.push("/profil/parametres");
     } else if (itemId === 7) {
       handleLogout(); // Appeler la fonction de déconnexion
     }
