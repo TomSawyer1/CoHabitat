@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons"; // Import des icônes
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Text,
@@ -17,8 +17,23 @@ interface SidebarProps {
 
 export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
   const slideAnim = useRef(new Animated.Value(-sidebarWidth)).current; // Initialiser la position hors écran (-largeur)
+  const [userRole, setUserRole] = useState<string | null>(null);
   const styles = useSidebarStyle();
   const router = useRouter();
+
+  // Charger le rôle utilisateur au démarrage
+  useEffect(() => {
+    const loadUserRole = async () => {
+      try {
+        const role = await AsyncStorage.getItem('userRole');
+        setUserRole(role);
+        console.log('📱 [SIDEBAR] Rôle utilisateur chargé:', role);
+      } catch (error) {
+        console.error('❌ [SIDEBAR] Erreur chargement rôle:', error);
+      }
+    };
+    loadUserRole();
+  }, []);
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -93,7 +108,14 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
     } else if (itemId === 2) {
       router.push("/batiments/mon-gardien");
     } else if (itemId === 3) {
-      router.push("/signalements/incidents");
+      // Navigation différente selon le rôle pour les incidents
+      if (userRole === 'guardian') {
+        console.log('🛡️ [SIDEBAR] Gardien -> Gestion des incidents');
+        router.push("/signalements/gerer-incidents");
+      } else {
+        console.log('👤 [SIDEBAR] Locataire -> Liste des incidents');
+        router.push("/signalements/incidents");
+      }
     } else if (itemId === 4) {
       router.push("/signalements/gerer-incidents");
     } else if (itemId === 5) {
