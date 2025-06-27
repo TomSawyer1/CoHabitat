@@ -40,4 +40,8 @@ yarn-error.*
 app-example
 
 # Backend/
+Backend/.env
+Backend/cohabitat.db
 
+.env
+.env
