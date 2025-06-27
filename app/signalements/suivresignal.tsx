@@ -1,10 +1,14 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Dimensions,
+  Image,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
@@ -12,71 +16,250 @@ import {
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
+import { API_BASE_URL } from "../../config";
 import { useSuivreSignalStyle } from "../../hooks/useSuivreSignalStyle";
 
 const { width } = Dimensions.get("window");
 const sidebarWidth = 250;
 
+interface Incident {
+  id: number;
+  type: string;
+  description: string;
+  date: string;
+  image?: string;
+  status: string;
+  etage?: string;
+  numero_porte?: string;
+  created_at: string;
+  updated_at: string;
+  user_nom?: string;
+  user_prenom?: string;
+  user_email?: string;
+  building_nom?: string;
+  guardian_nom?: string;
+  guardian_prenom?: string;
+}
+
+interface Comment {
+  id: number;
+  incident_id: number;
+  user_id: number;
+  user_role: string;
+  comment: string;
+  created_at: string;
+  user_name?: string;
+}
+
+interface HistoryItem {
+  id: number;
+  incident_id: number;
+  action: string;
+  old_status?: string;
+  new_status?: string;
+  comment?: string;
+  user_id: number;
+  user_role: string;
+  created_at: string;
+  user_name?: string;
+}
+
 export default function SuivreSignal() {
   const router = useRouter();
   const styles = useSuivreSignalStyle();
   const params = useLocalSearchParams();
-  const [isSidebarVisible, setIsSidebarVisible] = React.useState(false);
+  
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [incident, setIncident] = useState<Incident | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
-  // Récupérer les données de l'incident depuis les paramètres
-  const incident = {
-    id: params.id,
-    title: params.title,
-    date: params.date,
-    status: params.status,
-    description: "Description détaillée de l'incident...",
-    lieu: "Bâtiment A, Appartement 3B",
-    type: "Problème technique",
-    image: params.image as string | undefined,
+  const incidentId = params.id as string;
+
+  useEffect(() => {
+    if (incidentId) {
+      loadIncidentData();
+    }
+  }, [incidentId]);
+
+  const loadIncidentData = async () => {
+    try {
+      console.log('📋 [SUIVI] Chargement incident ID:', incidentId);
+      setIsLoading(true);
+
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
+
+      // Récupérer les détails de l'incident
+      const incidentResponse = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (incidentResponse.ok) {
+        const incidentData = await incidentResponse.json();
+        console.log('📋 [SUIVI] Incident reçu:', incidentData);
+        
+        if (incidentData.success) {
+          setIncident(incidentData.incident);
+        }
+      } else {
+        console.error('❌ [SUIVI] Erreur récupération incident:', incidentResponse.status);
+      }
+
+      // Récupérer les commentaires
+      const commentsResponse = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/comments`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (commentsResponse.ok) {
+        const commentsData = await commentsResponse.json();
+        console.log('💬 [SUIVI] Commentaires reçus:', commentsData);
+        
+        if (commentsData.success) {
+          setComments(commentsData.comments || []);
+        }
+      }
+
+      // Récupérer l'historique
+      const historyResponse = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/history`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        console.log('📚 [SUIVI] Historique reçu:', historyData);
+        
+        if (historyData.success) {
+          setHistory(historyData.history || []);
+        }
+      }
+
+    } catch (error) {
+      console.error('❌ [SUIVI] Erreur générale:', error);
+      Alert.alert('Erreur', 'Impossible de charger les détails de l\'incident.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Données statiques pour l'exemple (basées sur le Figma)
-  const userData = {
-    avatar: "", // Placeholder for avatar URL
-    name: "John Doe",
-    role: "Déclarant",
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un commentaire.');
+      return;
+    }
+
+    try {
+      setIsSubmittingComment(true);
+      console.log('💬 [SUIVI] Envoi commentaire:', newComment);
+
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        Alert.alert('Session expirée', 'Veuillez vous reconnecter.');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          comment: newComment.trim()
+        })
+      });
+
+      const data = await response.json();
+      console.log('💬 [SUIVI] Réponse commentaire:', data);
+
+      if (response.ok && data.success) {
+        setNewComment('');
+        Alert.alert('Succès', 'Commentaire ajouté avec succès !');
+        // Recharger les données pour afficher le nouveau commentaire
+        await loadIncidentData();
+      } else {
+        Alert.alert('Erreur', data.message || 'Impossible d\'ajouter le commentaire.');
+      }
+    } catch (error) {
+      console.error('❌ [SUIVI] Erreur envoi commentaire:', error);
+      Alert.alert('Erreur', 'Impossible d\'envoyer le commentaire.');
+    } finally {
+      setIsSubmittingComment(false);
+    }
   };
 
-  const metricsData = [
-    {
-      title: "Type",
-      data: incident.type,
-      change: "", // No change shown in Figma metric example
-    },
-    {
-      title: "Lieu",
-      data: incident.lieu,
-      change: "", // No change shown in Figma metric example
-    },
-    {
-      title: "Date",
-      data: incident.date,
-      change: "", // No change shown in Figma metric example
-    },
-    {
-      title: "Statut",
-      data: incident.status,
-      change: "", // No change shown in Figma metric example
-    },
-  ];
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'nouveau': return 'En attente';
+      case 'en_cours': return 'En cours';
+      case 'resolu': return 'Résolu';
+      case 'ferme': return 'Fermé';
+      default: return status;
+    }
+  };
 
-  const updatesData = [
-    {
-      date: "20/10/2023 15:00",
-      text: "Statut mis à jour : En cours de traitement.",
-      subtitle: "par Admin",
-    },
-    {
-      date: "20/10/2023 16:30",
-      text: "Un technicien a été dépêché sur place.",
-      subtitle: "par Système",
-    },
-  ];
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'nouveau': return '#ff9500';
+      case 'en_cours': return '#007AFF';
+      case 'resolu': return '#34c759';
+      case 'ferme': return '#8e8e93';
+      default: return '#8e8e93';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#666', fontSize: 16 }}>Chargement...</Text>
+      </View>
+    );
+  }
+
+  if (!incident) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#666', fontSize: 16 }}>Incident non trouvé</Text>
+        <TouchableOpacity 
+          style={{ marginTop: 20, padding: 10, backgroundColor: '#007AFF', borderRadius: 8 }}
+          onPress={() => router.back()}
+        >
+          <Text style={{ color: 'white' }}>Retour</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -89,47 +272,65 @@ export default function SuivreSignal() {
       >
         <View style={styles.contentContainer}>
           {/* Header */}
-          <Header subtitle="Suivre un incident" showBackButton={false} />
+          <Header subtitle="Suivre un incident" showBackButton={true} />
 
           {/* Contenu principal */}
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
           >
-            {/* Section Avatar (basé sur le Figma) */}
+            {/* Section Avatar et utilisateur */}
             <View style={styles.avatarContainer}>
               <View style={styles.avatarPlaceholder} />
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>{userData.name}</Text>
-                <Text style={styles.userRole}>{userData.role}</Text>
+                <Text style={styles.userName}>
+                  {incident.user_prenom} {incident.user_nom}
+                </Text>
+                <Text style={styles.userRole}>Déclarant</Text>
               </View>
             </View>
 
             {/* Titre de l'incident */}
-            <Text style={styles.incidentTitle}>{incident.title}</Text>
+            <Text style={styles.incidentTitle}>{incident.type}</Text>
 
-            {/* Section Métriques (basé sur le Figma) */}
+            {/* Section Métriques */}
             <View style={styles.metricsSection}>
               <Text style={styles.sectionTitle}>Détails de l'incident</Text>
-              {metricsData.map((metric, index) => (
-                <View key={index} style={styles.metricItem}>
-                  <Text style={styles.metricTitle}>{metric.title}</Text>
-                  <Text style={styles.metricData}>{metric.data}</Text>
-                  {/* Pas de 'change' dans le design Figma pour cette section */}
-                </View>
-              ))}
-            </View>
+              
+              <View style={styles.metricItem}>
+                <Text style={styles.metricTitle}>Type</Text>
+                <Text style={styles.metricData}>{incident.type}</Text>
+              </View>
 
-            {/* Section Statut et Progression (comme avant, légèrement stylisé) */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Statut de l'incident</Text>
-              <View style={styles.statusProgressContainer}>
-                <Text style={styles.statusText}>{incident.status}</Text>
-                <Text style={styles.progressLabel}>
-                  Progrès de votre demande
+              {incident.etage && (
+                <View style={styles.metricItem}>
+                  <Text style={styles.metricTitle}>Étage</Text>
+                  <Text style={styles.metricData}>{incident.etage}</Text>
+                </View>
+              )}
+
+              {incident.numero_porte && (
+                <View style={styles.metricItem}>
+                  <Text style={styles.metricTitle}>Numéro de porte</Text>
+                  <Text style={styles.metricData}>{incident.numero_porte}</Text>
+                </View>
+              )}
+
+              <View style={styles.metricItem}>
+                <Text style={styles.metricTitle}>Bâtiment</Text>
+                <Text style={styles.metricData}>{incident.building_nom || 'Non spécifié'}</Text>
+              </View>
+
+              <View style={styles.metricItem}>
+                <Text style={styles.metricTitle}>Date de création</Text>
+                <Text style={styles.metricData}>{formatDate(incident.created_at)}</Text>
+              </View>
+
+              <View style={styles.metricItem}>
+                <Text style={styles.metricTitle}>Statut</Text>
+                <Text style={[styles.metricData, { color: getStatusColor(incident.status) }]}>
+                  {getStatusText(incident.status)}
                 </Text>
-                {/* Placeholder pour la barre de progression */}
-                <View style={styles.progressBarPlaceholder}></View>
               </View>
             </View>
 
@@ -139,87 +340,128 @@ export default function SuivreSignal() {
               <Text style={styles.descriptionText}>{incident.description}</Text>
             </View>
 
-            {/* Section Mises à jour et Commentaires (basé sur le Figma) */}
+            {/* Image si disponible */}
+            {incident.image && (
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Photo</Text>
+                <Image 
+                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                  style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+
+            {/* Section Historique et Commentaires */}
             <View style={styles.updatesSection}>
-              <Text style={styles.updatesTitle}>
-                Mises à jour et Commentaires
-              </Text>
-              {updatesData.map((update, index) => (
-                <View key={index} style={styles.updateItem}>
-                  <View style={styles.updateImagePlaceholder} />
-                  {/* Placeholder pour icône/image */}
+              <Text style={styles.updatesTitle}>Historique et Commentaires</Text>
+              
+              {/* Historique */}
+              {history.map((item, index) => (
+                <View key={`history-${item.id}`} style={styles.updateItem}>
+                  <View style={[styles.updateImagePlaceholder, { backgroundColor: '#007AFF' }]} />
                   <View style={styles.updateContent}>
-                    <Text style={styles.updateDate}>{update.date}</Text>
-                    <Text style={styles.updateText}>{update.text}</Text>
-                    <Text style={styles.updateSubtitle}>{update.subtitle}</Text>
+                    <Text style={styles.updateDate}>{formatDate(item.created_at)}</Text>
+                    <Text style={styles.updateText}>
+                      {item.action}
+                      {item.old_status && item.new_status && 
+                        ` : ${getStatusText(item.old_status)} → ${getStatusText(item.new_status)}`
+                      }
+                    </Text>
+                    <Text style={styles.updateSubtitle}>
+                      par {item.user_name || `${item.user_role}`}
+                    </Text>
                   </View>
                 </View>
               ))}
+
+              {/* Commentaires */}
+              {comments.map((comment, index) => (
+                <View key={`comment-${comment.id}`} style={styles.updateItem}>
+                  <View style={[styles.updateImagePlaceholder, { backgroundColor: '#34c759' }]} />
+                  <View style={styles.updateContent}>
+                    <Text style={styles.updateDate}>{formatDate(comment.created_at)}</Text>
+                    <Text style={styles.updateText}>{comment.comment}</Text>
+                    <Text style={styles.updateSubtitle}>
+                      par {comment.user_name || `${comment.user_role}`}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+
+              {history.length === 0 && comments.length === 0 && (
+                <Text style={{ color: '#666', textAlign: 'center', padding: 20 }}>
+                  Aucun historique ou commentaire pour cet incident.
+                </Text>
+              )}
             </View>
 
-            {/* Champ de texte pour ajouter un commentaire (basé sur le Figma) */}
+            {/* Champ pour ajouter un commentaire */}
             <View style={styles.commentInputContainer}>
-              <Text style={styles.commentInputLabel}>
-                Ajouter un commentaire
-              </Text>
-              {/* Utiliser un TextInput ici */}
-              <View style={styles.commentTextFieldPlaceholder}></View>
-              {/* Placeholder pour TextInput */}
+              <Text style={styles.commentInputLabel}>Ajouter un commentaire</Text>
+              <TextInput
+                style={[styles.commentTextFieldPlaceholder, {
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 8,
+                  padding: 12,
+                  minHeight: 80,
+                  textAlignVertical: 'top'
+                }]}
+                placeholder="Tapez votre commentaire ici..."
+                placeholderTextColor="#888"
+                multiline
+                value={newComment}
+                onChangeText={setNewComment}
+                editable={!isSubmittingComment}
+              />
             </View>
+
             <TouchableOpacity
-              style={
-                [
-                  styles.buttonFigma,
-                  styles.primaryButtonFigma,
-                  styles.sendButtonFigma,
-                ] /* Ajusté pour être un bouton plein */
-              }
-              onPress={() => {
-                // Logique pour envoyer le commentaire
-                console.log("Envoyer commentaire");
-              }}
+              style={[
+                styles.buttonFigma,
+                styles.primaryButtonFigma,
+                styles.sendButtonFigma,
+                isSubmittingComment && { opacity: 0.6 }
+              ]}
+              onPress={handleSubmitComment}
+              disabled={isSubmittingComment}
             >
-              <Text style={styles.primaryButtonTextFigma}>Envoyer</Text>
+              <Text style={styles.primaryButtonTextFigma}>
+                {isSubmittingComment ? 'Envoi...' : 'Envoyer'}
+              </Text>
             </TouchableOpacity>
 
-            {/* Boutons d'action principaux (basés sur le Figma) */}
+            {/* Informations gardien si assigné */}
+            {incident.guardian_nom && (
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Gardien assigné</Text>
+                <Text style={styles.descriptionText}>
+                  {incident.guardian_prenom} {incident.guardian_nom}
+                </Text>
+              </View>
+            )}
+
+            {/* Boutons d'action */}
             <View style={styles.buttonsContainerFigma}>
-              {" "}
-              {/* Conteneur pour Annuler et Contacter */}
               <TouchableOpacity
                 style={[styles.buttonFigma, styles.secondaryButtonFigma]}
-                onPress={() => {
-                  // Logique pour annuler l'incident
-                  console.log("Annuler l'incident");
-                }}
+                onPress={() => router.back()}
               >
-                <Text style={styles.secondaryButtonTextFigma}>
-                  {"Annuler l'incident"}
-                </Text>
+                <Text style={styles.secondaryButtonTextFigma}>Retour</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.buttonFigma, styles.primaryButtonFigma]}
-                onPress={() => {
-                  // Logique pour contacter le gardien
-                  console.log("Contacter le gardien");
-                }}
-              >
-                <Text style={styles.primaryButtonTextFigma}>
-                  {"Contacter le gardien"}
-                </Text>
-              </TouchableOpacity>
+              
+              {incident.guardian_nom && (
+                <TouchableOpacity
+                  style={[styles.buttonFigma, styles.primaryButtonFigma]}
+                  onPress={() => {
+                    Alert.alert('Info', 'Fonctionnalité de contact en cours de développement.');
+                  }}
+                >
+                  <Text style={styles.primaryButtonTextFigma}>Contacter le gardien</Text>
+                </TouchableOpacity>
+              )}
             </View>
-
-            {/* Bouton Supprimer (basé sur le Figma) */}
-            <TouchableOpacity
-              style={[styles.buttonFigma, styles.deleteButtonFigma]}
-              onPress={() => {
-                // Logique pour supprimer l'incident
-                console.log("Supprimer l'incident");
-              }}
-            >
-              <Text style={styles.deleteButtonTextFigma}>Supprimer</Text>
-            </TouchableOpacity>
           </ScrollView>
 
           {/* Navbar */}
