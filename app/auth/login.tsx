@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from 'react';
 import {
+    Alert,
     ScrollView,
     Text,
     TextInput,
@@ -11,6 +12,7 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/Header";
+import { API_BASE_URL } from "../../config";
 import { useLoginStyle } from "../../hooks/useLoginStyle";
 
 export default function Login() {
@@ -18,43 +20,65 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const styles = useLoginStyle();
 
   const handleLogin = async () => {
     // Vérification des champs requis
     if (!email || !password) {
-      alert("Veuillez entrer votre email et votre mot de passe.");
+      Alert.alert("Erreur", "Veuillez entrer votre email et votre mot de passe.");
       return;
     }
 
+    // Validation email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Erreur", "Veuillez entrer un email valide.");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const response = await fetch('http://10.0.2.2:3000/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: email.toLowerCase().trim(),
           password,
-          role: 'locataire', // Spécifier le rôle pour la connexion
+          role: 'locataire',
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        alert("Connexion réussie !");
         // Stocker le token et les informations utilisateur
         await AsyncStorage.setItem('userToken', data.token);
-        // Vous pouvez également stocker d'autres informations utilisateur si nécessaire, par exemple: 
-        // await AsyncStorage.setItem('userId', data.user.id.toString());
-        router.push("/accueil"); // Rediriger vers la page d'accueil
+        await AsyncStorage.setItem('userId', data.user.id.toString());
+        await AsyncStorage.setItem('userRole', data.user.role);
+        await AsyncStorage.setItem('userEmail', data.user.email);
+        
+        Alert.alert(
+          "Succès", 
+          "Connexion réussie !",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/accueil/home")
+            }
+          ]
+        );
       } else {
-        alert(data.message || "Identifiants incorrects.");
+        Alert.alert("Erreur", data.message || "Identifiants incorrects.");
       }
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
-      alert("Impossible de se connecter au serveur. Veuillez réessayer plus tard.");
+      Alert.alert("Erreur", "Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,8 +141,11 @@ export default function Login() {
           <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
             onPress={handleLogin}
+            disabled={isLoading}
           >
-            <Text style={styles.primaryButtonText}>Se connecter</Text>
+            <Text style={styles.primaryButtonText}>
+              {isLoading ? "Connexion..." : "Se connecter"}
+            </Text>
           </TouchableOpacity>
           {/* Secondaire 2 */}
           <TouchableOpacity

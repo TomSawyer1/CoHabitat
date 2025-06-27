@@ -2,15 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import Header from "../../components/Header";
+import { API_BASE_URL } from "../../config";
 import { useRegisterStyle } from "../../hooks/useRegisterStyle";
 
 export default function Register() {
@@ -25,54 +27,115 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [telephone, setTelephone] = useState("");
   const [selectedBuilding, setSelectedBuilding] = useState("");
+  const [buildings, setBuildings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [buildingsLoading, setBuildingsLoading] = useState(true);
 
-  // Données fictives des bâtiments
-  const buildings = [
-    { id: "1", name: "Résidence Les Alpes" },
-    { id: "2", name: "Résidence Le Parc" },
-    { id: "3", name: "Résidence Les Tilleuls" },
-  ];
+  // Charger les bâtiments au démarrage
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      console.log('🏢 Chargement des bâtiments...');
+      setBuildingsLoading(true);
+      try {
+        console.log('🌐 URL API:', API_BASE_URL);
+        const response = await fetch(`${API_BASE_URL}/api/buildings`);
+        console.log('📡 Réponse buildings:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('🏢 Bâtiments reçus:', data);
+          setBuildings(data);
+        } else {
+          console.error("Erreur lors de la récupération des bâtiments:", response.status);
+          Alert.alert("Erreur", "Impossible de charger la liste des bâtiments. Vérifiez que le serveur est démarré.");
+        }
+      } catch (error) {
+        console.error("Erreur réseau lors de la récupération des bâtiments:", error);
+        Alert.alert("Erreur", "Impossible de se connecter au serveur pour charger les bâtiments.");
+      } finally {
+        setBuildingsLoading(false);
+      }
+    };
+    fetchBuildings();
+  }, []);
 
   const handleRegister = async () => {
+    console.log('🚀 Tentative d\'inscription...');
+    console.log('📝 Données:', { nom, prenom, email, telephone, selectedBuilding });
+    
+    // Validation des mots de passe
     if (password !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas.");
+      Alert.alert("Erreur", "Les mots de passe ne correspondent pas.");
       return;
     }
 
     // Vérification des champs requis
     if (!email || !nom || !prenom || !telephone || !selectedBuilding || !password) {
-      alert("Veuillez remplir tous les champs obligatoires.");
+      Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires.");
       return;
     }
 
+    // Validation email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Erreur", "Veuillez entrer un email valide.");
+      return;
+    }
+
+    // Validation mot de passe
+    if (password.length < 8) {
+      Alert.alert("Erreur", "Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const response = await fetch('http://10.0.2.2:3000/auth/register/locataire', {
+      console.log('🌐 Envoi vers:', `${API_BASE_URL}/auth/register/locataire`);
+      const response = await fetch(`${API_BASE_URL}/auth/register/locataire`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
-          nom,
-          prenom,
-          telephone,
-          batiment: selectedBuilding, // building_id attendu par le backend
+          email: email.toLowerCase().trim(),
+          nom: nom.trim(),
+          prenom: prenom.trim(),
+          telephone: telephone.trim(),
+          batiment: selectedBuilding,
           password,
         }),
       });
 
+      console.log('📡 Réponse inscription:', response.status);
       const data = await response.json();
+      console.log('📄 Data reçue:', data);
 
       if (response.ok) {
-        alert("Inscription réussie");
-        router.push("/auth/login"); // Rediriger vers la page de connexion du locataire
+        Alert.alert(
+          "Succès", 
+          "Inscription réussie ! Vous pouvez maintenant vous connecter.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.push("/auth/login")
+            }
+          ]
+        );
       } else {
-        alert(data.message || "Erreur lors de l\'inscription.");
+        Alert.alert("Erreur", data.message || "Erreur lors de l'inscription.");
       }
     } catch (error) {
-      console.error("Erreur lors de l\'inscription:", error);
-      alert("Impossible de se connecter au serveur. Veuillez réessayer plus tard.");
+      console.error("Erreur lors de l'inscription:", error);
+      Alert.alert("Erreur", "Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const testButtonPress = () => {
+    console.log('🔥 BOUTON PRESSÉ !');
+    Alert.alert("Test", "Le bouton fonctionne !");
   };
 
   return (
@@ -151,22 +214,34 @@ export default function Register() {
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Bâtiment</Text>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={selectedBuilding}
-                onValueChange={(itemValue) => setSelectedBuilding(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Sélectionnez votre bâtiment" value="" />
-                {buildings.map((building) => (
-                  <Picker.Item
-                    key={building.id}
-                    label={building.name}
-                    value={building.id}
-                  />
-                ))}
-              </Picker>
+              {buildingsLoading ? (
+                <Text style={styles.loadingText}>Chargement des bâtiments...</Text>
+              ) : (
+                <Picker
+                  selectedValue={selectedBuilding}
+                  onValueChange={(itemValue) => {
+                    console.log('🏢 Bâtiment sélectionné:', itemValue);
+                    setSelectedBuilding(itemValue);
+                  }}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Sélectionnez votre bâtiment" value="" />
+                  {buildings.map((building) => (
+                    <Picker.Item
+                      key={building.id}
+                      label={building.nom}
+                      value={building.id ? building.id.toString() : ""}
+                    />
+                  ))}
+                </Picker>
+              )}
             </View>
-            <Text style={styles.inputInfo}>Votre lieu de résidence</Text>
+            <Text style={styles.inputInfo}>
+              {buildings.length > 0 
+                ? `${buildings.length} bâtiment(s) disponible(s)` 
+                : "Aucun bâtiment trouvé"
+              }
+            </Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -227,11 +302,22 @@ export default function Register() {
             <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
           </TouchableOpacity>
 
+          {/* Bouton de test pour debug */}
+          <TouchableOpacity
+            style={[styles.buttonHorizontal, { backgroundColor: '#ff6b6b', flex: 0.3 }]}
+            onPress={testButtonPress}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Test</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
             onPress={handleRegister}
+            disabled={isLoading}
           >
-            <Text style={styles.primaryButtonHorizontalText}>S&apos;inscrire</Text>
+            <Text style={styles.primaryButtonHorizontalText}>
+              {isLoading ? "Inscription..." : "S'inscrire"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
