@@ -44,7 +44,15 @@ export default function Register() {
         if (response.ok) {
           const data = await response.json();
           console.log('🏢 Bâtiments reçus:', data);
-          setBuildings(data);
+          
+          // Extraire le tableau de bâtiments de la réponse
+          if (data.success && Array.isArray(data.buildings)) {
+            setBuildings(data.buildings);
+          } else {
+            console.error('Format de réponse inattendu:', data);
+            setBuildings([]);
+            Alert.alert("Erreur", "Format de données des bâtiments invalide.");
+          }
         } else {
           console.error("Erreur lors de la récupération des bâtiments:", response.status);
           Alert.alert("Erreur", "Impossible de charger la liste des bâtiments. Vérifiez que le serveur est démarré.");
