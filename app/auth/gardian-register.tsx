@@ -44,7 +44,15 @@ export default function GardianRegister() {
         if (response.ok) {
           const data = await response.json();
           console.log('🏢 [GARDIEN] Bâtiments reçus:', data);
-          setBuildings(data);
+          
+          // Extraire le tableau de bâtiments de la réponse
+          if (data.success && Array.isArray(data.buildings)) {
+            setBuildings(data.buildings);
+          } else {
+            console.error('Format de réponse inattendu:', data);
+            setBuildings([]);
+            Alert.alert("Erreur", "Format de données des bâtiments invalide.");
+          }
         } else {
           console.error("Erreur lors de la récupération des bâtiments:", response.status);
           Alert.alert("Erreur", "Impossible de charger la liste des bâtiments. Vérifiez que le serveur est démarré.");
@@ -196,14 +204,16 @@ export default function GardianRegister() {
                 style={styles.picker}
               >
                 <Picker.Item label="Sélectionnez le bâtiment" value="" />
-                {buildings.map((b) => (
+                {buildings && buildings.length > 0 ? buildings.map((b) => (
                   <Picker.Item key={b.id} label={b.nom} value={b.id ? b.id.toString() : ""} />
-                ))}
+                )) : (
+                  <Picker.Item label="Aucun bâtiment disponible" value="" enabled={false} />
+                )}
               </Picker>
             )}
           </View>
           <Text style={styles.inputInfo}>
-            {buildings.length > 0 
+            {buildings && buildings.length > 0 
               ? `${buildings.length} bâtiment(s) disponible(s)` 
               : "Aucun bâtiment trouvé"
             }
