@@ -26,7 +26,7 @@ const registerGuardian = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log('Mot de passe haché avec succès');
 
-        const query = `INSERT INTO guardians (email, nom, prenom, telephone, building_id, guardian_number, password) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const query = `INSERT INTO guardians (email, nom, prenom, telephone, batiments_id, guardian_number, password) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         const params = [email, nom, prenom, telephone, batiment, numeroGardien, hashedPassword];
         
         console.log('Exécution de la requête SQL:', query);
@@ -72,7 +72,7 @@ const registerLocataire = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log('Mot de passe haché avec succès');
 
-        const query = `INSERT INTO locataire (email, nom, prenom, telephone, building_id, password) VALUES (?, ?, ?, ?, ?, ?)`;
+        const query = `INSERT INTO locataire (email, nom, prenom, telephone, batiments_id, password) VALUES (?, ?, ?, ?, ?, ?)`;
         const params = [email, nom, prenom, telephone, batiment, hashedPassword];
         
         console.log('Exécution de la requête SQL:', query);
@@ -119,8 +119,14 @@ const login = async (req, res) => {
             });
         }
 
-        // Rechercher l'utilisateur dans la base de données
-        const query = `SELECT * FROM ${table} WHERE email = ?`;
+        // Rechercher l'utilisateur dans la base de données avec les infos du bâtiment
+        const query = `
+            SELECT u.*, b.nom as building_name, b.rue as building_address
+            FROM ${table} u
+            LEFT JOIN batiments b ON u.batiments_id = b.id
+            WHERE u.email = ?
+        `;
+        
         db.get(query, [email], async (err, user) => {
             if (err) {
                 console.error('Erreur SQL:', err);
@@ -151,13 +157,14 @@ const login = async (req, res) => {
                 { 
                     id: user.id,
                     email: user.email,
-                    role: role
+                    role: role,
+                    building_id: user.batiments_id
                 },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
 
-            // Retourner les informations de l'utilisateur et le token
+            // Retourner les informations complètes de l'utilisateur
             res.json({
                 success: true,
                 message: 'Connexion réussie',
@@ -165,7 +172,13 @@ const login = async (req, res) => {
                 user: {
                     id: user.id,
                     email: user.email,
-                    role: role
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    telephone: user.telephone,
+                    role: role,
+                    building_id: user.batiments_id,
+                    building_name: user.building_name,
+                    building_address: user.building_address
                 }
             });
         });
@@ -185,7 +198,7 @@ const getLocataireInfo = async (req, res) => {
         const query = `
             SELECT l.*, b.nom as batiment_nom 
             FROM locataire l 
-            LEFT JOIN batiments b ON l.building_id = b.id 
+            LEFT JOIN batiments b ON l.batiments_id = b.id 
             WHERE l.id = ?
         `;
         
@@ -208,9 +221,368 @@ const getLocataireInfo = async (req, res) => {
     }
 };
 
+const getGuardianInfo = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const query = `
+            SELECT g.*, b.nom as batiment_nom 
+            FROM guardians g 
+            LEFT JOIN batiments b ON g.batiments_id = b.id 
+            WHERE g.id = ?
+        `;
+        
+        db.get(query, [id], (err, guardian) => {
+            if (err) {
+                console.error('Erreur lors de la récupération des informations du gardien:', err);
+                return res.status(500).json({ success: false, message: 'Erreur serveur.' });
+            }
+            if (!guardian) {
+                return res.status(404).json({ success: false, message: 'Gardien non trouvé.' });
+            }
+
+            // Ne pas renvoyer le mot de passe
+            const { password, ...guardianInfo } = guardian;
+            res.json({ success: true, guardian: guardianInfo });
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des informations du gardien:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    }
+};
+
+// Mettre à jour le profil d'un locataire
+const updateLocataireProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        const { nom, prenom, telephone } = req.body;
+
+        console.log('💾 [UPDATE_PROFILE] Début mise à jour:', { 
+            userId, 
+            userRole, 
+            nom, 
+            prenom, 
+            telephone 
+        });
+
+        if (!nom || !prenom) {
+            console.error('❌ [UPDATE_PROFILE] Champs manquants:', { nom: !!nom, prenom: !!prenom });
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Le nom et le prénom sont requis.' 
+            });
+        }
+
+        const query = `
+            UPDATE locataire 
+            SET nom = ?, prenom = ?, telephone = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        `;
+        const params = [nom, prenom, telephone, userId];
+
+        console.log('📊 [UPDATE_PROFILE] Exécution requête:', { query, params });
+
+        db.run(query, params, function(err) {
+            if (err) {
+                console.error('❌ [UPDATE_PROFILE] Erreur SQL:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Erreur lors de la mise à jour du profil.' 
+                });
+            }
+
+            console.log('📊 [UPDATE_PROFILE] Résultat:', { 
+                changes: this.changes, 
+                lastID: this.lastID 
+            });
+
+            if (this.changes === 0) {
+                console.error('❌ [UPDATE_PROFILE] Aucune ligne modifiée pour userId:', userId);
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Utilisateur non trouvé.' 
+                });
+            }
+
+            console.log('✅ [UPDATE_PROFILE] Profil mis à jour avec succès');
+            res.json({ 
+                success: true, 
+                message: 'Profil mis à jour avec succès.',
+                changes: this.changes
+            });
+        });
+    } catch (error) {
+        console.error('💥 [UPDATE_PROFILE] Erreur générale:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur.' 
+        });
+    }
+};
+
+// Mettre à jour le profil d'un gardien
+const updateGuardianProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { nom, prenom, telephone } = req.body;
+
+        if (!nom || !prenom) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Le nom et le prénom sont requis.' 
+            });
+        }
+
+        const query = `
+            UPDATE guardians 
+            SET nom = ?, prenom = ?, telephone = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        `;
+
+        db.run(query, [nom, prenom, telephone, userId], function(err) {
+            if (err) {
+                console.error('Erreur lors de la mise à jour du profil:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Erreur lors de la mise à jour du profil.' 
+                });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Utilisateur non trouvé.' 
+                });
+            }
+
+            res.json({ 
+                success: true, 
+                message: 'Profil mis à jour avec succès.' 
+            });
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du profil:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur.' 
+        });
+    }
+};
+
+// Changer le mot de passe d'un utilisateur
+const changePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'L\'ancien et le nouveau mot de passe sont requis.' 
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' 
+            });
+        }
+
+        const table = userRole === 'locataire' ? 'locataire' : 'guardians';
+        
+        // Récupérer le mot de passe actuel
+        db.get(`SELECT password FROM ${table} WHERE id = ?`, [userId], async (err, user) => {
+            if (err) {
+                console.error('Erreur lors de la récupération de l\'utilisateur:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Erreur serveur.' 
+                });
+            }
+
+            if (!user) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Utilisateur non trouvé.' 
+                });
+            }
+
+            // Vérifier l'ancien mot de passe
+            const validPassword = await bcrypt.compare(currentPassword, user.password);
+            if (!validPassword) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: 'Mot de passe actuel incorrect.' 
+                });
+            }
+
+            // Hacher le nouveau mot de passe
+            const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+            // Mettre à jour le mot de passe
+            const updateQuery = `UPDATE ${table} SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+            db.run(updateQuery, [hashedNewPassword, userId], function(err) {
+                if (err) {
+                    console.error('Erreur lors de la mise à jour du mot de passe:', err);
+                    return res.status(500).json({ 
+                        success: false, 
+                        message: 'Erreur lors de la mise à jour du mot de passe.' 
+                    });
+                }
+
+                res.json({ 
+                    success: true, 
+                    message: 'Mot de passe modifié avec succès.' 
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Erreur lors du changement de mot de passe:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur.' 
+        });
+    }
+};
+
+// Obtenir le profil de l'utilisateur connecté
+const getMyProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        
+        console.log('📱 [PROFILE] Récupération profil:', { userId, userRole });
+
+        // Déterminer la table en fonction du rôle
+        const table = userRole === 'locataire' ? 'locataire' : 'guardians';
+        
+        // Récupérer les informations de l'utilisateur avec le bâtiment
+        const query = `
+            SELECT u.*, b.nom as building_name, b.rue as building_address
+            FROM ${table} u
+            LEFT JOIN batiments b ON u.batiments_id = b.id
+            WHERE u.id = ?
+        `;
+        
+        db.get(query, [userId], (err, user) => {
+            if (err) {
+                console.error('❌ [PROFILE] Erreur SQL:', err);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Erreur lors de la récupération du profil'
+                });
+            }
+
+            if (!user) {
+                console.error('❌ [PROFILE] Utilisateur non trouvé:', userId);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Utilisateur non trouvé'
+                });
+            }
+
+            console.log('✅ [PROFILE] Profil trouvé:', { 
+                id: user.id, 
+                email: user.email, 
+                building: user.building_name 
+            });
+
+            // Supprimer le mot de passe de la réponse
+            const { password, ...userProfile } = user;
+            
+            res.json({
+                success: true,
+                user: {
+                    ...userProfile,
+                    role: userRole,
+                    building_id: user.batiments_id,
+                    building_name: user.building_name,
+                    building_address: user.building_address
+                }
+            });
+        });
+    } catch (error) {
+        console.error('❌ [PROFILE] Erreur générale:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur'
+        });
+    }
+};
+
+// Obtenir la liste des locataires d'un bâtiment (pour les gardiens)
+const getBuildingResidents = async (req, res) => {
+    try {
+        if (req.user.role !== 'guardian') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Accès non autorisé. Réservé aux gardiens.' 
+            });
+        }
+
+        const buildingId = req.params.buildingId;
+
+        // Vérifier que le gardien est bien assigné à ce bâtiment
+        db.get('SELECT building_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
+            if (err) {
+                console.error('Erreur lors de la vérification du gardien:', err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Erreur serveur.' 
+                });
+            }
+
+            if (!guardian || guardian.building_id != buildingId) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Accès non autorisé à ce bâtiment.' 
+                });
+            }
+
+            // Récupérer la liste des locataires
+            const query = `
+                SELECT l.id, l.nom, l.prenom, l.email, l.telephone, l.created_at
+                FROM locataire l
+                WHERE l.building_id = ?
+                ORDER BY l.nom, l.prenom
+            `;
+
+            db.all(query, [buildingId], (err, residents) => {
+                if (err) {
+                    console.error('Erreur lors de la récupération des locataires:', err);
+                    return res.status(500).json({ 
+                        success: false, 
+                        message: 'Erreur serveur.' 
+                    });
+                }
+
+                res.json({ 
+                    success: true, 
+                    residents 
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des locataires:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erreur serveur.' 
+        });
+    }
+};
+
 module.exports = {
     registerGuardian,
     registerLocataire,
     login,
-    getLocataireInfo
+    getLocataireInfo,
+    getGuardianInfo,
+    updateLocataireProfile,
+    updateGuardianProfile,
+    changePassword,
+    getMyProfile,
+    getBuildingResidents
 }; 

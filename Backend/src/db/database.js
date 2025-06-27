@@ -7,6 +7,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error('Erreur lors de l\'ouverture de la base de données:', err.message);
     } else {
         console.log('Connecté à la base de données SQLite cohabitat.db');
+        
         // Création des tables si elles n'existent pas
         db.run(`CREATE TABLE IF NOT EXISTS guardians (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,10 +15,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
             nom TEXT NOT NULL,
             prenom TEXT NOT NULL,
             telephone TEXT,
-            building_id INTEGER,
+            batiments_id INTEGER,
             guardian_number TEXT UNIQUE,
             password TEXT NOT NULL,
-            FOREIGN KEY (building_id) REFERENCES batiments(id)
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (batiments_id) REFERENCES batiments(id)
         )`, (err) => {
             if (err) {
                 console.error('Erreur lors de la création de la table guardians:', err.message);
@@ -32,9 +35,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
             nom TEXT NOT NULL,
             prenom TEXT NOT NULL,
             telephone TEXT,
-            building_id INTEGER,
+            batiments_id INTEGER,
             password TEXT NOT NULL,
-            FOREIGN KEY (building_id) REFERENCES batiments(id)
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (batiments_id) REFERENCES batiments(id)
         )`, (err) => {
             if (err) {
                 console.error('Erreur lors de la création de la table locataire:', err.message);
@@ -52,7 +57,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
             annee_construction INTEGER,
             derniere_renovation INTEGER,
             equipements TEXT, -- Stocké en JSON
+            reglement TEXT,
             id_guardians INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (id_guardians) REFERENCES guardians(id)
         )`, (err) => {
             if (err) {
@@ -67,10 +75,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
                         return;
                     }
                     if (row.count === 0) {
-                        const stmt = db.prepare(`INSERT INTO batiments (nom, rue, nombre_etage, nombre_appartement, annee_construction, derniere_renovation, equipements) VALUES (?, ?, ?, ?, ?, ?, ?)`);
-                        stmt.run('Résidence Les Alpes', '123 Rue de la Montagne', 5, 20, 2000, 2020, JSON.stringify(['Piscine', 'Salle de sport']));
-                        stmt.run('Résidence Le Parc', '456 Avenue du Lac', 3, 15, 1995, 2018, JSON.stringify(['Jardin', 'Parking']));
-                        stmt.run('Résidence Les Tilleuls', '789 Boulevard de la Forêt', 8, 30, 2010, 2022, JSON.stringify(['Ascenseur', 'Interphone']));
+                        const stmt = db.prepare(`INSERT INTO batiments (nom, rue, nombre_etage, nombre_appartement, annee_construction, derniere_renovation, equipements, reglement) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+                        stmt.run('Résidence Les Alpes', '123 Rue de la Montagne', 5, 20, 2000, 2020, JSON.stringify(['Piscine', 'Salle de sport', 'Ascenseur']), 'Règlement de copropriété des Alpes');
+                        stmt.run('Résidence Le Parc', '456 Avenue du Lac', 3, 15, 1995, 2018, JSON.stringify(['Jardin', 'Parking', 'Interphone']), 'Règlement de copropriété du Parc');
+                        stmt.run('Résidence Les Tilleuls', '789 Boulevard de la Forêt', 8, 30, 2010, 2022, JSON.stringify(['Ascenseur', 'Interphone', 'Garage']), 'Règlement de copropriété des Tilleuls');
                         stmt.finalize(() => {
                             console.log('Données de test pour les bâtiments insérées.');
                         });
@@ -79,21 +87,88 @@ const db = new sqlite3.Database(dbPath, (err) => {
             }
         });
 
+        // Table incidents améliorée avec statuts et suivi
         db.run(`CREATE TABLE IF NOT EXISTS incidents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT NOT NULL,
             description TEXT NOT NULL,
             date TEXT NOT NULL,
             image TEXT,
+            status TEXT DEFAULT 'nouveau' CHECK(status IN ('nouveau', 'en_cours', 'resolu', 'ferme')),
             idUtilisateur INTEGER NOT NULL,
             idBatiment INTEGER NOT NULL,
+            etage TEXT,
+            numero_porte TEXT,
+            assigned_guardian_id INTEGER,
+            resolution_comment TEXT,
+            resolved_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (idUtilisateur) REFERENCES locataire(id),
-            FOREIGN KEY (idBatiment) REFERENCES batiments(id)
+            FOREIGN KEY (idBatiment) REFERENCES batiments(id),
+            FOREIGN KEY (assigned_guardian_id) REFERENCES guardians(id)
         )`, (err) => {
             if (err) {
                 console.error('Erreur lors de la création de la table incidents:', err.message);
             } else {
                 console.log('Table incidents créée ou déjà existante.');
+            }
+        });
+
+        // Table pour l'historique des incidents
+        db.run(`CREATE TABLE IF NOT EXISTS incident_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            incident_id INTEGER NOT NULL,
+            action TEXT NOT NULL,
+            old_status TEXT,
+            new_status TEXT,
+            comment TEXT,
+            user_id INTEGER NOT NULL,
+            user_role TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (incident_id) REFERENCES incidents(id)
+        )`, (err) => {
+            if (err) {
+                console.error('Erreur lors de la création de la table incident_history:', err.message);
+            } else {
+                console.log('Table incident_history créée ou déjà existante.');
+            }
+        });
+
+        // Table pour les notifications
+        db.run(`CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            user_role TEXT NOT NULL CHECK(user_role IN ('locataire', 'guardian')),
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            type TEXT DEFAULT 'info' CHECK(type IN ('info', 'warning', 'success', 'error')),
+            related_incident_id INTEGER,
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (related_incident_id) REFERENCES incidents(id)
+        )`, (err) => {
+            if (err) {
+                console.error('Erreur lors de la création de la table notifications:', err.message);
+            } else {
+                console.log('Table notifications créée ou déjà existante.');
+            }
+        });
+
+        // Table pour les commentaires sur les incidents
+        db.run(`CREATE TABLE IF NOT EXISTS incident_comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            incident_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_role TEXT NOT NULL CHECK(user_role IN ('locataire', 'guardian')),
+            comment TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (incident_id) REFERENCES incidents(id)
+        )`, (err) => {
+            if (err) {
+                console.error('Erreur lors de la création de la table incident_comments:', err.message);
+            } else {
+                console.log('Table incident_comments créée ou déjà existante.');
             }
         });
     }
