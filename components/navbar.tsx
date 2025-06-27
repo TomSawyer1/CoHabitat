@@ -38,19 +38,19 @@ export default function Navbar({
     if (itemId === 1) {
       setIsSidebarVisible(!isSidebarVisible);
     } else if (itemId === 2) {
-      router.push("/home");
+      router.push("/accueil/home");
       setActiveIndex(index);
       setIsSidebarVisible(false);
     } else if (itemId === 3) {
-      router.push("/signalement");
+      router.push("/signalements/signalement");
       setActiveIndex(index);
       setIsSidebarVisible(false);
     } else if (itemId === 4) {
-      router.push("/notifications");
+      router.push("/notifications/notifications");
       setActiveIndex(index);
       setIsSidebarVisible(false);
     } else if (itemId === 5) {
-      router.push("/profil");
+      router.push("/profil/profil");
       setActiveIndex(index);
       setIsSidebarVisible(false);
     } else {
