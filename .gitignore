@@ -42,6 +42,7 @@ app-example
 # Backend/
 Backend/.env
 Backend/cohabitat.db
+Backend/uploads
 
 .env
 .env
