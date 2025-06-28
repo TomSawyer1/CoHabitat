@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log('\n🚀 ================================');
-    console.log(`🌐 Serveur GuardConnect démarré !`);
+    console.log(`🌐 Serveur CoHabitat démarré !`);
     console.log(`📡 URL: http://localhost:${PORT}`);
     console.log(`🤖 Android: http://10.0.2.2:${PORT}`);
     console.log(`🍎 iOS: http://localhost:${PORT}`);

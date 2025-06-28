@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-// Configuration centralisée pour l'API GuardConnect
+// Configuration centralisée pour l'API CoHabitat
 let API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 if (!API_BASE_URL) {
@@ -42,8 +42,8 @@ console.log(`📱 Plateforme : ${Platform.OS}`);
 const BACKEND_PORT = process.env.BACKEND_PORT || '3000';
 
 export {
-  API_BASE_URL,
-  BACKEND_PORT
+    API_BASE_URL,
+    BACKEND_PORT
 };
 
 // Fonction utilitaire pour debug
