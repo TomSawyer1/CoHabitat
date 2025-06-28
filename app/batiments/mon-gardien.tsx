@@ -1,42 +1,159 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Alert,
+    Linking,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
+import { API_BASE_URL } from "../../config";
 import { useMonGardienStyle } from "../../hooks/useMonGardienStyle";
 
-// Données fictives pour le gardien
-const gardianData = {
-  name: "Spencer Thomas",
-  role: "Gardien de l'immeuble",
-  phone: "06 24 71 61 67",
-  email: "ts@cohabitat.com",
-  officeHours: "Lun-Ven: 9h-12h et 14h-17h",
-  buildingsManaged: [
-    
-    { id: 2, name: "Résidence Le Parc" },
-  ],
-};
+interface GuardianData {
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+  officeHours: string;
+}
 
 export default function MonGardien() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const styles = useMonGardienStyle();
 
-  const handleContactGardian = () => {
-    // Logique pour contacter le gardien (e.g., ouvrir l'application de téléphone ou d'email)
-    console.log("Contacter le gardien");
-    // Exemple: Linking.openURL(`tel:${gardianData.phone}`);
+  const [guardianData, setGuardianData] = useState<GuardianData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadGuardianData();
+  }, []);
+
+  const loadGuardianData = async () => {
+    try {
+      console.log('👮 [MON-GARDIEN] Chargement des données du gardien...');
+      setLoading(true);
+      setError(null);
+
+      // Récupérer les données utilisateur depuis AsyncStorage
+      const [token, userId] = await Promise.all([
+        AsyncStorage.getItem('userToken'),
+        AsyncStorage.getItem('userId')
+      ]);
+
+      console.log('📱 [MON-GARDIEN] Données utilisateur:', { 
+        hasToken: !!token, 
+        userId 
+      });
+
+      if (!token || !userId) {
+        Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
+
+      // Appel API pour récupérer les informations du bâtiment (qui contient les infos du gardien)
+      console.log('🌐 [MON-GARDIEN] Récupération depuis API...');
+      const response = await fetch(`${API_BASE_URL}/api/buildings/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('📡 [MON-GARDIEN] Réponse API:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('👮 [MON-GARDIEN] Données reçues:', data);
+
+        if (data.success && data.building && data.building.guardian) {
+          const guardian = data.building.guardian;
+          
+          setGuardianData({
+            name: guardian.name || 'Gardien non assigné',
+            role: 'Gardien de l\'immeuble',
+            phone: guardian.phone || 'Non disponible',
+            email: guardian.email || 'Non disponible',
+            officeHours: 'Lun-Ven: 9h-12h et 14h-17h'
+          });
+        } else {
+          setError('Aucun gardien assigné à votre bâtiment.');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('❌ [MON-GARDIEN] Erreur API:', errorData);
+        setError(errorData.message || 'Erreur lors de la récupération des données.');
+      }
+    } catch (error) {
+      console.error('❌ [MON-GARDIEN] Erreur:', error);
+      setError('Impossible de charger les informations du gardien. Vérifiez votre connexion internet.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleContactGardian = () => {
+    if (!guardianData?.phone || guardianData.phone === 'Non disponible') {
+      Alert.alert('Information manquante', 'Numéro de téléphone du gardien non disponible.');
+      return;
+    }
+
+    const phoneNumber = guardianData.phone.replace(/\s/g, ''); // Enlever les espaces
+    
+    Alert.alert(
+      'Contacter le gardien',
+      `Souhaitez-vous appeler ${guardianData.name} ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Appeler', 
+          onPress: () => Linking.openURL(`tel:${phoneNumber}`) 
+        }
+      ]
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#666', fontSize: 16 }}>Chargement des informations du gardien...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }]}>
+        <Text style={{ color: '#d32f2f', fontSize: 16, textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+        <TouchableOpacity onPress={loadGuardianData}>
+          <View style={{ backgroundColor: '#000', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8 }}>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Réessayer</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!guardianData) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#666', fontSize: 16 }}>Aucune information de gardien disponible.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -64,8 +181,8 @@ export default function MonGardien() {
             <View style={styles.card}>
               <View style={styles.avatarSection}>
                 <View style={styles.avatarPlaceholder} />
-                <Text style={styles.name}>{gardianData.name}</Text>
-                <Text style={styles.role}>{gardianData.role}</Text>
+                <Text style={styles.name}>{guardianData.name}</Text>
+                <Text style={styles.role}>{guardianData.role}</Text>
               </View>
 
               {/* Informations de contact */}
@@ -77,7 +194,7 @@ export default function MonGardien() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Téléphone</Text>
-                    <Text style={styles.infoValue}>{gardianData.phone}</Text>
+                    <Text style={styles.infoValue}>{guardianData.phone}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -86,7 +203,7 @@ export default function MonGardien() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Email</Text>
-                    <Text style={styles.infoValue}>{gardianData.email}</Text>
+                    <Text style={styles.infoValue}>{guardianData.email}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -95,20 +212,9 @@ export default function MonGardien() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Heures de bureau</Text>
-                    <Text style={styles.infoValue}>{gardianData.officeHours}</Text>
+                    <Text style={styles.infoValue}>{guardianData.officeHours}</Text>
                   </View>
                 </View>
-              </View>
-
-              {/* Bâtiments gérés */}
-              <View style={styles.infoSection}>
-                <Text style={styles.infoTitle}>Bâtiments gérés</Text>
-                {gardianData.buildingsManaged.map((building) => (
-                  <View key={building.id} style={styles.buildingManagedItem}>
-                    <Ionicons name="business-outline" size={20} color="#666" />
-                    <Text style={styles.buildingManagedName}>{building.name}</Text>
-                  </View>
-                ))}
               </View>
 
               <TouchableOpacity

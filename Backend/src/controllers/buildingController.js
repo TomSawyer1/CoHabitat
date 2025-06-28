@@ -24,7 +24,7 @@ const getBuildingInfo = async (req, res) => {
 
         // Déterminer la table et le champ en fonction du rôle
         const table = userRole === 'locataire' ? 'locataire' : 'guardians';
-        const buildingIdField = 'building_id';
+        const buildingIdField = userRole === 'locataire' ? 'batiments_id' : 'building_id';
 
         // Récupérer l'ID du bâtiment de l'utilisateur
         const userQuery = `SELECT ${buildingIdField} FROM ${table} WHERE id = ?`;
@@ -144,7 +144,7 @@ const getBuildingDetails = async (req, res) => {
                        COUNT(DISTINCT i.id) as total_incidents,
                        COUNT(DISTINCT CASE WHEN i.status = 'nouveau' THEN i.id END) as incidents_nouveaux
                 FROM batiments b
-                LEFT JOIN locataire l ON b.id = l.building_id
+                LEFT JOIN locataire l ON b.id = l.batiments_id
                 LEFT JOIN incidents i ON b.id = i.idBatiment
                 WHERE b.id = ?
                 GROUP BY b.id
