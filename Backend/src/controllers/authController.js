@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db/database');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'guardconnect_secret_key_2024'; // À remplacer par une variable d'environnement en production
+const JWT_SECRET = process.env.JWT_SECRET || 'cohabitat_secret_key_2024'; // À remplacer par une variable d'environnement en production
 
 const registerGuardian = async (req, res) => {
     console.log('Données reçues:', req.body);

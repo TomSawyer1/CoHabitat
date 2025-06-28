@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "GuardConnect",
-    "slug": "GuardConnect",
+    "name": "CoHabitat",
+    "slug": "CoHabitat",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "guardconnect",
+          "scheme": "cohabitat",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.guardconnect.app",
-      "associatedDomains": ["applinks:guardconnect.com"]
+              "bundleIdentifier": "com.cohabitat.app",
+        "associatedDomains": ["applinks:cohabitat.com"]
     },
     "android": {
       "edgeToEdgeEnabled": true
