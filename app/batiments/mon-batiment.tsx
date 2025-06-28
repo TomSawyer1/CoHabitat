@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   ScrollView,
   Text,
   TouchableWithoutFeedback,
@@ -11,26 +13,25 @@ import {
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
+import { API_BASE_URL } from "../../config";
 import { useMonBatimentStyle } from "../../hooks/useMonBatimentStyle";
 
 interface BuildingData {
   id: number;
-  nom: string;
-  adresse: string;
-  nombre_etage: number;
-  nombre_appartement: number;
-  annee_construction: number;
-  derniere_renovation: string; // Ou number si c'est une année
-  // Ajouter d'autres propriétés si l'API les retourne, comme facilities, emergency
+  name: string;
+  address: string;
+  floors: number;
+  totalApartments: number;
+  yearBuilt: string | number;
+  lastRenovation: string | number;
+  facilities?: string[];
+  rules?: string;
 }
 
 interface GuardianData {
-  id: number;
-  nom: string;
-  prenom: string;
-  telephone: string;
+  name: string;
+  phone: string;
   email: string;
-  // Ajouter d'autres propriétés si l'API les retourne, comme schedule
 }
 
 export default function MonBatiment() {
@@ -38,28 +39,110 @@ export default function MonBatiment() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const styles = useMonBatimentStyle();
 
-  const [buildingData, setBuildingData] = useState<BuildingData | null>({
-    id: 1,
-    nom: "Résidence Le Parc",
-    adresse: "456 Avenue du Lac",
-    nombre_etage: 3,
-    nombre_appartement: 15,
-    annee_construction: 1995,
-    derniere_renovation: "2018",
-  });
-  const [guardianData, setGuardianData] = useState<GuardianData | null>({
-    id: 101,
-    nom: "Spencer",
-    prenom: "Thomas",
-    telephone: "0624716167",
-    email: "ts@cohabitat.com",
-  });
-  const [loading, setLoading] = useState(false);
+  const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
+  const [guardianData, setGuardianData] = useState<GuardianData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadBuildingData();
+  }, []);
+
+  const loadBuildingData = async () => {
+    try {
+      console.log('🏢 [MON-BATIMENT] Chargement des données du bâtiment...');
+      setLoading(true);
+      setError(null);
+
+      // Récupérer les données utilisateur depuis AsyncStorage
+      const [token, userId] = await Promise.all([
+        AsyncStorage.getItem('userToken'),
+        AsyncStorage.getItem('userId')
+      ]);
+
+      console.log('📱 [MON-BATIMENT] Données utilisateur:', { 
+        hasToken: !!token, 
+        userId 
+      });
+
+      if (!token || !userId) {
+        Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
+
+      // Appel API pour récupérer les informations du bâtiment
+      console.log('🌐 [MON-BATIMENT] Récupération depuis API...');
+      const response = await fetch(`${API_BASE_URL}/api/buildings/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('📡 [MON-BATIMENT] Réponse API:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🏢 [MON-BATIMENT] Données reçues:', data);
+
+        if (data.success && data.building) {
+          const building = data.building;
+          
+          setBuildingData({
+            id: building.id,
+            name: building.name || 'Non spécifié',
+            address: building.address || 'Non spécifiée',
+            floors: building.floors || 0,
+            totalApartments: building.totalApartments || 0,
+            yearBuilt: building.yearBuilt || 'Non spécifiée',
+            lastRenovation: building.lastRenovation || 'Non spécifiée',
+            facilities: building.facilities || [],
+            rules: building.rules || 'Règlement non disponible'
+          });
+
+          if (building.guardian) {
+            setGuardianData({
+              name: building.guardian.name || 'Non assigné',
+              phone: building.guardian.phone || 'Non disponible',
+              email: building.guardian.email || 'Non disponible'
+            });
+          }
+        } else {
+          setError('Aucune information de bâtiment disponible.');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('❌ [MON-BATIMENT] Erreur API:', errorData);
+        setError(errorData.message || 'Erreur lors de la récupération des données.');
+      }
+    } catch (error) {
+      console.error('❌ [MON-BATIMENT] Erreur:', error);
+      setError('Impossible de charger les informations du bâtiment. Vérifiez votre connexion internet.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text>Chargement des informations du bâtiment...</Text>
+        <Text style={{ color: '#666', fontSize: 16 }}>Chargement des informations du bâtiment...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }]}>
+        <Text style={{ color: '#d32f2f', fontSize: 16, textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+        <TouchableWithoutFeedback onPress={loadBuildingData}>
+          <View style={{ backgroundColor: '#000', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8 }}>
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Réessayer</Text>
+          </View>
+        </TouchableWithoutFeedback>
       </View>
     );
   }
@@ -67,7 +150,7 @@ export default function MonBatiment() {
   if (!buildingData) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text>Aucune donnée de bâtiment disponible.</Text>
+        <Text style={{ color: '#666', fontSize: 16 }}>Aucune donnée de bâtiment disponible.</Text>
       </View>
     );
   }
@@ -96,8 +179,8 @@ export default function MonBatiment() {
             </View>
 
             <View style={styles.buildingCard}>
-              <Text style={styles.buildingName}>{buildingData.nom}</Text>
-              <Text style={styles.buildingAddress}>{buildingData.adresse}</Text>
+              <Text style={styles.buildingName}>{buildingData.name}</Text>
+              <Text style={styles.buildingAddress}>{buildingData.address}</Text>
 
               {/* Informations générales */}
               <View style={styles.infoSection}>
@@ -108,7 +191,7 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Nombre d'étages</Text>
-                    <Text style={styles.infoValue}>{buildingData.nombre_etage}</Text>
+                    <Text style={styles.infoValue}>{buildingData.floors}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -117,7 +200,7 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Nombre d'appartements</Text>
-                    <Text style={styles.infoValue}>{buildingData.nombre_appartement}</Text>
+                    <Text style={styles.infoValue}>{buildingData.totalApartments}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -126,7 +209,7 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Année de construction</Text>
-                    <Text style={styles.infoValue}>{buildingData.annee_construction}</Text>
+                    <Text style={styles.infoValue}>{buildingData.yearBuilt}</Text>
                   </View>
                 </View>
                 <View style={styles.infoItem}>
@@ -135,27 +218,27 @@ export default function MonBatiment() {
                   </View>
                   <View style={styles.infoContent}>
                     <Text style={styles.infoLabel}>Dernière rénovation</Text>
-                    <Text style={styles.infoValue}>{buildingData.derniere_renovation}</Text>
+                    <Text style={styles.infoValue}>{buildingData.lastRenovation}</Text>
                   </View>
                 </View>
               </View>
 
-              {/* Équipements (si disponible dans les données de l'API) */}
-              {/* J'ai commenté cette section car les données de l'API n'incluent pas 'facilities' directement.
-                  Si votre API renvoie les équipements, vous pouvez décommenter et adapter. */}
-              {/* <View style={styles.infoSection}>
-                <Text style={styles.infoTitle}>Équipements</Text>
-                {buildingData.facilities && buildingData.facilities.map((facility, index) => (
-                  <View key={index} style={styles.infoItem}>
-                    <View style={styles.infoIcon}>
-                      <Ionicons name="checkmark-circle-outline" size={24} color="#666" />
+              {/* Équipements */}
+              {buildingData.facilities && buildingData.facilities.length > 0 && (
+                <View style={styles.infoSection}>
+                  <Text style={styles.infoTitle}>Équipements</Text>
+                  {buildingData.facilities.map((facility, index) => (
+                    <View key={index} style={styles.infoItem}>
+                      <View style={styles.infoIcon}>
+                        <Ionicons name="checkmark-circle-outline" size={24} color="#666" />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoValue}>{facility}</Text>
+                      </View>
                     </View>
-                    <View style={styles.infoContent}>
-                      <Text style={styles.infoValue}>{facility}</Text>
-                    </View>
-                  </View>
-                ))}
-              </View> */}
+                  ))}
+                </View>
+              )}
 
               {/* Gardien */}
               {guardianData && (
@@ -163,32 +246,33 @@ export default function MonBatiment() {
                   <Text style={styles.contactTitle}>Gardien</Text>
                   <View style={styles.contactItem}>
                     <Ionicons name="person-outline" size={20} color="#666" />
-                    <Text style={styles.contactText}>{guardianData.nom} {guardianData.prenom}</Text>
+                    <Text style={styles.contactText}>{guardianData.name}</Text>
                   </View>
                   <View style={styles.contactItem}>
                     <Ionicons name="call-outline" size={20} color="#666" />
-                    <Text style={styles.contactText}>{guardianData.telephone}</Text>
+                    <Text style={styles.contactText}>{guardianData.phone}</Text>
                   </View>
                   <View style={styles.contactItem}>
                     <Ionicons name="mail-outline" size={20} color="#666" />
                     <Text style={styles.contactText}>{guardianData.email}</Text>
                   </View>
-                  {/* Si l'API retourne l'horaire, décommentez ceci */}
-                  {/* <View style={styles.contactItem}>
-                    <Ionicons name="time-outline" size={20} color="#666" />
-                    <Text style={styles.contactText}>{guardianData.schedule}</Text>
-                  </View> */}
                 </View>
               )}
 
-              {/* Urgences (si disponible dans les données de l'API) */}
-              {/* <View style={styles.emergencySection}>
-                <Text style={styles.emergencyTitle}>En cas d'urgence</Text>
-                <Text style={styles.emergencyText}>Gardien de service :</Text>
-                <Text style={styles.emergencyNumber}>{buildingData.emergency.guardian}</Text>
-                <Text style={styles.emergencyText}>Sécurité :</Text>
-                <Text style={styles.emergencyNumber}>{buildingData.emergency.security}</Text>
-              </View> */}
+              {/* Règlement */}
+              {buildingData.rules && buildingData.rules !== 'Règlement non disponible' && (
+                <View style={styles.infoSection}>
+                  <Text style={styles.infoTitle}>Règlement</Text>
+                  <View style={styles.infoItem}>
+                    <View style={styles.infoIcon}>
+                      <Ionicons name="document-text-outline" size={24} color="#666" />
+                    </View>
+                    <View style={styles.infoContent}>
+                      <Text style={styles.infoValue}>{buildingData.rules}</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
             </View>
           </ScrollView>
 
