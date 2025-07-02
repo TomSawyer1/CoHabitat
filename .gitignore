@@ -45,4 +45,4 @@ Backend/cohabitat.db
 Backend/uploads
 
 .env
-.env
+/Backend/
