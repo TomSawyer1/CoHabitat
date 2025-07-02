@@ -9,7 +9,8 @@ const {
     updateGuardianProfile,
     changePassword,
     getMyProfile,
-    getBuildingResidents
+    getBuildingResidents,
+    deleteMyAccount
 } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
@@ -26,6 +27,7 @@ router.get('/guardian/:id', getGuardianInfo);
 
 // Profil de l'utilisateur connecté
 router.get('/profile', auth, getMyProfile);
+router.delete('/profile', auth, deleteMyAccount);
 
 // Mise à jour des profils
 router.put('/profile/locataire', auth, updateLocataireProfile);
