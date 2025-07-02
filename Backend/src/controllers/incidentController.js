@@ -18,22 +18,6 @@ const updateIncidentSchema = z.object({
     resolution_comment: z.string().optional()
 });
 
-// Fonction utilitaire pour créer une notification
-const createNotification = (userId, userRole, title, message, type = 'info', incidentId = null) => {
-    return new Promise((resolve, reject) => {
-        const query = `INSERT INTO notifications (user_id, user_role, title, message, type, related_incident_id) 
-                       VALUES (?, ?, ?, ?, ?, ?)`;
-        db.run(query, [userId, userRole, title, message, type, incidentId], function(err) {
-            if (err) {
-                console.error('Erreur lors de la création de la notification:', err);
-                reject(err);
-            } else {
-                resolve(this.lastID);
-            }
-        });
-    });
-};
-
 // Fonction utilitaire pour ajouter à l'historique
 const addToHistory = (incidentId, action, oldStatus, newStatus, comment, userId, userRole) => {
     return new Promise((resolve, reject) => {
@@ -129,34 +113,6 @@ const createIncident = async (req, res) => {
                     try {
                         // Ajouter à l'historique
                         await addToHistory(incidentId, 'Création', null, 'nouveau', 'Incident créé', idUtilisateur, req.user.role);
-
-                        // Créer une notification pour l'utilisateur
-                        await createNotification(
-                            idUtilisateur, 
-                            req.user.role, 
-                            'Incident signalé', 
-                            `Votre incident "${type}" a été enregistré avec succès.`, 
-                            'success', 
-                            incidentId
-                        );
-
-                        // Notifier les gardiens du bâtiment
-                        db.all('SELECT id FROM guardians WHERE batiments_id = ?', [idBatiment], async (err, guardians) => {
-                            if (err) {
-                                console.error('Erreur lors de la récupération des gardiens:', err);
-                            } else {
-                                for (const guardian of guardians) {
-                                    await createNotification(
-                                        guardian.id,
-                                        'guardian',
-                                        'Nouvel incident',
-                                        `Un nouvel incident "${type}" a été signalé dans votre bâtiment.`,
-                                        'warning',
-                                        incidentId
-                                    ).catch(console.error);
-                                }
-                            }
-                        });
 
                         console.log('🎉 [INCIDENT] Incident créé avec succès!');
                         res.status(201).json({ 
@@ -321,26 +277,6 @@ const updateIncident = async (req, res) => {
                         req.user.id,
                         req.user.role
                     );
-
-                    // Créer une notification pour le locataire
-                    if (updates.status) {
-                        const statusMessages = {
-                            'en_cours': 'Votre incident est maintenant pris en charge.',
-                            'resolu': 'Votre incident a été résolu !',
-                            'ferme': 'Votre incident a été fermé.'
-                        };
-
-                        const message = statusMessages[updates.status] || 'Votre incident a été mis à jour.';
-                        
-                        await createNotification(
-                            currentIncident.idUtilisateur,
-                            'locataire',
-                            'Mise à jour de votre incident',
-                            message,
-                            updates.status === 'resolu' ? 'success' : 'info',
-                            incidentId
-                        );
-                    }
 
                     res.json({ 
                         success: true, 

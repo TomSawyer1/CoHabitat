@@ -5,7 +5,6 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const buildingRoutes = require('./routes/buildingRoutes'); // Importation des routes des bâtiments
 const incidentsRoutes = require('./routes/incidentsRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -63,9 +62,6 @@ app.use('/api', buildingRoutes);
 // Routes des incidents et signalements
 app.use('/api', incidentsRoutes);
 
-// Routes des notifications
-app.use('/api/notifications', notificationRoutes);
-
 // Route pour les informations générales de l'API
 app.get('/api/info', (req, res) => {
     res.json({
@@ -76,7 +72,6 @@ app.get('/api/info', (req, res) => {
             auth: '/auth/*',
             buildings: '/api/buildings',
             incidents: '/api/incidents',
-            notifications: '/api/notifications',
             uploads: '/uploads/*'
         },
         status: 'Production Ready'
@@ -97,7 +92,6 @@ app.use('*', (req, res) => {
             'POST /auth/register/guardian',
             'GET /api/buildings',
             'POST /api/incidents',
-            'GET /api/notifications',
             'GET /uploads/:filename'
         ]
     });
