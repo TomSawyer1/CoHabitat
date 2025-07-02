@@ -17,7 +17,13 @@ app.use(express.json());
 
 // Middleware CORS amélioré pour le développement
 app.use(cors({
-    origin: ['http://localhost:19006', 'http://localhost:8081', 'exp://localhost:19000'],
+    origin: [
+        'http://localhost:19006',
+        'http://localhost:8081',
+        'exp://localhost:19000',
+        'https://zoological-growth.up.railway.app', // URL Railway
+        // Ajoute ici l'URL de ton front en production si besoin
+    ],
     credentials: true
 }));
 
