@@ -574,6 +574,30 @@ const getBuildingResidents = async (req, res) => {
     }
 };
 
+// Supprimer le compte de l'utilisateur connecté
+const deleteMyAccount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        const table = userRole === 'locataire' ? 'locataire' : 'guardians';
+
+        const query = `DELETE FROM ${table} WHERE id = ?`;
+        db.run(query, [userId], function(err) {
+            if (err) {
+                console.error('Erreur lors de la suppression du compte:', err);
+                return res.status(500).json({ success: false, message: 'Erreur lors de la suppression du compte.' });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
+            }
+            res.json({ success: true, message: 'Compte supprimé avec succès.' });
+        });
+    } catch (error) {
+        console.error('Erreur générale lors de la suppression du compte:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    }
+};
+
 module.exports = {
     registerGuardian,
     registerLocataire,
@@ -584,5 +608,6 @@ module.exports = {
     updateGuardianProfile,
     changePassword,
     getMyProfile,
-    getBuildingResidents
+    getBuildingResidents,
+    deleteMyAccount
 }; 
