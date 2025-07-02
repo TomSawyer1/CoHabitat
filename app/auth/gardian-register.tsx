@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -38,7 +39,11 @@ export default function GardianRegister() {
       setBuildingsLoading(true);
       try {
         console.log('🌐 [GARDIEN] URL API:', API_BASE_URL);
-        const response = await fetch(`${API_BASE_URL}/api/buildings`);
+        // Récupérer le token
+        const token = await AsyncStorage.getItem('userToken');
+        const response = await fetch(`${API_BASE_URL}/api/buildings`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         console.log('📡 [GARDIEN] Réponse buildings:', response.status);
         
         if (response.ok) {

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import Header from "../../components/Header";
 import { API_BASE_URL } from "../../config";
@@ -30,6 +30,7 @@ export default function Register() {
   const [buildings, setBuildings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [buildingsLoading, setBuildingsLoading] = useState(true);
+  const [showBuildingList, setShowBuildingList] = useState(false);
 
   // Charger les bâtiments au démarrage
   useEffect(() => {
@@ -38,7 +39,11 @@ export default function Register() {
       setBuildingsLoading(true);
       try {
         console.log('🌐 URL API:', API_BASE_URL);
-        const response = await fetch(`${API_BASE_URL}/api/buildings`);
+        // Récupérer le token
+        const token = await AsyncStorage.getItem('userToken');
+        const response = await fetch(`${API_BASE_URL}/api/buildings`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         console.log('📡 Réponse buildings:', response.status);
         
         if (response.ok) {
@@ -221,29 +226,35 @@ export default function Register() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Bâtiment</Text>
-            <View style={styles.pickerContainer}>
-              {buildingsLoading ? (
-                <Text style={styles.loadingText}>Chargement des bâtiments...</Text>
-              ) : (
-                <Picker
-                  selectedValue={selectedBuilding}
-                  onValueChange={(itemValue) => {
-                    console.log('🏢 Bâtiment sélectionné:', itemValue);
-                    setSelectedBuilding(itemValue);
-                  }}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Sélectionnez votre bâtiment" value="" />
-                  {buildings.map((building) => (
-                    <Picker.Item
-                      key={building.id}
-                      label={building.nom}
-                      value={building.id ? building.id.toString() : ""}
-                    />
-                  ))}
-                </Picker>
-              )}
-            </View>
+            <TouchableOpacity
+              style={[styles.inputFieldContainer, { minHeight: 48, justifyContent: 'center' }]}
+              onPress={() => setShowBuildingList(true)}
+            >
+              <Text style={{ color: selectedBuilding ? '#000' : '#888', fontSize: 16 }}>
+                {selectedBuilding
+                  ? buildings.find(b => b.id.toString() === selectedBuilding)?.nom
+                  : 'Sélectionnez votre bâtiment'}
+              </Text>
+            </TouchableOpacity>
+            {showBuildingList && (
+              <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
+                {buildings.map((building) => (
+                  <TouchableOpacity
+                    key={building.id}
+                    style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                    onPress={() => {
+                      setSelectedBuilding(building.id.toString());
+                      setShowBuildingList(false);
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, color: '#000' }}>{building.nom}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity onPress={() => setShowBuildingList(false)} style={{ padding: 12 }}>
+                  <Text style={{ color: '#d32f2f', textAlign: 'center' }}>Annuler</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <Text style={styles.inputInfo}>
               {buildings.length > 0 
                 ? `${buildings.length} bâtiment(s) disponible(s)` 
@@ -308,14 +319,6 @@ export default function Register() {
             onPress={() => router.back()}
           >
             <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
-          </TouchableOpacity>
-
-          {/* Bouton de test pour debug */}
-          <TouchableOpacity
-            style={[styles.buttonHorizontal, { backgroundColor: '#ff6b6b', flex: 0.3 }]}
-            onPress={testButtonPress}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Test</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
