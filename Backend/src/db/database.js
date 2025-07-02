@@ -135,26 +135,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
             }
         });
 
-        // Table pour les notifications
-        db.run(`CREATE TABLE IF NOT EXISTS notifications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            user_role TEXT NOT NULL CHECK(user_role IN ('locataire', 'guardian')),
-            title TEXT NOT NULL,
-            message TEXT NOT NULL,
-            type TEXT DEFAULT 'info' CHECK(type IN ('info', 'warning', 'success', 'error')),
-            related_incident_id INTEGER,
-            is_read BOOLEAN DEFAULT FALSE,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (related_incident_id) REFERENCES incidents(id)
-        )`, (err) => {
-            if (err) {
-                console.error('Erreur lors de la création de la table notifications:', err.message);
-            } else {
-                console.log('Table notifications créée ou déjà existante.');
-            }
-        });
-
         // Table pour les commentaires sur les incidents
         db.run(`CREATE TABLE IF NOT EXISTS incident_comments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
