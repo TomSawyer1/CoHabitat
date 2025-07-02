@@ -243,16 +243,51 @@ export default function Profil() {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     Alert.alert(
-      "Supprimer le compte",
-      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+      "Vous déménagez ?",
+      "Êtes-vous sûr de vouloir supprimer votre compte ?",
       [
-        { text: "Annuler", style: "cancel" },
-        { text: "Supprimer", style: "destructive", onPress: () => {
-          // TODO: Implémenter la suppression du compte
-          console.log("Suppression du compte demandée");
-        }}
+        { text: "Non", style: "cancel" },
+        { text: "Oui", style: "destructive", onPress: async () => {
+            // Deuxième confirmation
+            Alert.alert(
+              "Confirmation",
+              "Cette action est irréversible. Voulez-vous vraiment supprimer votre compte ?",
+              [
+                { text: "Annuler", style: "cancel" },
+                { text: "Supprimer", style: "destructive", onPress: async () => {
+                    try {
+                      const token = await AsyncStorage.getItem('userToken');
+                      if (!token) {
+                        Alert.alert("Session expirée", "Veuillez vous reconnecter.");
+                        router.replace('/auth/login');
+                        return;
+                      }
+                      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+                        method: 'DELETE',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json'
+                        }
+                      });
+                      const data = await response.json();
+                      if (response.ok && data.success) {
+                        Alert.alert("Compte supprimé", "Votre compte a bien été supprimé.");
+                        await AsyncStorage.clear();
+                        router.replace('/auth/login');
+                      } else {
+                        Alert.alert("Erreur", data.message || "Erreur lors de la suppression du compte.");
+                      }
+                    } catch (error) {
+                      Alert.alert("Erreur", "Impossible de supprimer le compte. Veuillez réessayer plus tard.");
+                    }
+                  }
+                }
+              ]
+            );
+          }
+        }
       ]
     );
   };
