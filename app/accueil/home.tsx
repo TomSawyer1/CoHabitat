@@ -2,9 +2,9 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  ImageBackground,
-  TouchableWithoutFeedback,
-  View
+    ImageBackground,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Header from "../../components/Header";
@@ -12,7 +12,7 @@ import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { useHomeStyle } from "../../hooks/useHomeStyle";
 
-const backgroundImage = require("../../assets/images/SpeedOnana.jpg");
+const backgroundImage = require("../../assets/images/immeuble.jpg");
 
 export default function Home() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);

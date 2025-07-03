@@ -2,14 +2,14 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
-    ImageBackground,
-    Text,
-    TouchableOpacity,
-    View,
+  ImageBackground,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAccueilStyle } from "../../hooks/useAccueilStyle";
 
-const backgroundImage = require("../../assets/images/SpeedOnana.jpg");
+const backgroundImage = require("../../assets/images/immeuble.jpg");
 
 export default function Accueil() {
   const router = useRouter();
