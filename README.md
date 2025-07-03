@@ -26,7 +26,6 @@ L'application propose des fonctionnalités adaptées à chaque profil :
 - **Informations sur le bâtiment** : Accès aux informations détaillées sur chaque bâtiment.
 - **Coordonnées des locataires** : Visualisation des informations de contact des locataires.
 - **Profil** : Gestion des informations personnelles du gardien.
-- **Notifications** : Réception et consultation des notifications importantes.
 - **Paramètres** : Configuration des préférences de l'application.
 
 ### Locataires
@@ -36,7 +35,6 @@ L'application propose des fonctionnalités adaptées à chaque profil :
 - **Informations sur le bâtiment** : Accès aux détails et équipements du bâtiment.
 - **Coordonnées du gardien** : Informations de contact et horaires du gardien.
 - **Profil** : Gestion des informations personnelles du locataire.
-- **Notifications** : Consultation des notifications du bâtiment ou du gardien.
 - **Paramètres** : Personnalisation des préférences de l'application.
 
 ## Fonctionnalités Transversales (Front-end):
