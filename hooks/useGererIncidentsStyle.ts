@@ -31,6 +31,12 @@ export const useGererIncidentsStyle = () => {
       backgroundColor: "#E0E0E0",
       marginRight: 15,
     },
+    avatarImage: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      marginRight: 15,
+    },
     userInfo: {
       justifyContent: "center",
     },

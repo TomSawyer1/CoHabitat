@@ -7,13 +7,14 @@ import {
     Dimensions,
     Image,
     KeyboardAvoidingView,
+    Linking,
     Platform,
     ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -41,6 +42,7 @@ interface Incident {
   building_nom?: string;
   guardian_nom?: string;
   guardian_prenom?: string;
+  guardian_phone?: string;
 }
 
 interface Comment {
@@ -162,6 +164,28 @@ export default function SuivreSignal() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleContactGuardian = () => {
+    if (!incident?.guardian_phone) {
+      Alert.alert('Information manquante', 'Numéro de téléphone du gardien non disponible.');
+      return;
+    }
+
+    const phoneNumber = incident.guardian_phone.replace(/\s/g, ''); // Enlever les espaces
+    const guardianName = `${incident.guardian_prenom} ${incident.guardian_nom}`;
+    
+    Alert.alert(
+      'Contacter le gardien',
+      `Souhaitez-vous appeler ${guardianName} ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Appeler', 
+          onPress: () => Linking.openURL(`tel:${phoneNumber}`) 
+        }
+      ]
+    );
   };
 
   const handleSubmitComment = async () => {
@@ -287,7 +311,11 @@ export default function SuivreSignal() {
           >
             {/* Section Avatar et utilisateur */}
             <View style={styles.avatarContainer}>
-              <View style={styles.avatarPlaceholder} />
+              <Image 
+                source={require('../../assets/images/luigi.png')}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>
                   {incident.user_prenom} {incident.user_nom}
@@ -365,7 +393,14 @@ export default function SuivreSignal() {
               {/* Historique */}
               {history.map((item, index) => (
                 <View key={`history-${item.id}`} style={styles.updateItem}>
-                  <View style={[styles.updateImagePlaceholder, { backgroundColor: '#007AFF' }]} />
+                  <Image 
+                    source={item.user_role === 'guardian' 
+                      ? require('../../assets/images/guard.png') 
+                      : require('../../assets/images/luigi.png')
+                    }
+                    style={styles.updateImageAvatar}
+                    resizeMode="cover"
+                  />
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{formatDate(item.created_at)}</Text>
                     <Text style={styles.updateText}>
@@ -384,7 +419,14 @@ export default function SuivreSignal() {
               {/* Commentaires */}
               {comments.map((comment, index) => (
                 <View key={`comment-${comment.id}`} style={styles.updateItem}>
-                  <View style={[styles.updateImagePlaceholder, { backgroundColor: '#34c759' }]} />
+                  <Image 
+                    source={comment.user_role === 'guardian' 
+                      ? require('../../assets/images/guard.png') 
+                      : require('../../assets/images/luigi.png')
+                    }
+                    style={styles.updateImageAvatar}
+                    resizeMode="cover"
+                  />
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{formatDate(comment.created_at)}</Text>
                     <Text style={styles.updateText}>{comment.comment}</Text>
@@ -468,9 +510,7 @@ export default function SuivreSignal() {
               {incident.guardian_nom && (
                 <TouchableOpacity
                   style={[styles.buttonFigma, styles.primaryButtonFigma, { flex: 0.65 }]}
-                  onPress={() => {
-                    Alert.alert('Info', 'Fonctionnalité de contact en cours de développement.');
-                  }}
+                  onPress={handleContactGuardian}
                 >
                   <Text style={styles.primaryButtonTextFigma}>Contacter le gardien</Text>
                 </TouchableOpacity>

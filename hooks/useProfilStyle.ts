@@ -26,6 +26,12 @@ export const useProfilStyle = () => {
       backgroundColor: "#e1e1e1",
       marginBottom: 10,
     },
+    avatarImage: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      marginBottom: 10,
+    },
     userName: {
       fontSize: 24,
       fontWeight: "bold",

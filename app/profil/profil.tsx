@@ -4,14 +4,14 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    Alert,
+    Image,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -49,6 +49,7 @@ export default function Profil() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -62,7 +63,17 @@ export default function Profil() {
 
   useEffect(() => {
     loadUserData();
+    loadUserRole();
   }, []);
+
+  const loadUserRole = async () => {
+    try {
+      const role = await AsyncStorage.getItem('userRole');
+      setUserRole(role);
+    } catch (error) {
+      console.error('❌ [PROFIL] Erreur chargement rôle:', error);
+    }
+  };
 
   const loadUserData = async () => {
     try {
@@ -324,7 +335,14 @@ export default function Profil() {
           >
             {/* Section Avatar et Nom */}
             <View style={styles.avatarSection}>
-              <View style={styles.avatarPlaceholder} />
+              <Image 
+                source={userRole === 'guardian' 
+                  ? require('../../assets/images/guard.png') 
+                  : require('../../assets/images/luigi.png')
+                }
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
               <Text style={styles.userName}>
                 {`${formData.prenom} ${formData.nom}` || 'Nom non défini'}
               </Text>
