@@ -5,6 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -99,10 +101,18 @@ export default function GardianLogin() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <StatusBar style="light" />
       <Header subtitle="Connexion Gardien" showBackButton={false} />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Titre de section */}
         <Text style={styles.sectionTitle}>Connexion Gardien</Text>
         {/* Inputs */}
@@ -175,7 +185,7 @@ export default function GardianLogin() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

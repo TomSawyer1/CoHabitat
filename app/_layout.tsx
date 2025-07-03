@@ -1,6 +1,6 @@
 import {
-  DefaultTheme,
-  ThemeProvider
+    DefaultTheme,
+    ThemeProvider
 } from "@react-navigation/native";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -24,7 +24,7 @@ export default function RootLayout() {
           <Stack.Screen name="signalements/gerer-incidents" options={{ headerShown: false }} />
           <Stack.Screen name="signalements/suivresignal" options={{ headerShown: false }} />
           <Stack.Screen name="profil/profil" options={{ headerShown: false }} />
-          <Stack.Screen name="notifications/notifications" options={{ headerShown: false }} />
+  
           <Stack.Screen name="accueil/home" options={{ headerShown: false }} />
           <Stack.Screen name="batiments/batiments" options={{ headerShown: false }} />
           <Stack.Screen name="batiments/mon-batiment" options={{ headerShown: false }} />

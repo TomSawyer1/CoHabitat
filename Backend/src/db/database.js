@@ -69,6 +69,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 console.log('Table batiments créée ou déjà existante.');
                 
                 // Ajout de données de test pour les bâtiments si la table est vide
+                // Forcer la création des bâtiments de test
                 db.get("SELECT COUNT(*) as count FROM batiments", (err, row) => {
                     if (err) {
                         console.error("Erreur lors de la vérification du nombre de bâtiments:", err.message);

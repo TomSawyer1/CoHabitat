@@ -5,6 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -152,7 +154,11 @@ export default function Register() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <StatusBar style="light" />
 
       <Header subtitle="Créer un compte locataire" showBackButton={false} />
@@ -160,6 +166,8 @@ export default function Register() {
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         style={styles.scrollView}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>Bienvenue !</Text>
@@ -332,6 +340,6 @@ export default function Register() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

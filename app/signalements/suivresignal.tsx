@@ -6,6 +6,8 @@ import {
     Alert,
     Dimensions,
     Image,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -262,7 +264,11 @@ export default function SuivreSignal() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
@@ -271,13 +277,13 @@ export default function SuivreSignal() {
         disabled={!isSidebarVisible}
       >
         <View style={styles.contentContainer}>
-          {/* Header */}
-          <Header subtitle="Suivre un incident" showBackButton={true} />
+          <Header subtitle="Suivre un incident" showBackButton={false} />
 
-          {/* Contenu principal */}
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             {/* Section Avatar et utilisateur */}
             <View style={styles.avatarContainer}>
@@ -445,15 +451,23 @@ export default function SuivreSignal() {
             {/* Boutons d'action */}
             <View style={styles.buttonsContainerFigma}>
               <TouchableOpacity
-                style={[styles.buttonFigma, styles.secondaryButtonFigma]}
+                style={[
+                  styles.buttonFigma, 
+                  styles.secondaryButtonFigma,
+                  { 
+                    flex: incident.guardian_nom ? 0.35 : 0.5,
+                    height: 40,
+                    paddingHorizontal: 20
+                  }
+                ]}
                 onPress={() => router.back()}
               >
-                <Text style={styles.secondaryButtonTextFigma}>Retour</Text>
+                <Text style={[styles.secondaryButtonTextFigma, { fontSize: 14 }]}>Retour</Text>
               </TouchableOpacity>
               
               {incident.guardian_nom && (
                 <TouchableOpacity
-                  style={[styles.buttonFigma, styles.primaryButtonFigma]}
+                  style={[styles.buttonFigma, styles.primaryButtonFigma, { flex: 0.65 }]}
                   onPress={() => {
                     Alert.alert('Info', 'Fonctionnalité de contact en cours de développement.');
                   }}
@@ -464,7 +478,6 @@ export default function SuivreSignal() {
             </View>
           </ScrollView>
 
-          {/* Navbar */}
           <Navbar
             isSidebarVisible={isSidebarVisible}
             setIsSidebarVisible={setIsSidebarVisible}
@@ -473,11 +486,10 @@ export default function SuivreSignal() {
         </View>
       </TouchableWithoutFeedback>
 
-      {/* Sidebar */}
       <Sidebar
         isSidebarVisible={isSidebarVisible}
         onClose={() => setIsSidebarVisible(false)}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }

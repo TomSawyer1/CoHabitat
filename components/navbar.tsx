@@ -59,13 +59,7 @@ export default function Navbar({
         };
 
     const endItems = [
-      {
-        id: 4,
-        icon: "notifications-outline",
-        activeIcon: "notifications",
-        color: "#4343f5",
-      },
-      { id: 5, icon: "person-outline", activeIcon: "person", color: "#e0b115" },
+      { id: 4, icon: "person-outline", activeIcon: "person", color: "#e0b115" },
     ];
 
     return [...baseItems, signalementItem, ...endItems];
@@ -90,10 +84,6 @@ export default function Navbar({
       setActiveIndex(index);
       setIsSidebarVisible(false);
     } else if (itemId === 4) {
-      router.push("/notifications/notifications");
-      setActiveIndex(index);
-      setIsSidebarVisible(false);
-    } else if (itemId === 5) {
       router.push("/profil/profil");
       setActiveIndex(index);
       setIsSidebarVisible(false);
