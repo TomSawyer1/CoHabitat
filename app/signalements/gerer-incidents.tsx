@@ -12,7 +12,7 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View,
+    View
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -363,7 +363,11 @@ export default function GererIncidents() {
           >
             {/* Section Avatar et locataire */}
             <View style={styles.avatarContainer}>
-              <View style={styles.avatarPlaceholder} />
+              <Image 
+                source={require('../../assets/images/luigi.png')}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>
                   {incident.user_prenom} {incident.user_nom}

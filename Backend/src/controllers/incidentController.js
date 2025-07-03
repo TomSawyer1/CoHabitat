@@ -444,7 +444,7 @@ const getIncidentById = (req, res) => {
         SELECT i.*, 
                l.nom as user_nom, l.prenom as user_prenom, l.email as user_email,
                b.nom as building_nom,
-               g.nom as guardian_nom, g.prenom as guardian_prenom
+               g.nom as guardian_nom, g.prenom as guardian_prenom, g.telephone as guardian_phone
         FROM incidents i
         LEFT JOIN locataire l ON i.idUtilisateur = l.id
         LEFT JOIN batiments b ON i.idBatiment = b.id

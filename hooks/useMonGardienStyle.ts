@@ -53,6 +53,12 @@ export const useMonGardienStyle = () => {
       backgroundColor: "#e1e1e1",
       marginBottom: 10,
     },
+    avatarImage: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      marginBottom: 10,
+    },
     name: {
       fontSize: 22,
       fontWeight: "bold",

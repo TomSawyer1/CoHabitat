@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
+    Image,
     Linking,
     ScrollView,
     Text,
@@ -180,7 +181,11 @@ export default function MonGardien() {
 
             <View style={styles.card}>
               <View style={styles.avatarSection}>
-                <View style={styles.avatarPlaceholder} />
+                <Image 
+                  source={require('../../assets/images/guard.png')}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
                 <Text style={styles.name}>{guardianData.name}</Text>
                 <Text style={styles.role}>{guardianData.role}</Text>
               </View>
