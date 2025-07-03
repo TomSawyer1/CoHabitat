@@ -123,10 +123,10 @@ const createIncident = async (req, res) => {
                         });
 
                     } catch (error) {
-                        console.error('⚠️ [INCIDENT] Erreur notifications:', error);
+                        console.error('⚠️ [INCIDENT] Erreur:', error);
                         res.status(201).json({ 
                             success: true,
-                            message: 'Incident signalé avec succès (notifications partielles)', 
+                            message: 'Incident signalé avec succès', 
                             incidentId,
                             imagePath
                         });
@@ -285,10 +285,10 @@ const updateIncident = async (req, res) => {
                     });
 
                 } catch (error) {
-                    console.error('Erreur lors de la création des notifications:', error);
+                    console.error('Erreur lors de la création de l\'historique:', error);
                     res.json({ 
                         success: true, 
-                        message: 'Incident mis à jour avec succès (notifications partielles)',
+                        message: 'Incident mis à jour avec succès',
                         changes: updates 
                     });
                 }

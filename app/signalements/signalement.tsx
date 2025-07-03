@@ -8,6 +8,8 @@ import {
     Alert,
     Dimensions,
     Image,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -278,7 +280,11 @@ export default function Signalement() {
   ];
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
@@ -287,13 +293,13 @@ export default function Signalement() {
         disabled={!isSidebarVisible}
       >
         <View style={styles.contentContainer}>
-          {/* Header */}
           <Header subtitle="Signalement" showBackButton={false} />
 
-          {/* Contenu principal */}
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             {/* Titre et sous-titre de section */}
             <View style={styles.sectionTitleContainer}>
@@ -488,7 +494,6 @@ export default function Signalement() {
             </View>
           </ScrollView>
 
-          {/* Ajout de la Navbar en bas */}
           <Navbar
             isSidebarVisible={isSidebarVisible}
             setIsSidebarVisible={setIsSidebarVisible}
@@ -497,11 +502,10 @@ export default function Signalement() {
         </View>
       </TouchableWithoutFeedback>
 
-      {/* La Sidebar */}
       <Sidebar
         isSidebarVisible={isSidebarVisible}
         onClose={() => setIsSidebarVisible(false)}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }

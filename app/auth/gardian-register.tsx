@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -32,6 +33,7 @@ export default function GardianRegister() {
   const [buildings, setBuildings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [buildingsLoading, setBuildingsLoading] = useState(true);
+  const [showBuildingList, setShowBuildingList] = useState(false);
 
   useEffect(() => {
     const fetchBuildings = async () => {
@@ -147,20 +149,23 @@ export default function GardianRegister() {
     }
   };
 
-  const testButtonPress = () => {
-    console.log('🔥 [GARDIEN] BOUTON PRESSÉ !');
-    Alert.alert("Test Gardien", "Le bouton gardien fonctionne !");
-  };
-
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <StatusBar style="light" />
       <Header 
         subtitle="Créer un compte gardien"
         onBackPress={() => router.push("/auth/gardian-login")}
         showBackButton={false}
       />
-      <ScrollView contentContainerStyle={styles.inputsContainer}>
+      <ScrollView 
+        contentContainerStyle={styles.inputsContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>Bienvenue !</Text>
           <Text style={styles.sectionSubtitle}>
@@ -196,27 +201,36 @@ export default function GardianRegister() {
 
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Bâtiment</Text>
-          <View style={styles.pickerContainer}>
-            {buildingsLoading ? (
-              <Text style={styles.loadingText}>Chargement des bâtiments...</Text>
-            ) : (
-              <Picker
-                selectedValue={building}
-                onValueChange={(itemValue) => {
-                  console.log('🏢 [GARDIEN] Bâtiment sélectionné:', itemValue);
-                  setBuilding(itemValue);
-                }}
-                style={styles.picker}
-              >
-                <Picker.Item label="Sélectionnez le bâtiment" value="" />
-                {buildings && buildings.length > 0 ? buildings.map((b) => (
-                  <Picker.Item key={b.id} label={b.nom} value={b.id ? b.id.toString() : ""} />
-                )) : (
-                  <Picker.Item label="Aucun bâtiment disponible" value="" enabled={false} />
-                )}
-              </Picker>
-            )}
-          </View>
+          <TouchableOpacity
+            style={[styles.inputField, { minHeight: 48, justifyContent: 'center' }]}
+            onPress={() => setShowBuildingList(true)}
+          >
+            <Text style={{ color: building ? '#000' : '#00000080', fontSize: 16 }}>
+              {building
+                ? buildings.find(b => b.id.toString() === building)?.nom
+                : 'Sélectionnez votre bâtiment'}
+            </Text>
+          </TouchableOpacity>
+          {showBuildingList && (
+            <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
+              {buildings.map((buildingItem) => (
+                <TouchableOpacity
+                  key={buildingItem.id}
+                  style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                  onPress={() => {
+                    console.log('🏢 [GARDIEN] Bâtiment sélectionné:', buildingItem.id.toString());
+                    setBuilding(buildingItem.id.toString());
+                    setShowBuildingList(false);
+                  }}
+                >
+                  <Text style={{ fontSize: 16, color: '#000' }}>{buildingItem.nom}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity onPress={() => setShowBuildingList(false)} style={{ padding: 12 }}>
+                <Text style={{ color: '#d32f2f', textAlign: 'center' }}>Annuler</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <Text style={styles.inputInfo}>
             {buildings && buildings.length > 0 
               ? `${buildings.length} bâtiment(s) disponible(s)` 
@@ -326,14 +340,6 @@ export default function GardianRegister() {
             <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
           </TouchableOpacity>
           
-          {/* Bouton de test pour debug */}
-          <TouchableOpacity
-            style={[styles.buttonHorizontal, { backgroundColor: '#4ECDC4', flex: 0.3 }]}
-            onPress={testButtonPress}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Test</Text>
-          </TouchableOpacity>
-          
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}
             onPress={handleRegister}
@@ -345,6 +351,6 @@ export default function GardianRegister() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

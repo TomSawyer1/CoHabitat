@@ -24,7 +24,7 @@ const getBuildingInfo = async (req, res) => {
 
         // Déterminer la table et le champ en fonction du rôle
         const table = userRole === 'locataire' ? 'locataire' : 'guardians';
-        const buildingIdField = userRole === 'locataire' ? 'batiments_id' : 'building_id';
+        const buildingIdField = 'batiments_id'; // Même nom de colonne pour les deux tables
 
         // Récupérer l'ID du bâtiment de l'utilisateur
         const userQuery = `SELECT ${buildingIdField} FROM ${table} WHERE id = ?`;
@@ -50,7 +50,7 @@ const getBuildingInfo = async (req, res) => {
                 SELECT b.*, g.nom as guardian_name, g.prenom as guardian_prenom,
                        g.telephone as guardian_phone, g.email as guardian_email
                 FROM batiments b
-                LEFT JOIN guardians g ON b.id_guardians = g.id
+                LEFT JOIN guardians g ON b.id = g.batiments_id
                 WHERE b.id = ?
             `;
 
@@ -121,7 +121,7 @@ const getBuildingDetails = async (req, res) => {
         }
 
         // Vérifier que le gardien est assigné à ce bâtiment
-        db.get('SELECT building_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
+        db.get('SELECT batiments_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
             if (err) {
                 console.error('Erreur lors de la vérification du gardien:', err);
                 return res.status(500).json({
@@ -130,7 +130,7 @@ const getBuildingDetails = async (req, res) => {
                 });
             }
 
-            if (!guardian || guardian.building_id != buildingId) {
+            if (!guardian || guardian.batiments_id != buildingId) {
                 return res.status(403).json({
                     success: false,
                     message: 'Accès non autorisé à ce bâtiment.'
@@ -216,7 +216,7 @@ const updateBuildingInfo = async (req, res) => {
         }
 
         // Vérifier que le gardien est assigné à ce bâtiment
-        db.get('SELECT building_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
+        db.get('SELECT batiments_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
             if (err) {
                 console.error('Erreur lors de la vérification du gardien:', err);
                 return res.status(500).json({
@@ -225,7 +225,7 @@ const updateBuildingInfo = async (req, res) => {
                 });
             }
 
-            if (!guardian || guardian.building_id != buildingId) {
+            if (!guardian || guardian.batiments_id != buildingId) {
                 return res.status(403).json({
                     success: false,
                     message: 'Accès non autorisé à ce bâtiment.'

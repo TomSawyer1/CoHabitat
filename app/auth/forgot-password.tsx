@@ -1,20 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
+import Header from "../../components/Header";
 import { useForgotPasswordStyle } from "../../hooks/useForgotPasswordStyle";
 
 export default function ForgotPassword() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const styles = useForgotPasswordStyle();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = () => {
     // Logique pour envoyer le lien de réinitialisation du mot de passe
@@ -25,27 +28,18 @@ export default function ForgotPassword() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <StatusBar style="light" />
-
-      {/* Header rectangulaire noir */}
-      <View style={styles.headerRect}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>CoHabitat</Text>
-          <Text style={styles.headerSubtitle}>Mot de passe oublié</Text>
-        </View>
-      </View>
-
-      {/* Contenu principal */}
-      <ScrollView
+      <Header subtitle="Mot de passe oublié" showBackButton={false} />
+      
+      <ScrollView 
         contentContainerStyle={styles.scrollViewContent}
-        style={styles.scrollView}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {/* Titre et sous-titre de section */}
         <View style={styles.sectionTitleContainer}>
@@ -87,6 +81,6 @@ export default function ForgotPassword() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

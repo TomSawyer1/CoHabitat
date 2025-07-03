@@ -3,12 +3,11 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  ScrollView,
-  Switch,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -19,7 +18,7 @@ export default function Parametres() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [language, setLanguage] = useState("Français");
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
   const styles = useParametresStyle();
 
   // Fonction pour changer la langue (exemple simple)
@@ -29,11 +28,7 @@ export default function Parametres() {
     console.log("Changement de langue vers :", language);
   };
 
-  // Fonction pour gérer les notifications
-  const toggleNotifications = () => {
-    setNotificationsEnabled((prev) => !prev);
-    console.log("Notifications activées :", !notificationsEnabled);
-  };
+  
 
   return (
     <View style={styles.container}>
@@ -70,20 +65,7 @@ export default function Parametres() {
               </TouchableOpacity>
             </View>
 
-            {/* Section Notifications */}
-            <View style={styles.card}>
-              <View style={styles.settingItem}>
-                <Text style={styles.settingLabel}>Notifications</Text>
-                <Switch
-                  trackColor={{ false: "#767577", true: "#81b0ff" }}
-                  thumbColor={notificationsEnabled ? "#f5dd4b" : "#f4f3f4"}
-                  ios_backgroundColor="#3e3e3e"
-                  onValueChange={toggleNotifications}
-                  value={notificationsEnabled}
-                  style={styles.toggleSwitch}
-                />
-              </View>
-            </View>
+
 
             {/* Autres paramètres à ajouter ici */}
           </ScrollView>

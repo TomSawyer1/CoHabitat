@@ -5,6 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from 'react';
 import {
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -98,12 +100,17 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <StatusBar style="light" />
       <Header subtitle="Connexion Locataire" showBackButton={false} />
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
-        style={styles.scrollView}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {/* Titre de section */}
         <Text style={styles.sectionTitle}>Connexion Locataire</Text>
@@ -180,6 +187,6 @@ export default function Login() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
