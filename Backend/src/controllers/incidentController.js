@@ -4,6 +4,7 @@ const { z } = require('zod');
 // Schémas de validation Zod
 const incidentSchema = z.object({
     type: z.string().min(1),
+    title: z.string().optional(),
     description: z.string().min(1),
     date: z.string().min(1),
     idUtilisateur: z.number().int(),
@@ -57,12 +58,12 @@ const createIncident = async (req, res) => {
             });
         }
 
-        const { type, description, date, idUtilisateur, idBatiment, etage, numero_porte } = parseResult.data;
+        const { type, title, description, date, idUtilisateur, idBatiment, etage, numero_porte } = parseResult.data;
         
         // Récupérer le nom du fichier si une image a été uploadée
         const imagePath = req.file ? req.file.filename : null;
         
-        console.log('✅ [INCIDENT] Données validées:', { type, description, date, idUtilisateur, idBatiment, etage, numero_porte, imagePath });
+        console.log('✅ [INCIDENT] Données validées:', { type, title, description, date, idUtilisateur, idBatiment, etage, numero_porte, imagePath });
 
         // Vérifier l'existence de l'utilisateur
         const userQuery = req.user.role === 'locataire' ? 
@@ -94,10 +95,10 @@ const createIncident = async (req, res) => {
 
                 console.log('✅ [INCIDENT] Bâtiment trouvé:', batiment);
 
-                // Insertion de l'incident avec image
-                const query = `INSERT INTO incidents (type, description, date, image, status, idUtilisateur, idBatiment, etage, numero_porte) 
-                               VALUES (?, ?, ?, ?, 'nouveau', ?, ?, ?, ?)`;
-                const params = [type, description, date, imagePath, idUtilisateur, idBatiment, etage, numero_porte];
+                // Insertion de l'incident avec image et titre
+                const query = `INSERT INTO incidents (type, title, description, date, image, status, idUtilisateur, idBatiment, etage, numero_porte) 
+                               VALUES (?, ?, ?, ?, ?, 'nouveau', ?, ?, ?, ?)`;
+                const params = [type, title || type, description, date, imagePath, idUtilisateur, idBatiment, etage, numero_porte];
 
                 console.log('🔄 [INCIDENT] Insertion en cours...', { query, params });
 

@@ -4,18 +4,18 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -47,12 +47,21 @@ export default function Signalement() {
   const [userId, setUserId] = useState<number | null>(null);
   const [userBuildingId, setUserBuildingId] = useState<number | null>(null);
   const [userBuildingName, setUserBuildingName] = useState<string | null>(null);
+  const [showTypeList, setShowTypeList] = useState(false);
 
   // Charger les données utilisateur au démarrage
   useEffect(() => {
     loadUserData();
     setDefaultDateTime();
+    loadDraftData();
   }, []);
+
+  // Sauvegarder automatiquement en brouillon
+  useEffect(() => {
+    if (title || description || etage || numeroPorte) {
+      saveDraftData();
+    }
+  }, [title, description, etage, numeroPorte]);
 
   const loadUserData = async () => {
     try {
@@ -94,35 +103,128 @@ export default function Signalement() {
     setDateHeure(formattedDate);
   };
 
+  // Charger les données de brouillon
+  const loadDraftData = async () => {
+    try {
+      const draftData = await AsyncStorage.getItem('signalement_draft');
+      if (draftData) {
+        const draft = JSON.parse(draftData);
+        console.log('📄 [SIGNALEMENT] Brouillon chargé:', draft);
+        
+        if (draft.title) setTitle(draft.title);
+        if (draft.description) setDescription(draft.description);
+        if (draft.etage) setEtage(draft.etage);
+        if (draft.numeroPorte) setNumeroPorte(draft.numeroPorte);
+        if (draft.typeSignalement) setTypeSignalement(draft.typeSignalement);
+      }
+    } catch (error) {
+      console.error('❌ [SIGNALEMENT] Erreur chargement brouillon:', error);
+    }
+  };
+
+  // Sauvegarder les données en brouillon
+  const saveDraftData = async () => {
+    try {
+      const draftData = {
+        title: title.trim(),
+        description: description.trim(),
+        etage: etage.trim(),
+        numeroPorte: numeroPorte.trim(),
+        typeSignalement: typeSignalement.trim(),
+        lastSaved: new Date().toISOString()
+      };
+      
+      await AsyncStorage.setItem('signalement_draft', JSON.stringify(draftData));
+      console.log('💾 [SIGNALEMENT] Brouillon sauvegardé');
+    } catch (error) {
+      console.error('❌ [SIGNALEMENT] Erreur sauvegarde brouillon:', error);
+    }
+  };
+
   const handleSubmit = async () => {
-    // Validation des champs obligatoires
+    console.log('🚀 [SIGNALEMENT] Début de l\'envoi du signalement');
+    
+    // Validation renforcée des champs obligatoires
+    const errors: string[] = [];
+    
     if (!title.trim()) {
-      Alert.alert('Erreur', 'Le titre est obligatoire.');
-      return;
+      errors.push('Le titre est obligatoire');
     }
+    
     if (!typeSignalement.trim()) {
-      Alert.alert('Erreur', 'Le type de signalement est obligatoire.');
-      return;
+      errors.push('Le type de signalement est obligatoire');
     }
+    
     if (!description.trim()) {
-      Alert.alert('Erreur', 'La description est obligatoire.');
+      errors.push('La description est obligatoire');
+    }
+    
+    if (!batiment.trim()) {
+      errors.push('Le bâtiment doit être spécifié');
+    }
+    
+    if (!dateHeure.trim()) {
+      errors.push('La date et l\'heure sont obligatoires');
+    }
+    
+    // Validation de la longueur des champs
+    if (title.trim().length < 5) {
+      errors.push('Le titre doit contenir au moins 5 caractères');
+    }
+    
+    if (description.trim().length < 10) {
+      errors.push('La description doit contenir au moins 10 caractères');
+    }
+    
+    // Afficher les erreurs de validation
+    if (errors.length > 0) {
+      Alert.alert(
+        'Erreurs de validation',
+        errors.join('\n'),
+        [{ text: 'OK', style: 'default' }]
+      );
       return;
     }
+    
+    // Vérification des données utilisateur
     if (!userToken || !userId || !userBuildingId) {
-      Alert.alert('Erreur', 'Informations utilisateur manquantes. Veuillez vous reconnecter.');
+      Alert.alert(
+        'Erreur d\'authentification',
+        'Vos informations de connexion sont manquantes. Veuillez vous reconnecter.',
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Se reconnecter', onPress: () => router.push('/auth/login') }
+        ]
+      );
       return;
     }
 
+    // Confirmation avant envoi
+    Alert.alert(
+      'Confirmer l\'envoi',
+      'Êtes-vous sûr de vouloir envoyer ce signalement ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Envoyer', style: 'default', onPress: performSubmit }
+      ]
+    );
+  };
+
+  const performSubmit = async () => {
     setIsLoading(true);
+    console.log('📤 [SIGNALEMENT] Préparation de l\'envoi...');
 
     try {
-      // Créer FormData pour l'envoi avec image
+      // Créer FormData avec toutes les données
       const formData = new FormData();
-      formData.append('type', title.trim());
+      formData.append('type', typeSignalement.trim() || title.trim());
+      formData.append('title', title.trim());
       formData.append('description', description.trim());
-      formData.append('date', dateHeure);
-      formData.append('idUtilisateur', userId.toString());
-      formData.append('idBatiment', userBuildingId.toString());
+      formData.append('date', dateHeure.trim());
+      formData.append('idUtilisateur', userId!.toString());
+      formData.append('idBatiment', userBuildingId!.toString());
+      
+      // Ajouter les champs optionnels s'ils sont remplis
       if (etage.trim()) {
         formData.append('etage', etage.trim());
       }
@@ -133,17 +235,20 @@ export default function Signalement() {
       // Ajouter l'image si elle existe
       if (selectedImage) {
         const imageUri = selectedImage;
-        const filename = imageUri.split('/').pop();
-        const fileType = filename?.split('.').pop();
+        const filename = imageUri.split('/').pop() || 'incident.jpg';
+        const fileType = filename.split('.').pop() || 'jpg';
+        
+        console.log('📷 [SIGNALEMENT] Ajout de l\'image:', { filename, fileType });
         
         formData.append('image', {
           uri: imageUri,
           type: `image/${fileType}`,
-          name: filename || 'incident.jpg',
+          name: filename,
         } as any);
       }
 
-      console.log('🚀 [SIGNALEMENT] Envoi en cours...');
+      console.log('🌐 [SIGNALEMENT] Envoi vers:', `${API_BASE_URL}/api/incidents`);
+      console.log('🔑 [SIGNALEMENT] Token:', userToken ? 'Présent' : 'Absent');
 
       const response = await fetch(`${API_BASE_URL}/api/incidents`, {
         method: 'POST',
@@ -154,45 +259,104 @@ export default function Signalement() {
         body: formData,
       });
 
-      const result = await response.json();
-      console.log('📨 [SIGNALEMENT] Réponse:', result);
+      console.log('📨 [SIGNALEMENT] Statut de la réponse:', response.status);
+      
+      let result;
+      try {
+        result = await response.json();
+        console.log('📋 [SIGNALEMENT] Réponse complète:', result);
+      } catch (parseError) {
+        console.error('❌ [SIGNALEMENT] Erreur parsing JSON:', parseError);
+        throw new Error('Réponse du serveur invalide');
+      }
 
       if (response.ok && result.success) {
+        console.log('✅ [SIGNALEMENT] Signalement envoyé avec succès!');
+        
         Alert.alert(
-          'Succès !',
-          'Votre signalement a été envoyé avec succès. Le gardien sera notifié.',
+          '🎉 Succès !',
+          'Votre signalement a été envoyé avec succès. Le gardien sera notifié dans les plus brefs délais.',
           [
             {
-              text: 'OK',
-              onPress: () => {
-                // Réinitialiser le formulaire
-                setTitle('');
-                setTypeSignalement('');
-                setEtage('');
-                setNumeroPorte('');
-                setDescription('');
-                setSelectedImage(null);
-                setDefaultDateTime();
-                
-                // Rediriger vers la page home
-                router.push('/accueil/home');
-              },
+              text: 'Parfait !',
+              style: 'default',
+                             onPress: async () => {
+                 // Réinitialiser le formulaire
+                 await resetForm();
+                 
+                 // Rediriger vers la page d'accueil
+                 router.push('/accueil/home');
+               },
             },
           ]
         );
       } else {
-        throw new Error(result.message || 'Erreur lors de l\'envoi du signalement');
+        // Gestion des erreurs spécifiques du serveur
+        let errorMessage = 'Erreur lors de l\'envoi du signalement';
+        
+        if (result.message) {
+          errorMessage = result.message;
+        } else if (response.status === 401) {
+          errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+        } else if (response.status === 400) {
+          errorMessage = 'Données invalides. Vérifiez vos informations.';
+        } else if (response.status === 500) {
+          errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
-      console.error('❌ [SIGNALEMENT] Erreur:', error);
+      console.error('❌ [SIGNALEMENT] Erreur complète:', error);
+      
+      let userMessage = 'Impossible d\'envoyer le signalement. ';
+      
+      if (error.message.includes('Network')) {
+        userMessage += 'Vérifiez votre connexion internet.';
+      } else if (error.message.includes('Session expirée')) {
+        userMessage += 'Votre session a expiré.';
+        Alert.alert(
+          'Session expirée',
+          'Votre session a expiré. Veuillez vous reconnecter.',
+          [{ text: 'Se reconnecter', onPress: () => router.push('/auth/login') }]
+        );
+        return;
+      } else {
+        userMessage += error.message || 'Erreur inconnue.';
+      }
+      
       Alert.alert(
-        'Erreur',
-        error.message || 'Impossible d\'envoyer le signalement. Vérifiez votre connexion.',
-        [{ text: 'OK' }]
+        'Erreur d\'envoi',
+        userMessage,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          { text: 'Réessayer', onPress: performSubmit }
+        ]
       );
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fonction pour réinitialiser le formulaire
+  const resetForm = async () => {
+    setTitle('');
+    setTypeSignalement('');
+    setEtage('');
+    setNumeroPorte('');
+    setDescription('');
+    setSelectedImage(null);
+    setDefaultDateTime();
+    
+    // Nettoyer le brouillon
+    try {
+      await AsyncStorage.removeItem('signalement_draft');
+      console.log('🗑️ [SIGNALEMENT] Brouillon supprimé');
+    } catch (error) {
+      console.error('❌ [SIGNALEMENT] Erreur suppression brouillon:', error);
+    }
+    
+    console.log('🔄 [SIGNALEMENT] Formulaire réinitialisé');
   };
 
   const pickImage = async () => {
@@ -205,11 +369,11 @@ export default function Signalement() {
           style: "cancel"
         },
         {
-          text: "📷 Prendre une photo",
+          text: "Prendre une photo",
           onPress: takePhoto
         },
         {
-          text: "🖼️ Galerie",
+          text: "Galerie",
           onPress: pickFromGallery
         }
       ]
@@ -269,7 +433,7 @@ export default function Signalement() {
   // Types de signalement prédéfinis
   const signalementTypes = [
     "Problème de plomberie",
-    "Problème électrique",
+    "Problème électrique", 
     "Problème de chauffage",
     "Vandalisme",
     "Bruit excessif",
@@ -283,7 +447,7 @@ export default function Signalement() {
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
@@ -300,13 +464,41 @@ export default function Signalement() {
             style={styles.scrollView}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            bounces={false}
           >
             {/* Titre et sous-titre de section */}
             <View style={styles.sectionTitleContainer}>
-              <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
-              <Text style={styles.sectionSubtitle}>
-                Décrivez le problème rencontré dans votre résidence.
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Décrivez le problème rencontré dans votre résidence.
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#ff6b6b',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    marginLeft: 10,
+                  }}
+                  onPress={async () => {
+                    Alert.alert(
+                      'Effacer le brouillon',
+                      'Voulez-vous vraiment effacer toutes les données saisies ?',
+                      [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Effacer', style: 'destructive', onPress: resetForm }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                    Effacer
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Inputs */}
@@ -328,33 +520,62 @@ export default function Signalement() {
               {/* Input Type de signalement */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Type de signalement *</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Choisissez ou tapez le type d'incident"
-                    placeholderTextColor="#888"
-                    value={typeSignalement}
-                    onChangeText={setTypeSignalement}
-                  />
-                </View>
-                {/* Suggestion rapide */}
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
-                  {signalementTypes.slice(0, 3).map((type, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        backgroundColor: '#e0e0e0',
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 16,
-                        marginRight: 8,
-                        marginBottom: 4,
-                      }}
-                      onPress={() => setTypeSignalement(type)}
-                    >
-                      <Text style={{ fontSize: 12, color: '#333' }}>{type}</Text>
+                <TouchableOpacity
+                  style={styles.inputFieldContainer}
+                  onPress={() => setShowTypeList(true)}
+                >
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 16,
+                    paddingVertical: 16,
+                  }}>
+                    <Text style={{ 
+                      color: typeSignalement ? '#000' : '#888',
+                      fontSize: 16,
+                      flex: 1,
+                    }}>
+                      {typeSignalement || "Choisissez le type d'incident"}
+                    </Text>
+                    <Text style={{ fontSize: 18, color: '#666' }}>▼</Text>
+                  </View>
+                </TouchableOpacity>
+                {showTypeList && (
+                  <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
+                    {signalementTypes.map((type, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={{ padding: 12, borderBottomWidth: index < signalementTypes.length - 1 ? 1 : 0, borderBottomColor: '#eee' }}
+                        onPress={() => {
+                          setTypeSignalement(type);
+                          setShowTypeList(false);
+                        }}
+                      >
+                        <Text style={{ fontSize: 16, color: '#000' }}>{type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity onPress={() => setShowTypeList(false)} style={{ padding: 12 }}>
+                      <Text style={{ color: '#d32f2f', textAlign: 'center' }}>Annuler</Text>
                     </TouchableOpacity>
-                  ))}
+                  </View>
+                )}
+                {/* Indication visuelle */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                  <Text style={{ fontSize: 12, color: '#007AFF', marginRight: 8 }}>
+                    Appuyez pour sélectionner
+                  </Text>
+                  {typeSignalement && (
+                    <View style={{
+                      backgroundColor: '#e8f5e8',
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      marginLeft: 'auto'
+                    }}>
+                      <Text style={{ fontSize: 12, color: '#007000' }}>Sélectionné</Text>
+                    </View>
+                  )}
                 </View>
               </View>
 
@@ -444,7 +665,7 @@ export default function Signalement() {
                   onPress={pickImage}
                 >
                   <Text style={styles.imagePickerButtonText}>
-                    {selectedImage ? "Changer la photo" : "📷 Ajouter une photo (Appareil ou Galerie)"}
+                    {selectedImage ? "Changer la photo" : "Ajouter une photo (Appareil ou Galerie)"}
                   </Text>
                 </TouchableOpacity>
                 {selectedImage && (
@@ -484,7 +705,12 @@ export default function Signalement() {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <ActivityIndicator color="white" size="small" />
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
+                    <Text style={styles.primaryButtonHorizontalText}>
+                      Envoi en cours...
+                    </Text>
+                  </View>
                 ) : (
                   <Text style={styles.primaryButtonHorizontalText}>
                     Envoyer le signalement

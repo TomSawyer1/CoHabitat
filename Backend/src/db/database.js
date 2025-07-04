@@ -92,6 +92,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run(`CREATE TABLE IF NOT EXISTS incidents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT NOT NULL,
+            title TEXT,
             description TEXT NOT NULL,
             date TEXT NOT NULL,
             image TEXT,
@@ -113,6 +114,36 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 console.error('Erreur lors de la création de la table incidents:', err.message);
             } else {
                 console.log('Table incidents créée ou déjà existante.');
+                
+                // Migration : Ajouter la colonne title si elle n'existe pas
+                db.run(`PRAGMA table_info(incidents)`, (err, rows) => {
+                    if (err) {
+                        console.error('Erreur lors de la vérification de la structure de la table incidents:', err.message);
+                        return;
+                    }
+                    
+                    // Vérifier si la colonne title existe déjà
+                    db.all(`PRAGMA table_info(incidents)`, (err, columns) => {
+                        if (err) {
+                            console.error('Erreur lors de la récupération des colonnes:', err.message);
+                            return;
+                        }
+                        
+                        const hasTitle = columns.some(col => col.name === 'title');
+                        if (!hasTitle) {
+                            console.log('🔄 [MIGRATION] Ajout de la colonne title à la table incidents...');
+                            db.run(`ALTER TABLE incidents ADD COLUMN title TEXT`, (err) => {
+                                if (err) {
+                                    console.error('❌ [MIGRATION] Erreur lors de l\'ajout de la colonne title:', err.message);
+                                } else {
+                                    console.log('✅ [MIGRATION] Colonne title ajoutée avec succès à la table incidents.');
+                                }
+                            });
+                        } else {
+                            console.log('✅ [MIGRATION] Colonne title déjà présente dans la table incidents.');
+                        }
+                    });
+                });
             }
         });
 
