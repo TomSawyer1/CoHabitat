@@ -27,7 +27,6 @@ export const useSidebarStyle = () => {
       color: "#fff",
     },
     menuContainer: {
-      // Styles pour le conteneur des éléments de menu
     },
     menuItem: {
       flexDirection: "row",

@@ -61,8 +61,7 @@ export const useParametresStyle = () => {
       marginRight: 10,
     },
     toggleSwitch: {
-      // Styles pour le switch si nécessaire
-    },
+        },
   });
 
   return styles;

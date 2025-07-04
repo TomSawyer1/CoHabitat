@@ -112,11 +112,8 @@ export default function Login() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Titre de section */}
         <Text style={styles.sectionTitle}>Connexion Locataire</Text>
-        {/* Inputs */}
         <View style={styles.inputsContainer}>
-          {/* Input Email */}
           <View>
             <Text style={styles.inputLabel}>Email</Text>
             <View style={styles.inputFieldContainer}>
@@ -131,7 +128,6 @@ export default function Login() {
             </View>
             <Text style={styles.inputInfo}>Votre email professionnel</Text>
           </View>
-          {/* Input Mot de passe */}
           <View>
             <Text style={styles.inputLabel}>Mot de passe</Text>
             <View style={styles.inputFieldContainer}>
@@ -157,10 +153,8 @@ export default function Login() {
             <Text style={styles.inputInfo}>Minimum 8 caractères</Text>
           </View>
         </View>
-        {/* Boutons */}
-        <View style={styles.buttonsContainer}>
-          {/* Primaire */}
-          <TouchableOpacity
+                    <View style={styles.buttonsContainer}>
+              <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
             onPress={handleLogin}
             disabled={isLoading}
@@ -168,16 +162,14 @@ export default function Login() {
             <Text style={styles.primaryButtonText}>
               {isLoading ? "Connexion..." : "Se connecter"}
             </Text>
-          </TouchableOpacity>
-          {/* Secondaire 2 */}
-          <TouchableOpacity
+                        </TouchableOpacity>
+              <TouchableOpacity
             style={[styles.button, styles.secondaryButtonBlack]}
             onPress={() => router.push("/auth/register")}
           >
             <Text style={styles.secondaryButtonBlackText}>Créer un compte</Text>
-          </TouchableOpacity>
-          {/* Mot de passe oublié */}
-          <TouchableOpacity
+                        </TouchableOpacity>
+              <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
             onPress={() => router.push("/auth/forgot-password")}
           >

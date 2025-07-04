@@ -8,7 +8,7 @@ export const useAccueilStyle = () => {
     },
     container: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay semi-transparent
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     content: {
       flex: 1,

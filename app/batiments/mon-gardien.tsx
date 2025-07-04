@@ -190,7 +190,6 @@ export default function MonGardien() {
                 <Text style={styles.role}>{guardianData.role}</Text>
               </View>
 
-              {/* Informations de contact */}
               <View style={styles.infoSection}>
                 <Text style={styles.infoTitle}>Informations de contact</Text>
                 <View style={styles.infoItem}>

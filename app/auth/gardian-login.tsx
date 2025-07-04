@@ -113,11 +113,8 @@ export default function GardianLogin() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Titre de section */}
         <Text style={styles.sectionTitle}>Connexion Gardien</Text>
-        {/* Inputs */}
         <View style={styles.inputsContainer}>
-          {/* Input Email */}
           <View>
             <Text style={styles.inputLabel}>Email</Text>
             <View style={styles.inputFieldContainer}>
@@ -132,7 +129,6 @@ export default function GardianLogin() {
               />
             </View>
           </View>
-          {/* Input Mot de passe */}
           <View>
             <Text style={styles.inputLabel}>Mot de passe</Text>
             <View style={styles.inputFieldContainer}>
@@ -157,16 +153,13 @@ export default function GardianLogin() {
             </View>
           </View>
         </View>
-        {/* Boutons */}
         <View style={styles.buttonsContainer}>
-          {/* Primaire */}
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
             onPress={() => router.push("/auth/gardian-register")}
           >
             <Text style={styles.secondaryButtonText}>Créer un compte</Text>
           </TouchableOpacity>
-          {/* Secondaire 2 - Peut-être à adapter pour gardiens */}
           <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
             onPress={handleLogin}
@@ -176,7 +169,6 @@ export default function GardianLogin() {
               {isLoading ? "Connexion..." : "Se connecter"}
             </Text>
           </TouchableOpacity>
-          {/* Mot de passe oublié */}
           <TouchableOpacity
             style={[styles.button, styles.secondaryButtonBlack]}
             onPress={() => router.push("/auth/forgot-password")}

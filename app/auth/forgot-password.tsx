@@ -41,7 +41,6 @@ export default function ForgotPassword() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Titre et sous-titre de section */}
         <View style={styles.sectionTitleContainer}>
           <Text style={styles.sectionTitle}>
             Réinitialiser votre mot de passe
@@ -51,9 +50,7 @@ export default function ForgotPassword() {
           </Text>
         </View>
 
-        {/* Inputs */}
         <View style={styles.inputsContainer}>
-          {/* Input Email */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Email</Text>
             <View style={styles.inputFieldContainer}>
@@ -69,7 +66,6 @@ export default function ForgotPassword() {
           </View>
         </View>
 
-        {/* Bouton */}
         <View style={styles.buttonsContainerHorizontal}>
           <TouchableOpacity
             style={[styles.buttonHorizontal, styles.primaryButtonHorizontal]}

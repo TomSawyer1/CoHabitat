@@ -201,7 +201,7 @@ export const useGererIncidentsStyle = () => {
       paddingVertical: 12,
       alignItems: "center",
       justifyContent: "center",
-      width: width - 40, // Ajusté pour s'adapter à la largeur de l'écran avec padding
+      width: width - 40,
       alignSelf: "center",
     },
     primaryButtonFigma: {

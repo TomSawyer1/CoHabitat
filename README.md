@@ -1,96 +1,294 @@
-# CoHabitat - Votre application de gestion immobilière simplifiée
+# 🏢 CoHabitat - Gestion Immobilière Intelligente
 
-Bienvenue sur CoHabitat, l'application mobile conçue pour optimiser la communication et la gestion au sein des bâtiments. Que vous soyez un gardien soucieux de l'entretien de son bâtiment ou un locataire souhaitant accéder rapidement aux informations importantes, CoHabitat est là pour vous faciliter la vie.
+<div align="center">
+  <img src="./assets/images/icon.png" alt="CoHabitat Logo" width="120" height="120">
+  
+  **Une application mobile moderne pour simplifier la gestion immobilière et améliorer la communication entre gardiens et locataires.**
 
-## À quoi sert CoHabitat ?
+  ![React Native](https://img.shields.io/badge/React%20Native-0.74-blue?style=flat-square&logo=react)
+  ![Expo](https://img.shields.io/badge/Expo-51-black?style=flat-square&logo=expo)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
+  ![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=flat-square&logo=node.js)
+  ![SQLite](https://img.shields.io/badge/SQLite-Database-blue?style=flat-square&logo=sqlite)
+</div>
 
-CoHabitat vise à créer un pont numérique entre les gardiens d'immeubles et les résidents. L'application permet aux gardiens de gérer efficacement leurs bâtiments et leurs tâches, tandis qu'elle offre aux locataires un accès facile aux informations de leur logement, à leur gardien et la possibilité de signaler des incidents.
+## 📋 Table des Matières
 
-## Technologies Utilisées (Stack Technique)
+- [🎯 À propos](#-à-propos)
+- [✨ Fonctionnalités](#-fonctionnalités)
+- [🛠️ Technologies](#️-technologies)
+- [🏗️ Architecture](#️-architecture)
+- [🚀 Installation](#-installation)
+- [📱 Utilisation](#-utilisation)
+- [🔧 Configuration](#-configuration)
+- [📂 Structure du Projet](#-structure-du-projet)
+- [🤝 Contribution](#-contribution)
+- [📝 Licence](#-licence)
 
-Ce projet est développé avec des technologies modernes pour offrir une expérience utilisateur fluide et performante:
+## 🎯 À propos
 
-*   **React Native:** Framework pour le développement d'applications mobiles multiplateformes (iOS, Android) à partir d'une seule base de code JavaScript/TypeScript.
-*   **Expo:** Un ensemble d'outils et de services construits autour de React Native pour simplifier le développement, le déploiement et la gestion d'applications.
-*   **TypeScript:** Un sur-ensemble de JavaScript qui ajoute le typage statique, améliorant la robustesse et la maintenabilité du code.
-*   **Expo Router:** Pour la gestion de la navigation basée sur les fichiers, simplifiant la création et la gestion des routes de l'application.
+CoHabitat est une application mobile native développée avec React Native qui révolutionne la gestion immobilière en créant un pont numérique entre les gardiens d'immeubles et les résidents. Elle permet une communication fluide, un suivi efficace des incidents et une gestion simplifiée des bâtiments.
 
-## Fonctionnalités
+### 🎯 Objectifs
 
-L'application propose des fonctionnalités adaptées à chaque profil :
+- **Simplifier** la communication entre gardiens et locataires
+- **Centraliser** la gestion des incidents et signalements
+- **Optimiser** le suivi des tâches de maintenance
+- **Améliorer** l'expérience utilisateur dans la gestion immobilière
 
-### Gardiens
+## ✨ Fonctionnalités
 
-- **Gestion des bâtiments** : Vue d'ensemble et gestion des bâtiments, avec détails et maintenance.
-- **Suivi des signalements** : Consultation et mise à jour du statut des incidents signalés.
-- **Informations sur le bâtiment** : Accès aux informations détaillées sur chaque bâtiment.
-- **Coordonnées des locataires** : Visualisation des informations de contact des locataires.
-- **Profil** : Gestion des informations personnelles du gardien.
-<<<<<<< HEAD
+### 👨‍💼 Espace Gardien
 
-=======
->>>>>>> b4f12174c50fa0406d4ea62d506cf733529130eb
-- **Paramètres** : Configuration des préférences de l'application.
+- **🏢 Gestion des bâtiments**
+  - Vue d'ensemble des bâtiments assignés
+  - Informations détaillées (équipements, règlements)
+  - Historique des interventions
 
-### Locataires
+- **📋 Gestion des incidents**
+  - Tableau de bord des signalements
+  - Mise à jour des statuts en temps réel
+  - Système de commentaires et historique
+  - Notifications push
 
-- **Signalement d'incidents** : Formulaire simple pour signaler un problème ou une requête.
-- **Suivi des signalements** : Suivi de l'avancement des incidents signalés.
-- **Informations sur le bâtiment** : Accès aux détails et équipements du bâtiment.
-- **Coordonnées du gardien** : Informations de contact et horaires du gardien.
-- **Profil** : Gestion des informations personnelles du locataire.
-<<<<<<< HEAD
+- **👥 Gestion des locataires**
+  - Annuaire des résidents
+  - Informations de contact
+  - Historique des signalements par locataire
 
-=======
->>>>>>> b4f12174c50fa0406d4ea62d506cf733529130eb
-- **Paramètres** : Personnalisation des préférences de l'application.
+- **📊 Statistiques**
+  - Rapport d'activité
+  - Métriques de performance
+  - Suivi des temps de résolution
 
-## Fonctionnalités Transversales (Front-end):
+### 🏠 Espace Locataire
 
-*   **Navigation Cohérente:** Implémentation d'une barre latérale (Sidebar) et d'une barre de navigation (Navbar) pour une navigation intuitive.
-*   **En-têtes Uniformisés:** Un composant d'en-tête générique utilisé sur toutes les pages pour une cohérence visuelle et une gestion correcte de la "safe area" (zones de sécurité des appareils).
-*   **Design Adaptatif:** Styles conçus pour s'adapter à différentes tailles d'écran et orientations.
+- **📝 Signalement d'incidents**
+  - Formulaire intuitif avec photos
+  - Géolocalisation automatique
+  - Suivi en temps réel
+  - Notifications de mise à jour
 
-## Démarrage Rapide
+- **📱 Suivi des signalements**
+  - Historique personnel
+  - Statut détaillé des incidents
+  - Communication avec le gardien
+  - Évaluation des interventions
 
-Pour installer et lancer l'application sur votre environnement de développement:
+- **🏢 Informations du bâtiment**
+  - Détails techniques
+  - Équipements disponibles
+  - Règlement intérieur
+  - Contacts utiles
 
-1.  **Cloner le dépôt:**
-    ```bash
-    git clone [URL_DE_VOTRE_DEPOT]
-    cd CoHabitat
-    ```
-    (Remplacez `[URL_DE_VOTRE_DEPOT]` par l'URL réelle de votre dépôt Git si ce n'est pas déjà fait.)
+- **👨‍🔧 Contact gardien**
+  - Informations de contact
+  - Horaires de disponibilité
+  - Moyens de communication directs
 
-2.  **Installer les dépendances:**
-    ```bash
-    npm install
-    ```
+### 🔧 Fonctionnalités communes
 
-3.  **Lancer l'application:**
-    ```bash
-    npx expo start
-    ```
+- **🔐 Authentification sécurisée**
+  - Système JWT
+  - Gestion des rôles
+  - Récupération de mot de passe
 
-Une fois l'application lancée, vous aurez plusieurs options pour l'ouvrir:
+- **📱 Interface responsive**
+  - Design adaptatif
+  - Mode sombre/clair
+  - Accessibilité optimisée
 
-*   Sur un [appareil de développement](https://docs.expo.dev/develop/development-builds/introduction/)
-*   Sur un [émulateur Android](https://docs.expo.dev/workflow/android-studio-emulator/)
-*   Sur un [simulateur iOS](https://docs.expo.dev/workflow/ios-simulator/)
-*   Via [Expo Go](https://expo.dev/go) (une sandbox limitée pour le développement)
+- **🔄 Synchronisation**
+  - Données en temps réel
+  - Mode hors ligne
+  - Synchronisation automatique
 
-Vous pouvez commencer à développer en éditant les fichiers dans le répertoire **app**. Ce projet utilise le [routage basé sur les fichiers](https://docs.expo.dev/router/introduction).
+## 🛠️ Technologies
 
-## En savoir plus
+### Frontend (Mobile)
 
-Pour approfondir vos connaissances sur le développement avec Expo, consultez ces ressources:
+- **React Native** `0.74` - Framework mobile cross-platform
+- **Expo** `51` - Plateforme de développement
+- **TypeScript** `5.0` - Typage statique
+- **Expo Router** - Navigation basée sur les fichiers
+- **AsyncStorage** - Stockage local
+- **Expo Image Picker** - Gestion des photos
+- **React Native Safe Area Context** - Gestion des zones sécurisées
 
-*   [Documentation Expo](https://docs.expo.dev/): Apprenez les bases ou explorez des sujets avancés avec les [guides](https://docs.expo.dev/guides).
-*   [Tutoriel Learn Expo](https://docs.expo.dev/tutorial/introduction/): Suivez un tutoriel étape par étape pour créer une application qui fonctionne sur Android, iOS et le web.
+### Backend (API)
 
-## Rejoindre la Communauté
+- **Node.js** `18+` - Runtime JavaScript
+- **Express.js** `4.18` - Framework web
+- **SQLite** - Base de données
+- **JWT** - Authentification
+- **Multer** - Upload de fichiers
+- **Bcryptjs** - Hachage des mots de passe
+- **Cors** - Gestion CORS
+- **Nodemon** - Développement en temps réel
 
-Rejoignez notre communauté de développeurs créant des applications universelles:
+### Outils de développement
 
-*   [Expo sur GitHub](https://github.com/expo/expo): Consultez notre plateforme open source et contribuez.
-*   [Communauté Discord](https://chat.expo.dev): Discutez avec les utilisateurs d'Expo et posez vos questions.
+- **ESLint** - Analyse de code
+- **Prettier** - Formatage de code
+- **Git** - Contrôle de version
+- **npm** - Gestionnaire de paquets
+
+## 🏗️ Architecture
+
+```
+CoHabitat/
+├── 📱 Frontend (React Native + Expo)
+│   ├── app/                    # Pages et navigation
+│   ├── components/             # Composants réutilisables
+│   ├── hooks/                  # Hooks personnalisés
+│   ├── config/                 # Configuration
+│   └── assets/                 # Images et ressources
+│
+├── 🖥️ Backend (Node.js + Express)
+│   ├── src/
+│   │   ├── controllers/        # Logique métier
+│   │   ├── routes/            # Routes API
+│   │   ├── middleware/        # Middlewares
+│   │   ├── models/            # Modèles de données
+│   │   └── db/                # Base de données
+│   └── uploads/               # Fichiers uploadés
+│
+└── 📄 Documentation
+    └── README.md
+```
+
+## 🚀 Installation
+
+### Prérequis
+
+- **Node.js** 18+ ([Télécharger](https://nodejs.org/))
+- **npm** ou **yarn**
+- **Expo CLI** installé globalement
+- **Git** ([Télécharger](https://git-scm.com/))
+
+### 1. Cloner le projet
+
+```bash
+git clone https://github.com/votre-username/CoHabitat.git
+cd CoHabitat
+```
+
+### 2. Installer les dépendances
+
+```bash
+# Frontend
+npm install
+
+# Backend
+cd Backend
+npm install
+cd ..
+```
+
+### 3. Configuration
+
+Créer un fichier `.env` dans le dossier `Backend/` :
+
+```env
+# Backend/.env
+JWT_SECRET=votre_secret_jwt_super_secret_2024
+PORT=3000
+NODE_ENV=development
+```
+
+### 4. Lancer l'application
+
+```bash
+# Terminal 1 - Backend
+cd Backend
+npm run dev
+
+# Terminal 2 - Frontend
+npm start
+```
+
+### 5. Ouvrir l'application
+
+- **Expo Go** : Scanner le QR code avec l'app Expo Go
+- **Émulateur Android** : Appuyer sur `a`
+- **Simulateur iOS** : Appuyer sur `i`
+- **Web** : Appuyer sur `w`
+
+
+
+## 🔧 Configuration
+
+### Variables d'environnement
+
+```javascript
+// config/index.ts
+export const API_BASE_URL = __DEV__ 
+  ? 'http://10.0.2.2:3000'    // Android Emulator
+  : 'https://votre-api.com';   // Production
+```
+
+### Configuration de l'API
+
+L'API est automatiquement configurée selon l'environnement :
+
+- **Développement** : `http://localhost:3000`
+- **Émulateur Android** : `http://10.0.2.2:3000`
+- **Production** : À configurer selon votre serveur
+
+## 📂 Structure du Projet
+
+```
+CoHabitat/
+├── app/                        # 📱 Pages de l'application
+│   ├── auth/                   # Authentification
+│   ├── accueil/               # Page d'accueil
+│   ├── signalements/          # Gestion des incidents
+│   ├── batiments/             # Informations bâtiments
+│   └── profil/                # Profil utilisateur
+├── components/                 # 🧩 Composants réutilisables
+│   ├── Header.tsx             # En-tête global
+│   ├── Navbar.tsx             # Navigation
+│   └── Sidebar.tsx            # Menu latéral
+├── hooks/                      # 🎣 Hooks personnalisés
+├── config/                     # ⚙️ Configuration
+├── Backend/                    # 🖥️ API Backend
+│   ├── src/
+│   │   ├── controllers/       # Logique métier
+│   │   ├── routes/           # Routes API
+│   │   ├── middleware/       # Middlewares
+│   │   └── db/               # Base de données
+│   └── uploads/              # Fichiers uploadés
+└── assets/                     # 🎨 Images et ressources
+```
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Voici comment contribuer :
+
+1. **Fork** le projet
+2. **Créer** une branche pour votre fonctionnalité (`git checkout -b feature/nouvelle-fonctionnalite`)
+3. **Commit** vos changements (`git commit -m 'Ajouter une nouvelle fonctionnalité'`)
+4. **Push** vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
+5. **Ouvrir** une Pull Request
+
+### Standards de code
+
+- Utilisez **TypeScript** pour tous les nouveaux fichiers
+- Suivez les conventions de nommage existantes
+- Ajoutez des tests pour les nouvelles fonctionnalités
+- Documentez les fonctions complexes
+
+## 📝 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+---
+
+<div align="center">
+  <p>Développé avec ❤️ pour simplifier la gestion immobilière</p>
+  <p>
+    <a href="https://github.com/votre-username/CoHabitat/issues">🐛 Signaler un bug</a> •
+    <a href="https://github.com/votre-username/CoHabitat/discussions">💬 Discussions</a> •
+    <a href="mailto:contact@cohabitat.com">📧 Contact</a>
+  </p>
+</div>

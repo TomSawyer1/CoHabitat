@@ -4,11 +4,11 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  Text,
-  TouchableWithoutFeedback,
-  View
+    Alert,
+    ScrollView,
+    Text,
+    TouchableWithoutFeedback,
+    View
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -182,8 +182,7 @@ export default function MonBatiment() {
               <Text style={styles.buildingName}>{buildingData.name}</Text>
               <Text style={styles.buildingAddress}>{buildingData.address}</Text>
 
-              {/* Informations générales */}
-              <View style={styles.infoSection}>
+                      <View style={styles.infoSection}>
                 <Text style={styles.infoTitle}>Informations générales</Text>
                 <View style={styles.infoItem}>
                   <View style={styles.infoIcon}>
@@ -223,7 +222,6 @@ export default function MonBatiment() {
                 </View>
               </View>
 
-              {/* Équipements */}
               {buildingData.facilities && buildingData.facilities.length > 0 && (
                 <View style={styles.infoSection}>
                   <Text style={styles.infoTitle}>Équipements</Text>
@@ -240,7 +238,6 @@ export default function MonBatiment() {
                 </View>
               )}
 
-              {/* Gardien */}
               {guardianData && (
                 <View style={styles.contactSection}>
                   <Text style={styles.contactTitle}>Gardien</Text>
@@ -259,7 +256,6 @@ export default function MonBatiment() {
                 </View>
               )}
 
-              {/* Règlement */}
               {buildingData.rules && buildingData.rules !== 'Règlement non disponible' && (
                 <View style={styles.infoSection}>
                   <Text style={styles.infoTitle}>Règlement</Text>

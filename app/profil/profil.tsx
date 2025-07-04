@@ -325,15 +325,12 @@ export default function Profil() {
         disabled={!isSidebarVisible}
       >
         <View style={styles.contentContainer}>
-          {/* Header */}
           <Header subtitle="Mon Profil" showBackButton={false} />
 
-          {/* Contenu principal - Profil */}
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
           >
-            {/* Section Avatar et Nom */}
             <View style={styles.avatarSection}>
               <Image 
                 source={userRole === 'guardian' 
@@ -351,7 +348,6 @@ export default function Profil() {
               )}
             </View>
 
-            {/* Section Informations Personnelles */}
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection("informations")}
@@ -440,7 +436,6 @@ export default function Profil() {
               </View>
             )}
 
-            {/* Section Vos Incidents */}
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection("incidents")}
@@ -481,7 +476,6 @@ export default function Profil() {
                         })
                       }
                     >
-                      {/* Affichage de l'image réelle ou placeholder */}
                       {incident.image ? (
                         <Image 
                           source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
@@ -508,8 +502,7 @@ export default function Profil() {
               </View>
             )}
 
-            {/* Bouton Supprimer */}
-            <TouchableOpacity
+                                <TouchableOpacity
               style={styles.deleteButton}
               onPress={handleDelete}
             >
@@ -517,8 +510,7 @@ export default function Profil() {
             </TouchableOpacity>
           </ScrollView>
 
-          {/* Navbar */}
-          <Navbar
+                  <Navbar
             isSidebarVisible={isSidebarVisible}
             setIsSidebarVisible={setIsSidebarVisible}
             router={router}

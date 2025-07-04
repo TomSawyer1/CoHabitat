@@ -4,13 +4,13 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Alert,
+    Image,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
@@ -228,7 +228,6 @@ export default function Incidents() {
           }
         }}
       >
-        {/* Image de l'incident ou placeholder */}
         {incident.image ? (
           <Image 
             source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
@@ -242,14 +241,12 @@ export default function Incidents() {
         <View style={styles.incidentInfo}>
           <Text style={styles.incidentTitle}>{incident.type}</Text>
           
-          {/* Informations locataire pour les gardiens */}
           {userRole === 'guardian' && incident.user_nom && (
             <Text style={[styles.incidentDate, { color: '#666', fontSize: 12 }]}>
               Par: {incident.user_prenom} {incident.user_nom}
             </Text>
           )}
           
-          {/* Localisation si disponible */}
           {(incident.etage || incident.numero_porte) && (
             <Text style={[styles.incidentDate, { color: '#666', fontSize: 12 }]}>
               {incident.etage && `Étage ${incident.etage}`}
@@ -292,7 +289,6 @@ export default function Incidents() {
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
           >
-            {/* Section Incidents Non Pris en Charge */}
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection("nonPrisEnCharge")}
@@ -316,7 +312,6 @@ export default function Incidents() {
               </View>
             )}
 
-            {/* Section Incidents En Cours */}
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection("enCours")}
@@ -340,7 +335,6 @@ export default function Incidents() {
               </View>
             )}
 
-            {/* Section Incidents Résolus */}
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection("resolus")}
@@ -364,7 +358,6 @@ export default function Incidents() {
               </View>
             )}
 
-            {/* Section Incidents Fermés */}
             <TouchableOpacity
               style={styles.sectionHeader}
               onPress={() => toggleSection("fermes")}
@@ -388,8 +381,7 @@ export default function Incidents() {
               </View>
             )}
 
-            {/* Bouton de rechargement */}
-            <TouchableOpacity
+                    <TouchableOpacity
               style={{
                 backgroundColor: '#007AFF',
                 padding: 12,
