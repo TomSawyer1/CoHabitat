@@ -25,6 +25,7 @@ const { width } = Dimensions.get("window");
 interface Incident {
   id: number;
   type: string;
+  title?: string;
   description: string;
   date: string;
   image?: string;
@@ -81,6 +82,19 @@ export default function GererIncidents() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const styles = useGererIncidentsStyle();
+
+  // Types de signalement (identique à signalement.tsx)
+  const signalementTypes = [
+    "Problème de plomberie",
+    "Problème électrique",
+    "Problème de chauffage",
+    "Vandalisme",
+    "Bruit excessif",
+    "Problème d'ascenseur",
+    "Éclairage défaillant",
+    "Problème de sécurité",
+    "Autre"
+  ];
 
   const incidentId = params.id as string;
 
@@ -377,7 +391,9 @@ export default function GererIncidents() {
             </View>
 
             {/* Titre de l'incident */}
-            <Text style={styles.incidentTitle}>{incident.type}</Text>
+            <Text style={styles.incidentTitle}>
+              {incident.title || incident.type}
+            </Text>
 
             {/* Section Métriques */}
             <View style={styles.metricsSection}>
