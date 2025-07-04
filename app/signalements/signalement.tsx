@@ -466,7 +466,6 @@ export default function Signalement() {
             showsVerticalScrollIndicator={false}
             bounces={false}
           >
-            {/* Titre et sous-titre de section */}
             <View style={styles.sectionTitleContainer}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
@@ -501,9 +500,7 @@ export default function Signalement() {
               </View>
             </View>
 
-            {/* Inputs */}
             <View style={styles.inputsContainer}>
-              {/* Input Titre */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Titre de l'incident *</Text>
                 <View style={styles.inputFieldContainer}>
@@ -517,7 +514,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Input Type de signalement */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Type de signalement *</Text>
                 <TouchableOpacity
@@ -560,7 +556,6 @@ export default function Signalement() {
                     </TouchableOpacity>
                   </View>
                 )}
-                {/* Indication visuelle */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
                   <Text style={{ fontSize: 12, color: '#007AFF', marginRight: 8 }}>
                     Appuyez pour sélectionner
@@ -579,7 +574,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Input Étage */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Étage (optionnel)</Text>
                 <View style={styles.inputFieldContainer}>
@@ -593,7 +587,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Input Numéro de porte */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Numéro de porte (optionnel)</Text>
                 <View style={styles.inputFieldContainer}>
@@ -608,7 +601,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Input Date et Heure */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Date et Heure</Text>
                 <View style={styles.inputFieldContainer}>
@@ -622,7 +614,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Champ Bâtiment (auto-rempli) */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Bâtiment</Text>
                 <View style={styles.inputFieldContainer}>
@@ -636,7 +627,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Input Description */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Description détaillée *</Text>
                 <View
@@ -657,7 +647,6 @@ export default function Signalement() {
                 </View>
               </View>
 
-              {/* Section Ajout Photo */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Photo (optionnel)</Text>
                 <TouchableOpacity
@@ -678,9 +667,7 @@ export default function Signalement() {
               </View>
             </View>
 
-            {/* Boutons */}
             <View style={styles.buttonsContainerHorizontal}>
-              {/* Secondaire */}
               <TouchableOpacity
                 style={[
                   styles.buttonHorizontal,
@@ -694,7 +681,6 @@ export default function Signalement() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Primaire */}
               <TouchableOpacity
                 style={[
                   styles.buttonHorizontal,

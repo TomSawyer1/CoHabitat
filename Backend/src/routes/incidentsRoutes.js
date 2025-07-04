@@ -18,19 +18,16 @@ const router = express.Router();
 // Toutes les routes des incidents nécessitent une authentification
 router.use(auth);
 
-// Routes pour les incidents
-router.post('/incidents', uploadMiddleware, createIncident);                    // Créer un incident avec image
-router.get('/incidents', getAllIncidents);                   // Lister tous les incidents (avec filtres)
-router.get('/incidents/user/:userId', getIncidentsByUserId); // Incidents d'un utilisateur
-router.get('/incidents/:id', getIncidentById);               // Obtenir un incident par ID
-router.put('/incidents/:id', updateIncident);                // Mettre à jour un incident (gardiens)
+router.post('/incidents', uploadMiddleware, createIncident);
+router.get('/incidents', getAllIncidents);
+router.get('/incidents/user/:userId', getIncidentsByUserId);
+router.get('/incidents/:id', getIncidentById);
+router.put('/incidents/:id', updateIncident);
 
-// Routes pour l'historique et les commentaires
-router.get('/incidents/:id/history', getIncidentHistory);    // Historique d'un incident
-router.post('/incidents/:id/comments', addIncidentComment);  // Ajouter un commentaire
-router.get('/incidents/:id/comments', getIncidentComments);  // Obtenir les commentaires
+router.get('/incidents/:id/history', getIncidentHistory);
+router.post('/incidents/:id/comments', addIncidentComment);
+router.get('/incidents/:id/comments', getIncidentComments);
 
-// Statistiques pour les gardiens
-router.get('/incidents/stats', getIncidentStats);            // Statistiques des incidents
+router.get('/incidents/stats', getIncidentStats);
 
 module.exports = router; 

@@ -53,7 +53,6 @@ export default function Parametres() {
               </Text>
             </View>
 
-            {/* Section Langue */}
             <View style={styles.card}>
               <TouchableOpacity
                 style={styles.settingItem}
@@ -67,7 +66,6 @@ export default function Parametres() {
 
 
 
-            {/* Autres paramètres à ajouter ici */}
           </ScrollView>
 
           <Navbar

@@ -323,7 +323,6 @@ export default function SuivreSignal() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Section Avatar et utilisateur */}
             <View style={styles.avatarContainer}>
               <Image 
                 source={require('../../assets/images/luigi.png')}
@@ -338,12 +337,10 @@ export default function SuivreSignal() {
               </View>
             </View>
 
-            {/* Titre de l'incident */}
             <Text style={styles.incidentTitle}>
               {incident.title || incident.type}
             </Text>
 
-            {/* Section Métriques */}
             <View style={styles.metricsSection}>
               <Text style={styles.sectionTitle}>Détails de l'incident</Text>
               
@@ -384,13 +381,11 @@ export default function SuivreSignal() {
               </View>
             </View>
 
-            {/* Section Description */}
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Description</Text>
               <Text style={styles.descriptionText}>{incident.description}</Text>
             </View>
 
-            {/* Image si disponible */}
             {incident.image && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
@@ -402,11 +397,9 @@ export default function SuivreSignal() {
               </View>
             )}
 
-            {/* Section Historique et Commentaires */}
             <View style={styles.updatesSection}>
               <Text style={styles.updatesTitle}>Historique et Commentaires</Text>
               
-              {/* Historique */}
               {history.map((item, index) => (
                 <View key={`history-${item.id}`} style={styles.updateItem}>
                   <Image 
@@ -432,7 +425,6 @@ export default function SuivreSignal() {
                 </View>
               ))}
 
-              {/* Commentaires */}
               {comments.map((comment, index) => (
                 <View key={`comment-${comment.id}`} style={styles.updateItem}>
                   <Image 
@@ -460,7 +452,6 @@ export default function SuivreSignal() {
               )}
             </View>
 
-            {/* Champ pour ajouter un commentaire */}
             <View style={styles.commentInputContainer}>
               <Text style={styles.commentInputLabel}>Ajouter un commentaire</Text>
               <TextInput
@@ -496,7 +487,6 @@ export default function SuivreSignal() {
               </Text>
             </TouchableOpacity>
 
-            {/* Informations gardien si assigné */}
             {incident.guardian_nom && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Gardien assigné</Text>
@@ -506,7 +496,6 @@ export default function SuivreSignal() {
               </View>
             )}
 
-            {/* Boutons d'action */}
             <View style={styles.buttonsContainerFigma}>
               <TouchableOpacity
                 style={[

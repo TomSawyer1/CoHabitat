@@ -14,11 +14,10 @@ export const useHomeStyle = (insets: EdgeInsets) => {
     contentContainer: {
       flex: 1,
       justifyContent: "flex-end",
-      // Le paddingTop pour la safe area sera géré par le Header lui-même
     },
     mainContent: {
       flex: 1,
-      paddingTop: 0, // Ajusté si nécessaire, car le Header occupe déjà de l'espace
+      paddingTop: 0,
       paddingBottom: 0,
       paddingHorizontal: 20,
     },

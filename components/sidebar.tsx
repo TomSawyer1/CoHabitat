@@ -138,10 +138,8 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
         },
       ]}
     >
-      {/* Titre de l'application */}
       <Text style={styles.appTitle}>CoHabitat</Text>
 
-      {/* Liste des éléments de menu */}
       <View style={styles.menuContainer}>
         {menuItems.map((item) => (
           <TouchableOpacity
@@ -158,8 +156,6 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
           </TouchableOpacity>
         ))}
       </View>
-
-      {/* Ajoutez ici d'autres éléments si nécessaire */}
     </Animated.View>
   );
 }

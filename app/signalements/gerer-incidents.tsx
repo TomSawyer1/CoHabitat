@@ -375,7 +375,6 @@ export default function GererIncidents() {
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
           >
-            {/* Section Avatar et locataire */}
             <View style={styles.avatarContainer}>
               <Image 
                 source={require('../../assets/images/luigi.png')}
@@ -390,12 +389,10 @@ export default function GererIncidents() {
               </View>
             </View>
 
-            {/* Titre de l'incident */}
             <Text style={styles.incidentTitle}>
               {incident.title || incident.type}
             </Text>
 
-            {/* Section Métriques */}
             <View style={styles.metricsSection}>
               <Text style={styles.sectionTitle}>Détails de l'incident</Text>
               
@@ -436,13 +433,11 @@ export default function GererIncidents() {
               </View>
             </View>
 
-            {/* Section Description */}
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Description</Text>
               <Text style={styles.descriptionText}>{incident.description}</Text>
             </View>
 
-            {/* Section Photo */}
             {incident.image && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
@@ -471,7 +466,6 @@ export default function GererIncidents() {
               </View>
             </View>
 
-            {/* Champ pour ajouter un commentaire */}
             <View style={styles.commentInputContainer}>
               <Text style={styles.commentInputLabel}>Ajouter un commentaire</Text>
               <TextInput
@@ -507,7 +501,6 @@ export default function GererIncidents() {
               </Text>
             </TouchableOpacity>
 
-            {/* Bouton de mise à jour */}
             <TouchableOpacity
               style={[
                 styles.buttonFigma,
@@ -523,11 +516,9 @@ export default function GererIncidents() {
               </Text>
             </TouchableOpacity>
 
-            {/* Section Historique et Commentaires */}
             <View style={styles.updatesSection}>
               <Text style={styles.updatesTitle}>Historique et Commentaires</Text>
               
-              {/* Historique */}
               {history.map((item, index) => (
                 <View key={`history-${item.id}`} style={styles.updateItem}>
                   <View style={[styles.updateImagePlaceholder, { backgroundColor: '#007AFF' }]} />
@@ -567,7 +558,6 @@ export default function GererIncidents() {
               )}
             </View>
 
-            {/* Boutons d'action */}
             <View style={styles.buttonsContainerFigma}>
               <TouchableOpacity
                 style={[styles.buttonFigma, styles.primaryButtonFigma]}
