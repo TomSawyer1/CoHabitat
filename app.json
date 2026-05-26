@@ -10,20 +10,37 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-              "bundleIdentifier": "com.cohabitat.app",
-        "associatedDomains": ["applinks:cohabitat.com"]
+      "bundleIdentifier": "com.cohabitat.app",
+      "associatedDomains": ["applinks:cohabitat.com"],
+      "infoPlist": {
+        "NSCameraUsageDescription": "CoHabitat utilise l'appareil photo pour joindre une photo à vos signalements d'incidents.",
+        "NSPhotoLibraryUsageDescription": "CoHabitat accède à votre galerie pour joindre une photo à vos signalements d'incidents.",
+        "NSPhotoLibraryAddUsageDescription": "CoHabitat peut enregistrer des photos liées à vos signalements dans votre galerie."
+      }
     },
     "android": {
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ]
     },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CoHabitat accède à votre galerie pour joindre une photo à vos signalements d'incidents.",
+          "cameraPermission": "CoHabitat utilise l'appareil photo pour joindre une photo à vos signalements d'incidents."
+        }
+      ]
+    ],
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
     "experiments": {
       "typedRoutes": true
     },

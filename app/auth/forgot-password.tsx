@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
+    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -17,14 +18,28 @@ export default function ForgotPassword() {
   const router = useRouter();
   const styles = useForgotPasswordStyle();
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = () => {
-    // Logique pour envoyer le lien de réinitialisation du mot de passe
-    console.log("Demande de réinitialisation pour:", email);
-    // Afficher un message à l'utilisateur (email envoyé ou erreur)
-    // Rediriger, par exemple vers une page de confirmation ou la page de connexion
-    // router.push('/login');
+    // Validation minimale : on n'a pas encore le backend pour l'envoi de mail
+    // de réinitialisation. On affiche un message honnête plutôt qu'un faux
+    // succès qui laisserait l'utilisateur attendre un email qui n'arrivera pas.
+    if (!email.trim()) {
+      Alert.alert("Erreur", "Veuillez saisir votre email.");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Erreur", "Veuillez entrer un email valide.");
+      return;
+    }
+
+    Alert.alert(
+      "Fonctionnalité bientôt disponible",
+      "La réinitialisation de mot de passe par email sera disponible prochainement. En attendant, contactez votre gardien ou le support.",
+      [
+        { text: "OK", onPress: () => router.back() }
+      ]
+    );
   };
 
   return (

@@ -52,12 +52,17 @@ export default function Signalement() {
     loadDraftData();
   }, []);
 
-  // Sauvegarder automatiquement en brouillon
+  // Sauvegarder automatiquement en brouillon (avec debounce pour éviter
+  // une écriture AsyncStorage à chaque frappe — au pire 1 écriture / 800ms).
   useEffect(() => {
-    if (title || description || etage || numeroPorte) {
-      saveDraftData();
+    if (!title && !description && !etage && !numeroPorte && !typeSignalement) {
+      return;
     }
-  }, [title, description, etage, numeroPorte]);
+    const timer = setTimeout(() => {
+      saveDraftData();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [title, description, etage, numeroPorte, typeSignalement]);
 
   const loadUserData = async () => {
     try {

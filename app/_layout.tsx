@@ -4,11 +4,22 @@ import {
 } from "@react-navigation/native";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { View } from "react-native";
 import "react-native-reanimated";
+import { setUnauthorizedHandler } from "../config/api";
 
 export default function RootLayout() {
   const router = useRouter();
+
+  // Intercepteur global 401 : si une requête API échoue avec un token expiré,
+  // on est automatiquement redirigé vers la page de connexion (le storage est
+  // déjà purgé par apiFetch).
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      router.replace("/auth/login");
+    });
+  }, [router]);
 
   return (
     <ThemeProvider value={DefaultTheme}>
