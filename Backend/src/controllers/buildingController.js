@@ -22,6 +22,16 @@ const getBuildingInfo = async (req, res) => {
         const userId = req.params.userId;
         const userRole = req.user.role;
 
+        // Contrôle d'autorisation : un utilisateur ne peut consulter que SON propre
+        // bâtiment (route paramétrée par userId). Empêche un locataire de lister
+        // le bâtiment d'un autre locataire en devinant des IDs.
+        if (String(req.user.id) !== String(userId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Accès non autorisé.'
+            });
+        }
+
         // Déterminer la table et le champ en fonction du rôle
         const table = userRole === 'locataire' ? 'locataire' : 'guardians';
         const buildingIdField = 'batiments_id'; // Même nom de colonne pour les deux tables

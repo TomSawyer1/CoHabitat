@@ -1,8 +1,9 @@
+// ⚠️ Le module env doit être importé EN PREMIER : il valide les variables
+// d'environnement critiques (JWT_SECRET) et fait planter le boot si elles
+// manquent ou sont faibles.
+const { PORT } = require('./src/config/env');
 const app = require('./src/app');
-require('dotenv').config();
 const db = require('./src/db/database'); // S'assurer que la base de données est initialisée
-
-const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log('\n🚀 ================================');

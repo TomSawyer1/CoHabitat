@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'cohabitat_secret_key_2024'; // Utilise la variable d'environnement ou la valeur par défaut
+const { JWT_SECRET } = require('../config/env');
 
 const auth = (req, res, next) => {
     try {

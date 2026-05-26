@@ -1,8 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db/database');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'cohabitat_secret_key_2024'; // À remplacer par une variable d'environnement en production
+const { JWT_SECRET } = require('../config/env');
 
 const registerGuardian = async (req, res) => {
     const { email, nom, prenom, telephone, batiment, numeroGardien, password } = req.body;
@@ -168,6 +167,12 @@ const login = async (req, res) => {
 const getLocataireInfo = async (req, res) => {
     const { id } = req.params;
 
+    // Contrôle d'autorisation : un locataire ne peut consulter que son propre profil.
+    // Les gardiens passent par d'autres routes (résidents du bâtiment).
+    if (req.user.role !== 'locataire' || String(req.user.id) !== String(id)) {
+        return res.status(403).json({ message: 'Accès non autorisé.' });
+    }
+
     try {
         const query = `
             SELECT l.*, b.nom as batiment_nom 
@@ -197,6 +202,13 @@ const getLocataireInfo = async (req, res) => {
 
 const getGuardianInfo = async (req, res) => {
     const { id } = req.params;
+
+    // Contrôle d'autorisation : un gardien ne peut consulter que son propre profil.
+    // (Un locataire qui voudrait afficher son gardien doit passer par
+    //  /api/buildings/:userId qui retourne les infos publiques utiles.)
+    if (req.user.role !== 'guardian' || String(req.user.id) !== String(id)) {
+        return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+    }
 
     try {
         const query = `

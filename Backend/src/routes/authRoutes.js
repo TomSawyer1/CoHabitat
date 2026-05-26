@@ -20,8 +20,8 @@ router.post('/register/guardian', registerGuardian);
 router.post('/register/locataire', registerLocataire);
 router.post('/login', login);
 
-router.get('/locataire/:id', getLocataireInfo);
-router.get('/guardian/:id', getGuardianInfo);
+router.get('/locataire/:id', auth, getLocataireInfo);
+router.get('/guardian/:id', auth, getGuardianInfo);
 
 router.get('/profile', auth, getMyProfile);
 router.delete('/profile', auth, deleteMyAccount);
