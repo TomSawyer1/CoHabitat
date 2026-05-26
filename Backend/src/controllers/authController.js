@@ -1,14 +1,80 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { z } = require('zod');
 const db = require('../db/database');
 const { JWT_SECRET } = require('../config/env');
 
-const registerGuardian = async (req, res) => {
-    const { email, nom, prenom, telephone, batiment, numeroGardien, password } = req.body;
+// === Schémas de validation Zod ===
+// Politique de mot de passe : >= 8 caractères, au moins 1 chiffre et 1 lettre.
+const passwordSchema = z
+    .string()
+    .min(8, 'Le mot de passe doit contenir au moins 8 caractères.')
+    .max(128, 'Le mot de passe est trop long.')
+    .regex(/[A-Za-z]/, 'Le mot de passe doit contenir au moins une lettre.')
+    .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre.');
 
-    if (!email || !nom || !prenom || !telephone || !batiment || !numeroGardien || !password) {
-        return res.status(400).json({ message: 'Tous les champs sont requis.' });
+const emailSchema = z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Email invalide.')
+    .max(254);
+
+const phoneSchema = z
+    .string()
+    .trim()
+    .min(6, 'Numéro de téléphone trop court.')
+    .max(20, 'Numéro de téléphone trop long.');
+
+const nameSchema = z.string().trim().min(1, 'Champ requis.').max(80);
+
+const registerLocataireSchema = z.object({
+    email: emailSchema,
+    nom: nameSchema,
+    prenom: nameSchema,
+    telephone: phoneSchema,
+    batiment: z.union([z.string(), z.number()]).transform((v) => String(v)),
+    password: passwordSchema,
+});
+
+const registerGuardianSchema = registerLocataireSchema.extend({
+    numeroGardien: z.string().trim().min(1).max(50),
+});
+
+const loginSchema = z.object({
+    email: emailSchema,
+    password: z.string().min(1, 'Mot de passe requis.'),
+    role: z.enum(['locataire', 'guardian'], {
+        errorMap: () => ({ message: 'Rôle invalide (attendu : locataire ou guardian).' }),
+    }),
+});
+
+const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, 'Mot de passe actuel requis.'),
+    newPassword: passwordSchema,
+});
+
+const updateProfileSchema = z.object({
+    nom: nameSchema,
+    prenom: nameSchema,
+    telephone: phoneSchema.optional().or(z.literal('')),
+});
+
+const sendValidationError = (res, parseResult) => {
+    const firstError = parseResult.error.errors[0];
+    return res.status(400).json({
+        success: false,
+        message: firstError ? firstError.message : 'Données invalides.',
+        errors: parseResult.error.errors,
+    });
+};
+
+const registerGuardian = async (req, res) => {
+    const parseResult = registerGuardianSchema.safeParse(req.body);
+    if (!parseResult.success) {
+        return sendValidationError(res, parseResult);
     }
+    const { email, nom, prenom, telephone, batiment, numeroGardien, password } = parseResult.data;
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,11 +105,11 @@ const registerGuardian = async (req, res) => {
 };
 
 const registerLocataire = async (req, res) => {
-    const { email, nom, prenom, telephone, batiment, password } = req.body;
-
-    if (!email || !nom || !prenom || !telephone || !batiment || !password) {
-        return res.status(400).json({ message: 'Tous les champs sont requis.' });
+    const parseResult = registerLocataireSchema.safeParse(req.body);
+    if (!parseResult.success) {
+        return sendValidationError(res, parseResult);
     }
+    const { email, nom, prenom, telephone, batiment, password } = parseResult.data;
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,25 +138,14 @@ const registerLocataire = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, password, role } = req.body;
-
-        if (!email || !password || !role) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email, mot de passe et rôle requis'
-            });
+        const parseResult = loginSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return sendValidationError(res, parseResult);
         }
+        const { email, password, role } = parseResult.data;
 
-        // Déterminer la table en fonction du rôle
-        const table = role === 'locataire' ? 'locataire' : 
-                     role === 'guardian' ? 'guardians' : null;
-
-        if (!table) {
-            return res.status(400).json({
-                success: false,
-                message: 'Rôle invalide'
-            });
-        }
+        // Le rôle est déjà validé par le schéma (locataire | guardian)
+        const table = role === 'locataire' ? 'locataire' : 'guardians';
 
         // Rechercher l'utilisateur dans la base de données avec les infos du bâtiment
         const query = `
@@ -241,57 +296,36 @@ const getGuardianInfo = async (req, res) => {
 const updateLocataireProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        const userRole = req.user.role;
-        const { nom, prenom, telephone } = req.body;
 
-        console.log('💾 [UPDATE_PROFILE] Début mise à jour:', { 
-            userId, 
-            userRole, 
-            nom, 
-            prenom, 
-            telephone 
-        });
-
-        if (!nom || !prenom) {
-            console.error('❌ [UPDATE_PROFILE] Champs manquants:', { nom: !!nom, prenom: !!prenom });
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Le nom et le prénom sont requis.' 
-            });
+        const parseResult = updateProfileSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return sendValidationError(res, parseResult);
         }
+        const { nom, prenom, telephone } = parseResult.data;
 
         const query = `
             UPDATE locataire 
             SET nom = ?, prenom = ?, telephone = ?, updated_at = CURRENT_TIMESTAMP 
             WHERE id = ?
         `;
-        const params = [nom, prenom, telephone, userId];
-
-        console.log('📊 [UPDATE_PROFILE] Exécution requête:', { query, params });
+        const params = [nom, prenom, telephone || null, userId];
 
         db.run(query, params, function(err) {
             if (err) {
-                console.error('❌ [UPDATE_PROFILE] Erreur SQL:', err);
+                console.error('Erreur lors de la mise à jour du profil locataire:', err);
                 return res.status(500).json({ 
                     success: false, 
                     message: 'Erreur lors de la mise à jour du profil.' 
                 });
             }
 
-            console.log('📊 [UPDATE_PROFILE] Résultat:', { 
-                changes: this.changes, 
-                lastID: this.lastID 
-            });
-
             if (this.changes === 0) {
-                console.error('❌ [UPDATE_PROFILE] Aucune ligne modifiée pour userId:', userId);
                 return res.status(404).json({ 
                     success: false, 
                     message: 'Utilisateur non trouvé.' 
                 });
             }
 
-            console.log('✅ [UPDATE_PROFILE] Profil mis à jour avec succès');
             res.json({ 
                 success: true, 
                 message: 'Profil mis à jour avec succès.',
@@ -299,7 +333,7 @@ const updateLocataireProfile = async (req, res) => {
             });
         });
     } catch (error) {
-        console.error('💥 [UPDATE_PROFILE] Erreur générale:', error);
+        console.error('Erreur lors de la mise à jour du profil locataire:', error);
         res.status(500).json({ 
             success: false, 
             message: 'Erreur serveur.' 
@@ -311,14 +345,12 @@ const updateLocataireProfile = async (req, res) => {
 const updateGuardianProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { nom, prenom, telephone } = req.body;
 
-        if (!nom || !prenom) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Le nom et le prénom sont requis.' 
-            });
+        const parseResult = updateProfileSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return sendValidationError(res, parseResult);
         }
+        const { nom, prenom, telephone } = parseResult.data;
 
         const query = `
             UPDATE guardians 
@@ -326,7 +358,7 @@ const updateGuardianProfile = async (req, res) => {
             WHERE id = ?
         `;
 
-        db.run(query, [nom, prenom, telephone, userId], function(err) {
+        db.run(query, [nom, prenom, telephone || null, userId], function(err) {
             if (err) {
                 console.error('Erreur lors de la mise à jour du profil:', err);
                 return res.status(500).json({ 
@@ -361,21 +393,12 @@ const changePassword = async (req, res) => {
     try {
         const userId = req.user.id;
         const userRole = req.user.role;
-        const { currentPassword, newPassword } = req.body;
 
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'L\'ancien et le nouveau mot de passe sont requis.' 
-            });
+        const parseResult = changePasswordSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return sendValidationError(res, parseResult);
         }
-
-        if (newPassword.length < 8) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' 
-            });
-        }
+        const { currentPassword, newPassword } = parseResult.data;
 
         const table = userRole === 'locataire' ? 'locataire' : 'guardians';
         

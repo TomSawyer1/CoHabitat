@@ -50,27 +50,42 @@ const upload = multer({
 // Middleware pour un seul fichier
 const uploadSingle = upload.single('image');
 
-// Middleware wrapper pour une meilleure gestion d'erreurs
+// Middleware wrapper pour une meilleure gestion d'erreurs.
+// On distingue 3 cas :
+//   1. MulterError connue (taille, champ inattendu, …) → 400 explicite
+//   2. Erreur custom du fileFilter (mauvais type MIME) → 400
+//   3. Toute autre erreur (FS, permissions, …) → 500 sans détail technique
 const uploadMiddleware = (req, res, next) => {
     uploadSingle(req, res, function (err) {
+        if (!err) return next();
+
         if (err instanceof multer.MulterError) {
-            if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Fichier trop volumineux. Taille maximale : 5MB'
-                });
-            }
+            const messages = {
+                LIMIT_FILE_SIZE: 'Fichier trop volumineux. Taille maximale : 5MB.',
+                LIMIT_UNEXPECTED_FILE: 'Champ de fichier inattendu (attendu : "image").',
+                LIMIT_FILE_COUNT: 'Trop de fichiers envoyés.',
+            };
             return res.status(400).json({
                 success: false,
-                message: 'Erreur lors de l\'upload : ' + err.message
+                message: messages[err.code] || `Erreur lors de l'upload : ${err.message}`
             });
-        } else if (err) {
+        }
+
+        // Erreur levée par notre fileFilter (type MIME interdit)
+        if (err.message && err.message.includes('Seules les images sont autorisées')) {
             return res.status(400).json({
                 success: false,
                 message: err.message
             });
         }
-        next();
+
+        // Erreur imprévue (FS, permissions, …) : on log côté serveur mais on
+        // ne renvoie pas la stack au client.
+        console.error('Erreur upload inattendue:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur serveur lors du traitement du fichier.'
+        });
     });
 };
 

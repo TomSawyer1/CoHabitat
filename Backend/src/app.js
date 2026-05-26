@@ -91,9 +91,10 @@ app.get('/api/info', (req, res) => {
     });
 });
 
-// Middleware pour les routes non trouvées
-app.use('*', (req, res) => {
-    res.status(404).json({ 
+// Middleware pour les routes non trouvées.
+// On n'utilise pas app.use('*', …) car path-to-regexp v6 (Express 5) le rejette.
+app.use((req, res) => {
+    res.status(404).json({
         success: false,
         message: 'Route non trouvée',
         requested_url: req.originalUrl,
