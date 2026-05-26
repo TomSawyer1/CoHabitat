@@ -148,11 +148,6 @@ export default function Register() {
     }
   };
 
-  const testButtonPress = () => {
-    console.log('🔥 BOUTON PRESSÉ !');
-    Alert.alert("Test", "Le bouton fonctionne !");
-  };
-
   return (
     <KeyboardAvoidingView 
       style={styles.container}

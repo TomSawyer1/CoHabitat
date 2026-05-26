@@ -29,14 +29,27 @@ app.use(cors({
 // Servir les images statiques depuis le dossier uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Middleware de logging détaillé des requêtes
+// Middleware de logging détaillé des requêtes (mode développement uniquement)
+// ⚠️ Les champs sensibles (password, currentPassword, newPassword, token, Authorization) sont masqués.
+const SENSITIVE_BODY_KEYS = ['password', 'currentPassword', 'newPassword', 'confirmPassword'];
+const SENSITIVE_HEADER_KEYS = ['authorization', 'cookie', 'x-api-key'];
+
+const redact = (obj, keys) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const clone = { ...obj };
+    for (const k of Object.keys(clone)) {
+        if (keys.includes(k.toLowerCase())) clone[k] = '[REDACTED]';
+    }
+    return clone;
+};
+
 app.use((req, res, next) => {
-    console.log('\n=== Nouvelle requête ===');
-    console.log(`Méthode: ${req.method}`);
-    console.log(`URL: ${req.url}`);
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
-    console.log('=====================\n');
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`[${req.method}] ${req.url}`);
+        if (req.body && Object.keys(req.body).length > 0) {
+            console.log('  body:', redact(req.body, SENSITIVE_BODY_KEYS));
+        }
+    }
     next();
 });
 

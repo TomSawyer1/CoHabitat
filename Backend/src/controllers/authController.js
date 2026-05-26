@@ -5,38 +5,26 @@ const db = require('../db/database');
 const JWT_SECRET = process.env.JWT_SECRET || 'cohabitat_secret_key_2024'; // À remplacer par une variable d'environnement en production
 
 const registerGuardian = async (req, res) => {
-    console.log('Données reçues:', req.body);
     const { email, nom, prenom, telephone, batiment, numeroGardien, password } = req.body;
 
     if (!email || !nom || !prenom || !telephone || !batiment || !numeroGardien || !password) {
-        console.log('Champs manquants:', {
-            email: !email,
-            nom: !nom,
-            prenom: !prenom,
-            telephone: !telephone,
-            batiment: !batiment,
-            numeroGardien: !numeroGardien,
-            password: !password
-        });
         return res.status(400).json({ message: 'Tous les champs sont requis.' });
     }
 
     try {
-        console.log('Hachage du mot de passe...');
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log('Mot de passe haché avec succès');
 
         const query = `INSERT INTO guardians (email, nom, prenom, telephone, batiments_id, guardian_number, password) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         const params = [email, nom, prenom, telephone, batiment, numeroGardien, hashedPassword];
-        
-        console.log('Exécution de la requête SQL:', query);
-        console.log('Paramètres:', params);
 
         db.run(query, params, function (err) {
             if (err) {
                 console.error('Erreur SQL détaillée:', err);
                 if (err.message.includes('UNIQUE constraint failed: guardians.email')) {
                     return res.status(409).json({ message: 'Cet email est déjà enregistré.' });
+                }
+                if (err.message.includes('UNIQUE constraint failed: guardians.guardian_number')) {
+                    return res.status(409).json({ message: 'Ce numéro de gardien est déjà utilisé.' });
                 }
                 console.error('Erreur lors de l\'insertion du gardien:', err.message);
                 return res.status(500).json({ message: 'Erreur serveur lors de l\'inscription.' });
@@ -52,31 +40,17 @@ const registerGuardian = async (req, res) => {
 };
 
 const registerLocataire = async (req, res) => {
-    console.log('Données reçues:', req.body);
     const { email, nom, prenom, telephone, batiment, password } = req.body;
 
     if (!email || !nom || !prenom || !telephone || !batiment || !password) {
-        console.log('Champs manquants:', {
-            email: !email,
-            nom: !nom,
-            prenom: !prenom,
-            telephone: !telephone,
-            batiment: !batiment,
-            password: !password
-        });
         return res.status(400).json({ message: 'Tous les champs sont requis.' });
     }
 
     try {
-        console.log('Hachage du mot de passe...');
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log('Mot de passe haché avec succès');
 
         const query = `INSERT INTO locataire (email, nom, prenom, telephone, batiments_id, password) VALUES (?, ?, ?, ?, ?, ?)`;
         const params = [email, nom, prenom, telephone, batiment, hashedPassword];
-        
-        console.log('Exécution de la requête SQL:', query);
-        console.log('Paramètres:', params);
 
         db.run(query, params, function (err) {
             if (err) {
@@ -526,7 +500,7 @@ const getBuildingResidents = async (req, res) => {
         const buildingId = req.params.buildingId;
 
         // Vérifier que le gardien est bien assigné à ce bâtiment
-        db.get('SELECT building_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
+        db.get('SELECT batiments_id FROM guardians WHERE id = ?', [req.user.id], (err, guardian) => {
             if (err) {
                 console.error('Erreur lors de la vérification du gardien:', err);
                 return res.status(500).json({ 
@@ -535,7 +509,7 @@ const getBuildingResidents = async (req, res) => {
                 });
             }
 
-            if (!guardian || guardian.building_id != buildingId) {
+            if (!guardian || guardian.batiments_id != buildingId) {
                 return res.status(403).json({ 
                     success: false, 
                     message: 'Accès non autorisé à ce bâtiment.' 
@@ -546,7 +520,7 @@ const getBuildingResidents = async (req, res) => {
             const query = `
                 SELECT l.id, l.nom, l.prenom, l.email, l.telephone, l.created_at
                 FROM locataire l
-                WHERE l.building_id = ?
+                WHERE l.batiments_id = ?
                 ORDER BY l.nom, l.prenom
             `;
 

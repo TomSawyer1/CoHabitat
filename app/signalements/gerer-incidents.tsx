@@ -5,7 +5,6 @@ import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
-    Dimensions,
     Image,
     ScrollView,
     Text,
@@ -19,8 +18,6 @@ import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { useGererIncidentsStyle } from "../../hooks/useGererIncidentsStyle";
-
-const { width } = Dimensions.get("window");
 
 interface Incident {
   id: number;

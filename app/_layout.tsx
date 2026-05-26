@@ -28,7 +28,7 @@ export default function RootLayout() {
           <Stack.Screen name="accueil/home" options={{ headerShown: false }} />
           <Stack.Screen name="batiments/batiments" options={{ headerShown: false }} />
           <Stack.Screen name="batiments/mon-batiment" options={{ headerShown: false }} />
-          <Stack.Screen name="profil/mon-gardien" options={{ headerShown: false }} />
+          <Stack.Screen name="batiments/mon-gardien" options={{ headerShown: false }} />
           <Stack.Screen name="profil/parametres" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="light" />

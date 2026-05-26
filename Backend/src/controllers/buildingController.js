@@ -87,8 +87,7 @@ const getBuildingInfo = async (req, res) => {
                         email: building.guardian_email || 'Non disponible'
                     } : null,
                     emergency: {
-                        guardian: building.guardian_phone || 'Non disponible',
-                        security: building.telephone_securite || 'Non disponible'
+                        guardian: building.guardian_phone || 'Non disponible'
                     }
                 };
 

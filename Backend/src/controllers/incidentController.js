@@ -419,8 +419,7 @@ const getIncidentStats = (req, res) => {
             SUM(CASE WHEN status = 'nouveau' THEN 1 ELSE 0 END) as nouveaux,
             SUM(CASE WHEN status = 'en_cours' THEN 1 ELSE 0 END) as en_cours,
             SUM(CASE WHEN status = 'resolu' THEN 1 ELSE 0 END) as resolus,
-            SUM(CASE WHEN status = 'ferme' THEN 1 ELSE 0 END) as fermes,
-            SUM(CASE WHEN priority = 'urgente' THEN 1 ELSE 0 END) as urgents
+            SUM(CASE WHEN status = 'ferme' THEN 1 ELSE 0 END) as fermes
         FROM incidents 
         ${whereClause}
     `;

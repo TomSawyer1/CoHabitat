@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
-    Dimensions,
     Image,
     KeyboardAvoidingView,
     Linking,
@@ -21,9 +20,6 @@ import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { useSuivreSignalStyle } from "../../hooks/useSuivreSignalStyle";
-
-const { width } = Dimensions.get("window");
-const sidebarWidth = 250;
 
 interface Incident {
   id: number;

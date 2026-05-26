@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+    Alert,
     Animated,
     Text,
     TouchableOpacity,
@@ -51,7 +52,7 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
       onClose(); // Fermer la sidebar
     } catch (e) {
       console.error("Erreur lors de la déconnexion:", e);
-      alert("Erreur lors de la déconnexion.");
+      Alert.alert("Erreur", "Erreur lors de la déconnexion.");
     }
   };
 
@@ -117,7 +118,8 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
         router.push("/signalements/incidents");
       }
     } else if (itemId === 4) {
-      router.push("/signalements/gerer-incidents");
+      // "Rapports" : liste des incidents (vue identique pour les deux rôles).
+      router.push("/signalements/incidents");
     } else if (itemId === 5) {
       router.push("/profil/profil");
     } else if (itemId === 6) {

@@ -6,7 +6,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -22,9 +21,6 @@ import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { useSignalementStyle } from "../../hooks/useSignalementStyle";
-
-const { width } = Dimensions.get("window");
-const sidebarWidth = 250;
 
 export default function Signalement() {
   const router = useRouter();
@@ -392,7 +388,7 @@ export default function Signalement() {
     }
 
     let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
@@ -417,7 +413,7 @@ export default function Signalement() {
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8, // Optimiser la qualité pour l'upload

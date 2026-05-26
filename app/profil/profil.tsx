@@ -19,31 +19,6 @@ import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { useProfilStyle } from "../../hooks/useProfilStyle";
 
-// Données fictives (seront remplacées par les données de l'API)
-const incidentsData = [
-  {
-    id: "1",
-    title: "Fuite d'eau",
-    date: "12/03/2024",
-    status: "En cours de traitement",
-    image: null,
-  },
-  {
-    id: "2",
-    title: "Problème électrique",
-    date: "10/03/2024",
-    status: "Résolu",
-    image: null,
-  },
-  {
-    id: "3",
-    title: "Porte d'entrée bloquée",
-    date: "08/03/2024",
-    status: "En attente",
-    image: null,
-  },
-];
-
 export default function Profil() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
