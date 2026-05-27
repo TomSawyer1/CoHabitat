@@ -53,7 +53,7 @@ export default function Profil() {
 
   const loadUserData = async () => {
     try {
-      console.log('📱 [PROFIL] Chargement des données utilisateur...');
+      if (__DEV__) console.log('📱 [PROFIL] Chargement des données utilisateur...');
       setIsLoading(true);
 
       // Récupérer les données depuis AsyncStorage
@@ -65,13 +65,7 @@ export default function Profil() {
         AsyncStorage.getItem('userBuildingId')
       ]);
 
-      console.log('📱 [PROFIL] Données AsyncStorage:', { 
-        hasToken: !!token, 
-        userId, 
-        userRole, 
-        userBuildingName, 
-        userBuildingId 
-      });
+      if (__DEV__) console.log('📱 [PROFIL] AsyncStorage:', { hasToken: !!token, hasUserId: !!userId, userRole });
 
       if (!token || !userId) {
         Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
@@ -81,14 +75,14 @@ export default function Profil() {
       }
 
       // Récupérer les informations du profil depuis l'API
-      console.log('🌐 [PROFIL] Récupération profil depuis API...');
+      if (__DEV__) console.log('🌐 [PROFIL] Récupération profil depuis API...');
       const profileResponse = await apiFetch('/auth/profile');
 
-      console.log('📡 [PROFIL] Réponse profil:', profileResponse.status);
+      if (__DEV__) console.log('📡 [PROFIL] Réponse profil:', profileResponse.status);
 
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
-        console.log('👤 [PROFIL] Données profil reçues:', profileData);
+        if (__DEV__) console.log('👤 [PROFIL] Profil reçu (success):', { success: profileData?.success });
 
         if (profileData.success) {
           setFormData({
@@ -114,14 +108,14 @@ export default function Profil() {
       }
 
       // Récupérer les incidents de l'utilisateur
-      console.log('🌐 [PROFIL] Récupération incidents...');
+      if (__DEV__) console.log('🌐 [PROFIL] Récupération incidents...');
       const incidentsResponse = await apiFetch(`/api/incidents/user/${userId}`);
 
-      console.log('📡 [PROFIL] Réponse incidents:', incidentsResponse.status);
+      if (__DEV__) console.log('📡 [PROFIL] Réponse incidents:', incidentsResponse.status);
 
       if (incidentsResponse.ok) {
         const incidentsData = await incidentsResponse.json();
-        console.log('📋 [PROFIL] Incidents reçus:', incidentsData);
+        if (__DEV__) console.log('📋 [PROFIL] Incidents reçus (count):', Array.isArray(incidentsData?.incidents) ? incidentsData.incidents.length : 0);
         
         if (incidentsData.success && Array.isArray(incidentsData.incidents)) {
           setIncidents(incidentsData.incidents);
@@ -151,12 +145,7 @@ export default function Profil() {
 
   const handleSave = async () => {
     try {
-      console.log('💾 [PROFIL] Sauvegarde en cours...');
-      console.log('💾 [PROFIL] Données à sauvegarder:', {
-        nom: formData.nom,
-        prenom: formData.prenom,
-        telephone: formData.telephone
-      });
+      if (__DEV__) console.log('💾 [PROFIL] Sauvegarde en cours...');
 
       const token = await AsyncStorage.getItem('userToken');
       const userRole = await AsyncStorage.getItem('userRole');
@@ -174,7 +163,7 @@ export default function Profil() {
       }
 
       const endpoint = userRole === 'locataire' ? '/auth/profile/locataire' : '/auth/profile/guardian';
-      console.log('🌐 [PROFIL] Endpoint:', `${API_BASE_URL}${endpoint}`);
+      if (__DEV__) console.log('🌐 [PROFIL] Endpoint:', endpoint);
       
       const requestData = {
         nom: formData.nom.trim(),
@@ -182,22 +171,22 @@ export default function Profil() {
         telephone: formData.telephone.trim(),
       };
 
-      console.log('📤 [PROFIL] Envoi des données:', requestData);
+      if (__DEV__) console.log('📤 [PROFIL] Envoi des données (champs):', Object.keys(requestData));
 
       const response = await apiFetch(endpoint, {
         method: 'PUT',
         body: requestData,
       });
 
-      console.log('📡 [PROFIL] Status réponse:', response.status);
+      if (__DEV__) console.log('📡 [PROFIL] Status réponse:', response.status);
       const data = await response.json();
-      console.log('📡 [PROFIL] Réponse sauvegarde:', data);
+      if (__DEV__) console.log('📡 [PROFIL] Réponse sauvegarde (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok && data.success) {
         Alert.alert("Succès", "Profil mis à jour avec succès !");
         
         // Recharger les données pour s'assurer qu'elles sont à jour
-        console.log('🔄 [PROFIL] Rechargement des données...');
+        if (__DEV__) console.log('🔄 [PROFIL] Rechargement des données...');
         await loadUserData();
         
         // Mettre à jour AsyncStorage avec les nouvelles données
@@ -209,7 +198,7 @@ export default function Profil() {
         Alert.alert("Erreur", data.message || "Erreur lors de la mise à jour du profil.");
       }
     } catch (error) {
-      console.error("❌ [PROFIL] Erreur sauvegarde:", error);
+      if (__DEV__) console.error("❌ [PROFIL] Erreur sauvegarde:", error);
       Alert.alert("Erreur", "Impossible de sauvegarder le profil. Veuillez réessayer plus tard.");
     }
   };

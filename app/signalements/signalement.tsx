@@ -74,7 +74,7 @@ export default function Signalement() {
         AsyncStorage.getItem('userBuildingName')
       ]);
       
-      console.log('📱 [SIGNALEMENT] Données utilisateur:', { token: !!token, id, buildingId, buildingName });
+      if (__DEV__) console.log('📱 [SIGNALEMENT] Données utilisateur:', { hasToken: !!token, hasUserId: !!id, hasBuildingId: !!buildingId });
       
       if (token && id) {
         setUserToken(token);
@@ -111,7 +111,7 @@ export default function Signalement() {
       const draftData = await AsyncStorage.getItem('signalement_draft');
       if (draftData) {
         const draft = JSON.parse(draftData);
-        console.log('📄 [SIGNALEMENT] Brouillon chargé:', draft);
+        if (__DEV__) console.log('📄 [SIGNALEMENT] Brouillon chargé (champs):', Object.keys(draft || {}));
         
         if (draft.title) setTitle(draft.title);
         if (draft.description) setDescription(draft.description);
@@ -137,14 +137,14 @@ export default function Signalement() {
       };
       
       await AsyncStorage.setItem('signalement_draft', JSON.stringify(draftData));
-      console.log('💾 [SIGNALEMENT] Brouillon sauvegardé');
+      if (__DEV__) console.log('💾 [SIGNALEMENT] Brouillon sauvegardé');
     } catch (error) {
       console.error('❌ [SIGNALEMENT] Erreur sauvegarde brouillon:', error);
     }
   };
 
   const handleSubmit = async () => {
-    console.log('🚀 [SIGNALEMENT] Début de l\'envoi du signalement');
+    if (__DEV__) console.log('🚀 [SIGNALEMENT] Début de l\'envoi du signalement');
     
     // Validation renforcée des champs obligatoires
     const errors: string[] = [];
@@ -214,7 +214,7 @@ export default function Signalement() {
 
   const performSubmit = async () => {
     setIsLoading(true);
-    console.log('📤 [SIGNALEMENT] Préparation de l\'envoi...');
+    if (__DEV__) console.log('📤 [SIGNALEMENT] Préparation de l\'envoi...');
 
     try {
       // Créer FormData avec toutes les données
@@ -240,7 +240,7 @@ export default function Signalement() {
         const filename = imageUri.split('/').pop() || 'incident.jpg';
         const fileType = filename.split('.').pop() || 'jpg';
         
-        console.log('📷 [SIGNALEMENT] Ajout de l\'image:', { filename, fileType });
+        if (__DEV__) console.log('📷 [SIGNALEMENT] Ajout de l\'image:', { filename, fileType });
         
         formData.append('image', {
           uri: imageUri,
@@ -249,8 +249,8 @@ export default function Signalement() {
         } as any);
       }
 
-      console.log('🌐 [SIGNALEMENT] Envoi vers:', `${API_BASE_URL}/api/incidents`);
-      console.log('🔑 [SIGNALEMENT] Token:', userToken ? 'Présent' : 'Absent');
+      if (__DEV__) console.log('🌐 [SIGNALEMENT] Envoi vers:', `${API_BASE_URL}/api/incidents`);
+      if (__DEV__) console.log('🔑 [SIGNALEMENT] Token:', userToken ? 'Présent' : 'Absent');
 
       const response = await apiFetch('/api/incidents', {
         method: 'POST',
@@ -258,19 +258,19 @@ export default function Signalement() {
         isMultipart: true,
       });
 
-      console.log('📨 [SIGNALEMENT] Statut de la réponse:', response.status);
+      if (__DEV__) console.log('📨 [SIGNALEMENT] Statut de la réponse:', response.status);
       
       let result;
       try {
         result = await response.json();
-        console.log('📋 [SIGNALEMENT] Réponse complète:', result);
+        if (__DEV__) console.log('📋 [SIGNALEMENT] Réponse (success/message):', { success: result?.success, message: result?.message });
       } catch (parseError) {
-        console.error('❌ [SIGNALEMENT] Erreur parsing JSON:', parseError);
+        if (__DEV__) console.error('❌ [SIGNALEMENT] Erreur parsing JSON:', parseError);
         throw new Error('Réponse du serveur invalide');
       }
 
       if (response.ok && result.success) {
-        console.log('✅ [SIGNALEMENT] Signalement envoyé avec succès!');
+        if (__DEV__) console.log('✅ [SIGNALEMENT] Signalement envoyé avec succès!');
         
         Alert.alert(
           '🎉 Succès !',
@@ -306,7 +306,7 @@ export default function Signalement() {
         throw new Error(errorMessage);
       }
     } catch (error: any) {
-      console.error('❌ [SIGNALEMENT] Erreur complète:', error);
+      if (__DEV__) console.error('❌ [SIGNALEMENT] Erreur complète:', error);
       
       let userMessage = 'Impossible d\'envoyer le signalement. ';
       

@@ -19,6 +19,8 @@ const updateIncidentSchema = z.object({
     resolution_comment: z.string().optional()
 });
 
+const IS_PROD = process.env.NODE_ENV === 'production';
+
 // Fonction utilitaire pour ajouter à l'historique
 const addToHistory = (incidentId, action, oldStatus, newStatus, comment, userId, userRole) => {
     return new Promise((resolve, reject) => {
@@ -38,8 +40,11 @@ const addToHistory = (incidentId, action, oldStatus, newStatus, comment, userId,
 // Créer un incident (modifié pour supporter les images)
 const createIncident = async (req, res) => {
     try {
-        console.log('🔍 [INCIDENT] Body reçu:', req.body);
-        console.log('🔍 [INCIDENT] Fichier reçu:', req.file);
+        if (!IS_PROD) {
+            // Attention : ne pas loguer les champs complets (PII).
+            console.log('🔍 [INCIDENT] Création - champs body:', Object.keys(req.body || {}));
+            console.log('🔍 [INCIDENT] Image fournie:', !!req.file);
+        }
 
         // Convertir les strings en nombres pour la validation Zod
         const bodyData = {
@@ -63,7 +68,9 @@ const createIncident = async (req, res) => {
         // Récupérer le nom du fichier si une image a été uploadée
         const imagePath = req.file ? req.file.filename : null;
         
-        console.log('✅ [INCIDENT] Données validées:', { type, title, description, date, idUtilisateur, idBatiment, etage, numero_porte, imagePath });
+        if (!IS_PROD) {
+            console.log('✅ [INCIDENT] Données validées:', { type, title, idUtilisateur, idBatiment, image: !!imagePath });
+        }
 
         // Vérifier l'existence de l'utilisateur
         const userQuery = req.user.role === 'locataire' ? 
@@ -80,7 +87,7 @@ const createIncident = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
             }
 
-            console.log('✅ [INCIDENT] Utilisateur trouvé:', user);
+            if (!IS_PROD) console.log('✅ [INCIDENT] Utilisateur trouvé');
 
             // Vérifier l'existence du bâtiment
             db.get('SELECT id FROM batiments WHERE id = ?', [idBatiment], async (err, batiment) => {
@@ -93,14 +100,14 @@ const createIncident = async (req, res) => {
                     return res.status(404).json({ success: false, message: 'Bâtiment non trouvé.' });
                 }
 
-                console.log('✅ [INCIDENT] Bâtiment trouvé:', batiment);
+                if (!IS_PROD) console.log('✅ [INCIDENT] Bâtiment trouvé');
 
                 // Insertion de l'incident avec image et titre
                 const query = `INSERT INTO incidents (type, title, description, date, image, status, idUtilisateur, idBatiment, etage, numero_porte) 
                                VALUES (?, ?, ?, ?, ?, 'nouveau', ?, ?, ?, ?)`;
                 const params = [type, title || type, description, date, imagePath, idUtilisateur, idBatiment, etage, numero_porte];
 
-                console.log('🔄 [INCIDENT] Insertion en cours...', { query, params });
+                if (!IS_PROD) console.log('🔄 [INCIDENT] Insertion en cours...');
 
                 db.run(query, params, async function(err) {
                     if (err) {
@@ -109,13 +116,13 @@ const createIncident = async (req, res) => {
                     }
 
                     const incidentId = this.lastID;
-                    console.log('✅ [INCIDENT] Incident créé avec ID:', incidentId);
+                    if (!IS_PROD) console.log('✅ [INCIDENT] Incident créé avec ID:', incidentId);
 
                     try {
                         // Ajouter à l'historique
                         await addToHistory(incidentId, 'Création', null, 'nouveau', 'Incident créé', idUtilisateur, req.user.role);
 
-                        console.log('🎉 [INCIDENT] Incident créé avec succès!');
+                        if (!IS_PROD) console.log('🎉 [INCIDENT] Incident créé avec succès!');
                         res.status(201).json({ 
                             success: true,
                             message: 'Incident signalé avec succès', 

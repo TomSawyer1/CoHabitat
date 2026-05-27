@@ -14,6 +14,7 @@ import {
     View
 } from "react-native";
 import Header from "../../components/Header";
+import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useRegisterStyle } from "../../hooks/useRegisterStyle";
 
@@ -37,32 +38,30 @@ export default function Register() {
   // Charger les bâtiments au démarrage
   useEffect(() => {
     const fetchBuildings = async () => {
-      console.log('🏢 Chargement des bâtiments...');
       setBuildingsLoading(true);
       try {
-        console.log('🌐 URL API:', API_BASE_URL);
         // Récupérer le token
         const response = await apiFetch('/api/buildings', { auth: false });
-        console.log('📡 Réponse buildings:', response.status);
+        if (__DEV__) console.log('📡 [REGISTER] buildings status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('🏢 Bâtiments reçus:', data);
+          if (__DEV__) console.log('🏢 [REGISTER] buildings count:', Array.isArray(data?.buildings) ? data.buildings.length : 0);
           
           // Extraire le tableau de bâtiments de la réponse
           if (data.success && Array.isArray(data.buildings)) {
             setBuildings(data.buildings);
           } else {
-            console.error('Format de réponse inattendu:', data);
+            if (__DEV__) console.error('[REGISTER] Format de réponse inattendu:', data);
             setBuildings([]);
             Alert.alert("Erreur", "Format de données des bâtiments invalide.");
           }
         } else {
-          console.error("Erreur lors de la récupération des bâtiments:", response.status);
+          if (__DEV__) console.error("[REGISTER] Erreur lors de la récupération des bâtiments:", response.status);
           Alert.alert("Erreur", "Impossible de charger la liste des bâtiments. Vérifiez que le serveur est démarré.");
         }
       } catch (error) {
-        console.error("Erreur réseau lors de la récupération des bâtiments:", error);
+        if (__DEV__) console.error("Erreur réseau lors de la récupération des bâtiments:", error);
         Alert.alert("Erreur", "Impossible de se connecter au serveur pour charger les bâtiments.");
       } finally {
         setBuildingsLoading(false);
@@ -72,8 +71,7 @@ export default function Register() {
   }, []);
 
   const handleRegister = async () => {
-    console.log('🚀 Tentative d\'inscription...');
-    console.log('📝 Données:', { nom, prenom, email, telephone, selectedBuilding });
+    if (__DEV__) console.log('🚀 [REGISTER] Tentative d\'inscription', { hasEmail: !!email, hasPhone: !!telephone, hasBuilding: !!selectedBuilding });
     
     // Validation des mots de passe
     if (password !== confirmPassword) {
@@ -103,7 +101,6 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      console.log('🌐 Envoi vers:', `${API_BASE_URL}/auth/register/locataire`);
       const response = await apiFetch('/auth/register/locataire', {
         method: 'POST',
         auth: false,
@@ -117,9 +114,9 @@ export default function Register() {
         },
       });
 
-      console.log('📡 Réponse inscription:', response.status);
+      if (__DEV__) console.log('📡 [REGISTER] Réponse inscription:', response.status);
       const data = await response.json();
-      console.log('📄 Data reçue:', data);
+      if (__DEV__) console.log('📄 [REGISTER] Réponse inscription (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok) {
         Alert.alert(
@@ -136,7 +133,7 @@ export default function Register() {
         Alert.alert("Erreur", data.message || "Erreur lors de l'inscription.");
       }
     } catch (error) {
-      console.error("Erreur lors de l'inscription:", error);
+      if (__DEV__) console.error("Erreur lors de l'inscription:", error);
       Alert.alert("Erreur", "Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
     } finally {
       setIsLoading(false);

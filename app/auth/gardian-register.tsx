@@ -14,6 +14,7 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/Header";
+import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useGuardianRegisterStyle } from "../../hooks/useGuardianRegisterStyle";
 
@@ -37,32 +38,30 @@ export default function GardianRegister() {
 
   useEffect(() => {
     const fetchBuildings = async () => {
-      console.log('🏢 [GARDIEN] Chargement des bâtiments...');
       setBuildingsLoading(true);
       try {
-        console.log('🌐 [GARDIEN] URL API:', API_BASE_URL);
         // Récupérer le token
         const response = await apiFetch('/api/buildings', { auth: false });
-        console.log('📡 [GARDIEN] Réponse buildings:', response.status);
+        if (__DEV__) console.log('📡 [GARDIEN REGISTER] buildings status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('🏢 [GARDIEN] Bâtiments reçus:', data);
+          if (__DEV__) console.log('🏢 [GARDIEN REGISTER] buildings count:', Array.isArray(data?.buildings) ? data.buildings.length : 0);
           
           // Extraire le tableau de bâtiments de la réponse
           if (data.success && Array.isArray(data.buildings)) {
             setBuildings(data.buildings);
           } else {
-            console.error('Format de réponse inattendu:', data);
+            if (__DEV__) console.error('[GARDIEN REGISTER] Format de réponse inattendu:', data);
             setBuildings([]);
             Alert.alert("Erreur", "Format de données des bâtiments invalide.");
           }
         } else {
-          console.error("Erreur lors de la récupération des bâtiments:", response.status);
+          if (__DEV__) console.error("[GARDIEN REGISTER] Erreur lors de la récupération des bâtiments:", response.status);
           Alert.alert("Erreur", "Impossible de charger la liste des bâtiments. Vérifiez que le serveur est démarré.");
         }
       } catch (error) {
-        console.error("Erreur réseau lors de la récupération des bâtiments:", error);
+        if (__DEV__) console.error("Erreur réseau lors de la récupération des bâtiments:", error);
         Alert.alert("Erreur", "Impossible de se connecter au serveur pour charger les bâtiments.");
       } finally {
         setBuildingsLoading(false);
@@ -72,8 +71,7 @@ export default function GardianRegister() {
   }, []);
 
   const handleRegister = async () => {
-    console.log('🚀 [GARDIEN] Tentative d\'inscription...');
-    console.log('📝 [GARDIEN] Données:', { firstName, lastName, email, phoneNumber, building, guardNumber });
+    if (__DEV__) console.log('🚀 [GARDIEN REGISTER] Tentative d\'inscription', { hasEmail: !!email, hasPhone: !!phoneNumber, hasBuilding: !!building, hasGuardNumber: !!guardNumber });
     
     // Validation des mots de passe
     if (password !== confirmPassword) {
@@ -117,9 +115,9 @@ export default function GardianRegister() {
         },
       });
 
-      console.log('📡 [GARDIEN] Réponse inscription:', response.status);
+      if (__DEV__) console.log('📡 [GARDIEN REGISTER] Réponse inscription:', response.status);
       const data = await response.json();
-      console.log('📄 [GARDIEN] Data reçue:', data);
+      if (__DEV__) console.log('📄 [GARDIEN REGISTER] Réponse inscription (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok) {
         Alert.alert(
@@ -136,7 +134,7 @@ export default function GardianRegister() {
         Alert.alert("Erreur", data.message || "Erreur lors de l'inscription du gardien.");
       }
     } catch (error) {
-      console.error("Erreur lors de l'inscription du gardien:", error);
+      if (__DEV__) console.error("Erreur lors de l'inscription du gardien:", error);
       Alert.alert("Erreur", "Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
     } finally {
       setIsLoading(false);
