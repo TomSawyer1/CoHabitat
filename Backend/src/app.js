@@ -1,30 +1,43 @@
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan'); // Pour le logging des requêtes
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 const path = require('path');
+const { CORS_ORIGINS, NODE_ENV } = require('./config/env');
 const authRoutes = require('./routes/authRoutes');
-const buildingRoutes = require('./routes/buildingRoutes'); // Importation des routes des bâtiments
+const buildingRoutes = require('./routes/buildingRoutes');
 const incidentsRoutes = require('./routes/incidentsRoutes');
 
 const app = express();
 
-// Middleware pour le logging des requêtes
-app.use(morgan('dev')); // Utilisez 'dev' pour un format de log concis
-
-// Middleware pour parser le JSON
-app.use(express.json());
-
-// Middleware CORS amélioré pour le développement
-app.use(cors({
-    origin: [
-        'http://localhost:19006',
-        'http://localhost:8081',
-        'exp://localhost:19000',
-        'https://zoological-growth.up.railway.app', // URL Railway
-        // Ajoute ici l'URL de ton front en production si besoin
-    ],
-    credentials: true
+app.use(helmet({
+    // Les images uploadées sont servies depuis ce même serveur ; on autorise
+    // le chargement cross-origin pour l'app mobile / web.
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
+
+app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+app.use(express.json({ limit: '1mb' }));
+
+app.use(cors({
+    origin: CORS_ORIGINS,
+    credentials: true,
+}));
+
+// Limite les tentatives de brute force sur l'authentification.
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Trop de tentatives. Réessayez dans 15 minutes.',
+    },
+});
+app.use('/auth', authLimiter);
 
 // Servir les images statiques depuis le dossier uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

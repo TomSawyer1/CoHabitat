@@ -182,6 +182,24 @@ const db = new sqlite3.Database(dbPath, (err) => {
             } else {
                 console.log('Table incident_comments créée ou déjà existante.');
             }
+
+            // Index pour accélérer les requêtes fréquentes
+            const indexes = [
+                'CREATE INDEX IF NOT EXISTS idx_locataire_batiments ON locataire(batiments_id)',
+                'CREATE INDEX IF NOT EXISTS idx_guardians_batiments ON guardians(batiments_id)',
+                'CREATE INDEX IF NOT EXISTS idx_incidents_idBatiment ON incidents(idBatiment)',
+                'CREATE INDEX IF NOT EXISTS idx_incidents_idUtilisateur ON incidents(idUtilisateur)',
+                'CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status)',
+                'CREATE INDEX IF NOT EXISTS idx_incident_history_incident ON incident_history(incident_id)',
+                'CREATE INDEX IF NOT EXISTS idx_incident_comments_incident ON incident_comments(incident_id)',
+            ];
+            indexes.forEach((sql) => {
+                db.run(sql, (idxErr) => {
+                    if (idxErr) {
+                        console.error('Erreur création index:', idxErr.message);
+                    }
+                });
+            });
         });
     }
 });

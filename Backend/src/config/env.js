@@ -38,8 +38,24 @@ if (WEAK_SECRETS.has(process.env.JWT_SECRET.trim().toLowerCase())) {
     process.exit(1);
 }
 
+const DEFAULT_CORS_ORIGINS = [
+    'http://localhost:19006',
+    'http://localhost:8081',
+    'exp://localhost:19000',
+    'http://localhost:3000',
+];
+
+const parseCorsOrigins = () => {
+    const raw = process.env.CORS_ORIGINS;
+    if (!raw || !raw.trim()) {
+        return DEFAULT_CORS_ORIGINS;
+    }
+    return raw.split(',').map((o) => o.trim()).filter(Boolean);
+};
+
 module.exports = {
     JWT_SECRET: process.env.JWT_SECRET,
     PORT: parseInt(process.env.PORT, 10) || 3000,
     NODE_ENV: process.env.NODE_ENV || 'development',
+    CORS_ORIGINS: parseCorsOrigins(),
 };
