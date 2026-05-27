@@ -82,7 +82,7 @@ Le projet est **fonctionnel sur le papier** (les principaux parcours sont câbl�
 | S5 | **Le `req.body` est loggué entier** → les **mots de passe en clair** apparaissent dans les logs serveur et dans les logs d'inscription/connexion. | `Backend/src/app.js:33-41`, `authController.js:8/55` | 🔴 Critique |
 | S6 | **Aucun rate limiting** sur `/auth/login` ni `/auth/register/*` → brute force trivial. | absence de `express-rate-limit` | 🟠 Élevé |
 | S7 | **Aucune en-tête de sécurité** : pas de `helmet`, pas de CSP, pas de HSTS. | `Backend/src/app.js` | 🟠 Élevé |
-| S8 | **CORS très permissif** (`credentials: true` + liste contenant `localhost:*` et une URL Railway hardcodée). | `Backend/src/app.js:18-27` | 🟡 Moyen |
+| S8 | **CORS** : `credentials: true` + origines localhost/Expo par défaut ; configurable via `CORS_ORIGINS` (`Backend/src/config/env.js`). | `Backend/src/app.js`, `env.js` | 🟡 Moyen |
 | S9 | **Le token JWT est stocké dans `AsyncStorage`** non chiffré (acceptable côté mobile mais à signaler ; sur Web il devient `localStorage`, donc vulnérable XSS). | tous les écrans `auth/*.tsx` | 🟡 Moyen |
 | S10 | **Aucune politique de mot de passe forte** côté serveur (8 caractères mini, mais aucune complexité, aucune liste noire). | `authController.js:387` | 🟡 Moyen |
 
@@ -165,7 +165,7 @@ Le projet est **fonctionnel sur le papier** (les principaux parcours sont câbl�
 
 ### 4.6 Configuration & déploiement
 
-- **URL Railway hardcodée** dans la liste CORS (`zoological-growth.up.railway.app`). À passer en `process.env.CORS_ORIGINS`.
+- **CORS** : origines via `CORS_ORIGINS` dans `Backend/.env` (plus d’URL cloud hardcodée).
 - **Aucun `Dockerfile`**, aucun `docker-compose.yml`, aucun pipeline CI/CD (`.github/workflows/` absent).
 - **Aucun reverse-proxy / HTTPS** documenté — le `.env-exemple` recommande HTTPS en prod mais rien n'est outillé.
 - **Pas de séparation `dev` / `prod`** : un seul `app.js`, pas de profil Zod différent, pas de niveau de log configurable.
