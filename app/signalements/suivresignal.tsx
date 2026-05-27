@@ -21,6 +21,7 @@ import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useSuivreSignalStyle } from "../../hooks/useSuivreSignalStyle";
+import { colors, getIncidentStatusColor } from "../../theme";
 
 interface Incident {
   id: number;
@@ -78,6 +79,7 @@ export default function SuivreSignal() {
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [imageToken, setImageToken] = useState<string | null>(null);
 
   // Types de signalement (identique à signalement.tsx)
   const signalementTypes = [
@@ -95,6 +97,15 @@ export default function SuivreSignal() {
   const incidentId = params.id as string;
 
   useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const t = await AsyncStorage.getItem("token");
+        setImageToken(t);
+      } catch {
+        setImageToken(null);
+      }
+    };
+    void loadToken();
     if (incidentId) {
       loadIncidentData();
     }
@@ -102,7 +113,7 @@ export default function SuivreSignal() {
 
   const loadIncidentData = async () => {
     try {
-      console.log('📋 [SUIVI] Chargement incident ID:', incidentId);
+      if (__DEV__) console.log('📋 [SUIVI] Chargement incident ID:', incidentId);
       setIsLoading(true);
 
       // Récupérer les détails de l'incident
@@ -110,7 +121,7 @@ export default function SuivreSignal() {
 
       if (incidentResponse.ok) {
         const incidentData = await incidentResponse.json();
-        console.log('📋 [SUIVI] Incident reçu:', incidentData);
+        if (__DEV__) console.log('📋 [SUIVI] Incident reçu (success):', { success: incidentData?.success });
         
         if (incidentData.success) {
           setIncident(incidentData.incident);
@@ -124,7 +135,7 @@ export default function SuivreSignal() {
 
       if (commentsResponse.ok) {
         const commentsData = await commentsResponse.json();
-        console.log('💬 [SUIVI] Commentaires reçus:', commentsData);
+        if (__DEV__) console.log('💬 [SUIVI] Commentaires (count):', Array.isArray(commentsData?.comments) ? commentsData.comments.length : 0);
         
         if (commentsData.success) {
           setComments(commentsData.comments || []);
@@ -136,7 +147,7 @@ export default function SuivreSignal() {
 
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
-        console.log('📚 [SUIVI] Historique reçu:', historyData);
+        if (__DEV__) console.log('📚 [SUIVI] Historique (count):', Array.isArray(historyData?.history) ? historyData.history.length : 0);
         
         if (historyData.success) {
           setHistory(historyData.history || []);
@@ -181,7 +192,7 @@ export default function SuivreSignal() {
 
     try {
       setIsSubmittingComment(true);
-      console.log('💬 [SUIVI] Envoi commentaire:', newComment);
+      if (__DEV__) console.log('💬 [SUIVI] Envoi commentaire (len):', newComment.trim().length);
 
       const response = await apiFetch(`/api/incidents/${incidentId}/comments`, {
         method: 'POST',
@@ -189,7 +200,7 @@ export default function SuivreSignal() {
       });
 
       const data = await response.json();
-      console.log('💬 [SUIVI] Réponse commentaire:', data);
+      if (__DEV__) console.log('💬 [SUIVI] Réponse commentaire (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok && data.success) {
         setNewComment('');
@@ -217,16 +228,6 @@ export default function SuivreSignal() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'nouveau': return '#ff9500';
-      case 'en_cours': return '#007AFF';
-      case 'resolu': return '#34c759';
-      case 'ferme': return '#8e8e93';
-      default: return '#8e8e93';
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
@@ -251,10 +252,10 @@ export default function SuivreSignal() {
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: '#666', fontSize: 16 }}>Incident non trouvé</Text>
         <TouchableOpacity 
-          style={{ marginTop: 20, padding: 10, backgroundColor: '#007AFF', borderRadius: 8 }}
+          style={{ marginTop: 20, padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}
           onPress={() => router.back()}
         >
-          <Text style={{ color: 'white' }}>Retour</Text>
+          <Text style={{ color: colors.primaryContrast }}>Retour</Text>
         </TouchableOpacity>
       </View>
     );
@@ -334,7 +335,7 @@ export default function SuivreSignal() {
 
               <View style={styles.metricItem}>
                 <Text style={styles.metricTitle}>Statut</Text>
-                <Text style={[styles.metricData, { color: getStatusColor(incident.status) }]}>
+                <Text style={[styles.metricData, { color: getIncidentStatusColor(incident.status) }]}>
                   {getStatusText(incident.status)}
                 </Text>
               </View>
@@ -349,7 +350,11 @@ export default function SuivreSignal() {
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
                 <Image 
-                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                  source={{
+                    uri: imageToken
+                      ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
+                      : `${API_BASE_URL}/uploads/${incident.image}`,
+                  }}
                   style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
                   resizeMode="cover"
                 />

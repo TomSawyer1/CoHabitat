@@ -1,6 +1,24 @@
 const db = require('../db/database');
 const { z } = require('zod');
 
+const asInt = (value) => {
+    const n = Number.parseInt(String(value), 10);
+    return Number.isFinite(n) ? n : null;
+};
+
+const getCurrentUserBuildingId = (req) => asInt(req.user?.building_id);
+
+const canAccessIncident = (req, incident) => {
+    if (!req.user || !incident) return false;
+
+    if (req.user.role === 'guardian') {
+        const guardianBuildingId = getCurrentUserBuildingId(req);
+        return guardianBuildingId !== null && asInt(incident.idBatiment) === guardianBuildingId;
+    }
+
+    return asInt(incident.idUtilisateur) === asInt(req.user.id);
+};
+
 // Schémas de validation Zod
 const incidentSchema = z.object({
     type: z.string().min(1),
@@ -40,17 +58,31 @@ const addToHistory = (incidentId, action, oldStatus, newStatus, comment, userId,
 // Créer un incident (modifié pour supporter les images)
 const createIncident = async (req, res) => {
     try {
+        // Démo publique : seuls les locataires créent des incidents.
+        if (req.user.role !== 'locataire') {
+            return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+        }
+
+        const buildingIdFromToken = getCurrentUserBuildingId(req);
+        if (buildingIdFromToken === null) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bâtiment manquant dans la session. Reconnectez-vous.',
+            });
+        }
+
         if (!IS_PROD) {
             // Attention : ne pas loguer les champs complets (PII).
             console.log('🔍 [INCIDENT] Création - champs body:', Object.keys(req.body || {}));
             console.log('🔍 [INCIDENT] Image fournie:', !!req.file);
         }
 
-        // Convertir les strings en nombres pour la validation Zod
+        // Convertir les strings en nombres pour la validation Zod.
+        // Important : on ne fait pas confiance au client pour idUtilisateur/idBatiment.
         const bodyData = {
             ...req.body,
-            idUtilisateur: parseInt(req.body.idUtilisateur),
-            idBatiment: parseInt(req.body.idBatiment)
+            idUtilisateur: asInt(req.user.id),
+            idBatiment: buildingIdFromToken,
         };
 
         const parseResult = incidentSchema.safeParse(bodyData);
@@ -72,12 +104,8 @@ const createIncident = async (req, res) => {
             console.log('✅ [INCIDENT] Données validées:', { type, title, idUtilisateur, idBatiment, image: !!imagePath });
         }
 
-        // Vérifier l'existence de l'utilisateur
-        const userQuery = req.user.role === 'locataire' ? 
-            'SELECT id FROM locataire WHERE id = ?' : 
-            'SELECT id FROM guardians WHERE id = ?';
-
-        db.get(userQuery, [idUtilisateur], (err, user) => {
+        // Vérifier l'existence de l'utilisateur (locataire uniquement ici)
+        db.get('SELECT id, batiments_id FROM locataire WHERE id = ?', [idUtilisateur], (err, user) => {
             if (err) {
                 console.error('❌ [INCIDENT] Erreur vérification utilisateur:', err.message);
                 return res.status(500).json({ success: false, message: 'Erreur serveur.' });
@@ -85,6 +113,14 @@ const createIncident = async (req, res) => {
             if (!user) {
                 console.error('❌ [INCIDENT] Utilisateur non trouvé:', idUtilisateur);
                 return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
+            }
+
+            // Vérifier la cohérence bâtiment : token vs BDD
+            if (asInt(user.batiments_id) !== idBatiment) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Accès non autorisé.',
+                });
             }
 
             if (!IS_PROD) console.log('✅ [INCIDENT] Utilisateur trouvé');
@@ -150,7 +186,16 @@ const createIncident = async (req, res) => {
 
 // Obtenir tous les incidents (pour les gardiens)
 const getAllIncidents = (req, res) => {
-    const { status, building_id } = req.query;
+    if (req.user.role !== 'guardian') {
+        return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+    }
+
+    const guardianBuildingId = getCurrentUserBuildingId(req);
+    if (guardianBuildingId === null) {
+        return res.status(400).json({ success: false, message: 'Bâtiment manquant dans la session.' });
+    }
+
+    const { status } = req.query;
     
     let query = `
         SELECT i.*, 
@@ -161,19 +206,14 @@ const getAllIncidents = (req, res) => {
         LEFT JOIN locataire l ON i.idUtilisateur = l.id
         LEFT JOIN batiments b ON i.idBatiment = b.id
         LEFT JOIN guardians g ON i.assigned_guardian_id = g.id
-        WHERE 1=1
+        WHERE i.idBatiment = ?
     `;
     
-    const params = [];
+    const params = [guardianBuildingId];
     
     if (status) {
         query += ' AND i.status = ?';
         params.push(status);
-    }
-    
-    if (building_id) {
-        query += ' AND i.idBatiment = ?';
-        params.push(building_id);
     }
     
     query += ' ORDER BY i.created_at DESC';
@@ -194,7 +234,17 @@ const getIncidentsByUserId = (req, res) => {
         return res.status(400).json({ success: false, message: 'Paramètre userId invalide.' });
     }
 
-    const query = `
+    // Locataire : uniquement ses incidents
+    if (req.user.role === 'locataire' && String(req.user.id) !== String(userId)) {
+        return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+    }
+
+    const guardianBuildingId = req.user.role === 'guardian' ? getCurrentUserBuildingId(req) : null;
+    if (req.user.role === 'guardian' && guardianBuildingId === null) {
+        return res.status(400).json({ success: false, message: 'Bâtiment manquant dans la session.' });
+    }
+
+    let query = `
         SELECT i.*, 
                b.nom as building_nom,
                g.nom as guardian_nom, g.prenom as guardian_prenom, g.telephone as guardian_phone
@@ -202,10 +252,16 @@ const getIncidentsByUserId = (req, res) => {
         LEFT JOIN batiments b ON i.idBatiment = b.id
         LEFT JOIN guardians g ON i.assigned_guardian_id = g.id
         WHERE i.idUtilisateur = ?
-        ORDER BY i.created_at DESC
     `;
 
-    db.all(query, [userId], (err, rows) => {
+    const params = [userId];
+    if (req.user.role === 'guardian') {
+        query += ' AND i.idBatiment = ?';
+        params.push(guardianBuildingId);
+    }
+    query += ' ORDER BY i.created_at DESC';
+
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error('Erreur lors de la récupération des incidents:', err.message);
             return res.status(500).json({ success: false, message: 'Erreur serveur.' });
@@ -217,6 +273,15 @@ const getIncidentsByUserId = (req, res) => {
 // Mettre à jour un incident (pour les gardiens)
 const updateIncident = async (req, res) => {
     try {
+        if (req.user.role !== 'guardian') {
+            return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+        }
+
+        const guardianBuildingId = getCurrentUserBuildingId(req);
+        if (guardianBuildingId === null) {
+            return res.status(400).json({ success: false, message: 'Bâtiment manquant dans la session.' });
+        }
+
         const incidentId = parseInt(req.params.id, 10);
         if (isNaN(incidentId)) {
             return res.status(400).json({ success: false, message: 'ID incident invalide.' });
@@ -239,6 +304,10 @@ const updateIncident = async (req, res) => {
             }
             if (!currentIncident) {
                 return res.status(404).json({ success: false, message: 'Incident non trouvé.' });
+            }
+
+            if (asInt(currentIncident.idBatiment) !== guardianBuildingId) {
+                return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
             }
 
             const updates = parseResult.data;
@@ -308,6 +377,28 @@ const updateIncident = async (req, res) => {
     }
 };
 
+const ensureIncidentAccess = (req, res, next) => {
+    const incidentId = parseInt(req.params.id, 10);
+    if (isNaN(incidentId)) {
+        return res.status(400).json({ success: false, message: 'ID incident invalide.' });
+    }
+
+    db.get('SELECT id, idUtilisateur, idBatiment, image FROM incidents WHERE id = ?', [incidentId], (err, incident) => {
+        if (err) {
+            console.error('Erreur lors de la vérification d\'accès incident:', err);
+            return res.status(500).json({ success: false, message: 'Erreur serveur.' });
+        }
+        if (!incident) {
+            return res.status(404).json({ success: false, message: 'Incident non trouvé.' });
+        }
+        if (!canAccessIncident(req, incident)) {
+            return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+        }
+        req.incident = incident;
+        next();
+    });
+};
+
 // Obtenir l'historique d'un incident
 const getIncidentHistory = (req, res) => {
     const incidentId = parseInt(req.params.id, 10);
@@ -345,6 +436,11 @@ const addIncidentComment = async (req, res) => {
 
         if (isNaN(incidentId) || !comment) {
             return res.status(400).json({ success: false, message: 'ID incident et commentaire requis.' });
+        }
+
+        // `ensureIncidentAccess` a déjà vérifié l'accès et attaché `req.incident`.
+        if (req.incident && asInt(req.incident.id) !== incidentId) {
+            return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
         }
 
         const query = `INSERT INTO incident_comments (incident_id, user_id, user_role, comment) VALUES (?, ?, ?, ?)`;
@@ -410,14 +506,13 @@ const getIncidentComments = (req, res) => {
 
 // Statistiques des incidents (pour les gardiens)
 const getIncidentStats = (req, res) => {
-    const { building_id } = req.query;
-    
-    let whereClause = '';
-    const params = [];
-    
-    if (building_id) {
-        whereClause = 'WHERE idBatiment = ?';
-        params.push(building_id);
+    if (req.user.role !== 'guardian') {
+        return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+    }
+
+    const guardianBuildingId = getCurrentUserBuildingId(req);
+    if (guardianBuildingId === null) {
+        return res.status(400).json({ success: false, message: 'Bâtiment manquant dans la session.' });
     }
     
     const query = `
@@ -428,10 +523,10 @@ const getIncidentStats = (req, res) => {
             SUM(CASE WHEN status = 'resolu' THEN 1 ELSE 0 END) as resolus,
             SUM(CASE WHEN status = 'ferme' THEN 1 ELSE 0 END) as fermes
         FROM incidents 
-        ${whereClause}
+        WHERE idBatiment = ?
     `;
 
-    db.get(query, params, (err, stats) => {
+    db.get(query, [guardianBuildingId], (err, stats) => {
         if (err) {
             console.error('Erreur lors de la récupération des statistiques:', err);
             return res.status(500).json({ success: false, message: 'Erreur serveur.' });
@@ -469,6 +564,10 @@ const getIncidentById = (req, res) => {
             return res.status(404).json({ success: false, message: 'Incident non trouvé.' });
         }
 
+        if (!canAccessIncident(req, incident)) {
+            return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
+        }
+
         res.json({ success: true, incident });
     });
 };
@@ -479,6 +578,7 @@ module.exports = {
     getIncidentsByUserId,
     getIncidentById,
     updateIncident,
+    ensureIncidentAccess,
     getIncidentHistory,
     addIncidentComment,
     getIncidentComments,

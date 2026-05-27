@@ -19,6 +19,7 @@ import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useGererIncidentsStyle } from "../../hooks/useGererIncidentsStyle";
+import { colors, getIncidentStatusColor, incidentStatusColors } from "../../theme";
 
 interface Incident {
   id: number;
@@ -75,6 +76,7 @@ export default function GererIncidents() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [comment, setComment] = useState("");
   const [incidentStatus, setIncidentStatus] = useState("nouveau");
+  const [imageToken, setImageToken] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -97,6 +99,15 @@ export default function GererIncidents() {
   const incidentId = params.id as string;
 
   useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const t = await AsyncStorage.getItem("token");
+        setImageToken(t);
+      } catch {
+        setImageToken(null);
+      }
+    };
+    void loadToken();
     if (incidentId) {
       loadIncidentData();
     }
@@ -104,14 +115,14 @@ export default function GererIncidents() {
 
   const loadIncidentData = async () => {
     try {
-      console.log('📋 [GESTION] Chargement incident ID:', incidentId);
+      if (__DEV__) console.log('📋 [GESTION] Chargement incident ID:', incidentId);
       setIsLoading(true);
 
       const incidentResponse = await apiFetch(`/api/incidents/${incidentId}`);
 
       if (incidentResponse.ok) {
         const incidentData = await incidentResponse.json();
-        console.log('📋 [GESTION] Incident reçu:', incidentData);
+        if (__DEV__) console.log('📋 [GESTION] Incident reçu (success):', { success: incidentData?.success });
         
         if (incidentData.success) {
           setIncident(incidentData.incident);
@@ -129,7 +140,7 @@ export default function GererIncidents() {
 
       if (commentsResponse.ok) {
         const commentsData = await commentsResponse.json();
-        console.log('💬 [GESTION] Commentaires reçus:', commentsData);
+        if (__DEV__) console.log('💬 [GESTION] Commentaires (count):', Array.isArray(commentsData?.comments) ? commentsData.comments.length : 0);
         
         if (commentsData.success) {
           setComments(commentsData.comments || []);
@@ -141,7 +152,7 @@ export default function GererIncidents() {
 
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
-        console.log('📚 [GESTION] Historique reçu:', historyData);
+        if (__DEV__) console.log('📚 [GESTION] Historique (count):', Array.isArray(historyData?.history) ? historyData.history.length : 0);
         
         if (historyData.success) {
           setHistory(historyData.history || []);
@@ -164,7 +175,7 @@ export default function GererIncidents() {
 
     try {
       setIsSubmittingComment(true);
-      console.log('💬 [GESTION] Envoi commentaire:', comment);
+      if (__DEV__) console.log('💬 [GESTION] Envoi commentaire (len):', comment.trim().length);
 
       const response = await apiFetch(`/api/incidents/${incidentId}/comments`, {
         method: 'POST',
@@ -172,7 +183,7 @@ export default function GererIncidents() {
       });
 
       const data = await response.json();
-      console.log('💬 [GESTION] Réponse commentaire:', data);
+      if (__DEV__) console.log('💬 [GESTION] Réponse commentaire (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok && data.success) {
         setComment('');
@@ -195,9 +206,7 @@ export default function GererIncidents() {
 
     try {
       setIsUpdating(true);
-      console.log('🔄 [GESTION] Mise à jour incident:', {
-        status: incidentStatus
-      });
+      if (__DEV__) console.log('🔄 [GESTION] Mise à jour incident (status):', incidentStatus);
 
       const updateData: any = {};
       
@@ -218,7 +227,7 @@ export default function GererIncidents() {
       });
 
       const data = await response.json();
-      console.log('🔄 [GESTION] Réponse mise à jour:', data);
+      if (__DEV__) console.log('🔄 [GESTION] Réponse mise à jour (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok && data.success) {
         Alert.alert('Succès', 'Incident mis à jour avec succès !');
@@ -265,16 +274,6 @@ export default function GererIncidents() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'nouveau': return '#ff9500';
-      case 'en_cours': return '#007AFF';
-      case 'resolu': return '#34c759';
-      case 'ferme': return '#8e8e93';
-      default: return '#8e8e93';
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
@@ -299,10 +298,10 @@ export default function GererIncidents() {
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: '#666', fontSize: 16 }}>Incident non trouvé</Text>
         <TouchableOpacity 
-          style={{ marginTop: 20, padding: 10, backgroundColor: '#007AFF', borderRadius: 8 }}
+          style={{ marginTop: 20, padding: 10, backgroundColor: colors.primary, borderRadius: 8 }}
           onPress={() => router.back()}
         >
-          <Text style={{ color: 'white' }}>Retour</Text>
+          <Text style={{ color: colors.primaryContrast }}>Retour</Text>
         </TouchableOpacity>
       </View>
     );
@@ -376,7 +375,7 @@ export default function GererIncidents() {
 
               <View style={styles.metricItem}>
                 <Text style={styles.metricTitle}>Statut actuel</Text>
-                <Text style={[styles.metricData, { color: getStatusColor(incident.status) }]}>
+                <Text style={[styles.metricData, { color: getIncidentStatusColor(incident.status) }]}>
                   {getStatusText(incident.status)}
                 </Text>
               </View>
@@ -391,7 +390,11 @@ export default function GererIncidents() {
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
                 <Image 
-                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                  source={{
+                    uri: imageToken
+                      ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
+                      : `${API_BASE_URL}/uploads/${incident.image}`,
+                  }}
                   style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
                   resizeMode="cover"
                 />
@@ -470,7 +473,7 @@ export default function GererIncidents() {
               
               {history.map((item, index) => (
                 <View key={`history-${item.id}`} style={styles.updateItem}>
-                  <View style={[styles.updateImagePlaceholder, { backgroundColor: '#007AFF' }]} />
+                  <View style={[styles.updateImagePlaceholder, { backgroundColor: incidentStatusColors.en_cours }]} />
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{formatDate(item.created_at)}</Text>
                     <Text style={styles.updateText}>
@@ -489,7 +492,7 @@ export default function GererIncidents() {
               {/* Commentaires */}
               {comments.map((commentItem, index) => (
                 <View key={`comment-${commentItem.id}`} style={styles.updateItem}>
-                  <View style={[styles.updateImagePlaceholder, { backgroundColor: '#34c759' }]} />
+                  <View style={[styles.updateImagePlaceholder, { backgroundColor: incidentStatusColors.resolu }]} />
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{formatDate(commentItem.created_at)}</Text>
                     <Text style={styles.updateText}>{commentItem.comment}</Text>
@@ -516,7 +519,7 @@ export default function GererIncidents() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.buttonFigma, { backgroundColor: '#666' }]}
+                style={[styles.buttonFigma, styles.secondaryButtonMuted]}
                 onPress={() => router.back()}
               >
                 <Text style={styles.primaryButtonTextFigma}>Retour</Text>

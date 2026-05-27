@@ -50,7 +50,7 @@ export default function MonBatiment() {
 
   const loadBuildingData = async () => {
     try {
-      console.log('🏢 [MON-BATIMENT] Chargement des données du bâtiment...');
+      if (__DEV__) console.log('🏢 [MON-BATIMENT] Chargement des données du bâtiment...');
       setLoading(true);
       setError(null);
 
@@ -60,10 +60,7 @@ export default function MonBatiment() {
         AsyncStorage.getItem('userId')
       ]);
 
-      console.log('📱 [MON-BATIMENT] Données utilisateur:', { 
-        hasToken: !!token, 
-        userId 
-      });
+      if (__DEV__) console.log('📱 [MON-BATIMENT] Données utilisateur:', { hasToken: !!token, hasUserId: !!userId });
 
       if (!token || !userId) {
         Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
@@ -73,14 +70,14 @@ export default function MonBatiment() {
       }
 
       // Appel API pour récupérer les informations du bâtiment
-      console.log('🌐 [MON-BATIMENT] Récupération depuis API...');
+      if (__DEV__) console.log('🌐 [MON-BATIMENT] Récupération depuis API...');
       const response = await apiFetch(`/api/buildings/${userId}`);
 
-      console.log('📡 [MON-BATIMENT] Réponse API:', response.status);
+      if (__DEV__) console.log('📡 [MON-BATIMENT] Réponse API:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('🏢 [MON-BATIMENT] Données reçues:', data);
+        if (__DEV__) console.log('🏢 [MON-BATIMENT] Données reçues (success):', { success: data?.success });
 
         if (data.success && data.building) {
           const building = data.building;

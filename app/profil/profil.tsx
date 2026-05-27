@@ -26,6 +26,7 @@ export default function Profil() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [imageToken, setImageToken] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -38,6 +39,15 @@ export default function Profil() {
   const styles = useProfilStyle();
 
   useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const t = await AsyncStorage.getItem("token");
+        setImageToken(t);
+      } catch {
+        setImageToken(null);
+      }
+    };
+    void loadToken();
     loadUserData();
     loadUserRole();
   }, []);
@@ -423,7 +433,11 @@ export default function Profil() {
                     >
                       {incident.image ? (
                         <Image 
-                          source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                          source={{
+                            uri: imageToken
+                              ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
+                              : `${API_BASE_URL}/uploads/${incident.image}`,
+                          }}
                           style={styles.incidentImage}
                           resizeMode="cover"
                         />

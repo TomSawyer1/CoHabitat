@@ -2,7 +2,8 @@ import {
     DefaultTheme,
     ThemeProvider
 } from "@react-navigation/native";
-import { Stack, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { View } from "react-native";
@@ -11,6 +12,7 @@ import { setUnauthorizedHandler } from "../config/api";
 
 export default function RootLayout() {
   const router = useRouter();
+  const segments = useSegments();
 
   // Intercepteur global 401 : si une requête API échoue avec un token expiré,
   // on est automatiquement redirigé vers la page de connexion (le storage est
@@ -20,6 +22,22 @@ export default function RootLayout() {
       router.replace("/auth/login");
     });
   }, [router]);
+
+  // Garde de navigation globale (démo publique) : empêche l'accès aux écrans
+  // protégés sans session. On laisse passer uniquement `accueil/*` et `auth/*`.
+  useEffect(() => {
+    const check = async () => {
+      const root = segments?.[0];
+      const isPublic = root === "auth" || root === "accueil";
+      if (isPublic) return;
+
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        router.replace("/auth/login");
+      }
+    };
+    void check();
+  }, [router, segments]);
 
   return (
     <ThemeProvider value={DefaultTheme}>

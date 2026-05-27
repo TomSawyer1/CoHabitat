@@ -18,6 +18,7 @@ import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useIncidentsListStyle } from "../../hooks/useIncidentsListStyle";
+import { getIncidentStatusColor } from "../../theme";
 
 interface Incident {
   id: number;
@@ -56,15 +57,25 @@ export default function Incidents() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [imageToken, setImageToken] = useState<string | null>(null);
   const styles = useIncidentsListStyle();
 
   useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const t = await AsyncStorage.getItem("token");
+        setImageToken(t);
+      } catch {
+        setImageToken(null);
+      }
+    };
+    void loadToken();
     loadIncidents();
   }, []);
 
   const loadIncidents = async () => {
     try {
-      console.log('📋 [INCIDENTS] Chargement des incidents...');
+      if (__DEV__) console.log('📋 [INCIDENTS] Chargement des incidents...');
       setIsLoading(true);
 
       const [userId, userRole, buildingId] = await Promise.all([
@@ -84,15 +95,15 @@ export default function Incidents() {
 
       const response = await apiFetch(path);
 
-      console.log('📡 [INCIDENTS] Réponse API:', response.status);
+      if (__DEV__) console.log('📡 [INCIDENTS] Réponse API:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('📋 [INCIDENTS] Données reçues:', data);
+        if (__DEV__) console.log('📋 [INCIDENTS] Données reçues (success/count):', { success: data?.success, count: Array.isArray(data?.incidents) ? data.incidents.length : 0 });
 
         if (data.success) {
           const allIncidents = data.incidents || [];
-          console.log('📊 [INCIDENTS] Total incidents:', allIncidents.length);
+          if (__DEV__) console.log('📊 [INCIDENTS] Total incidents:', allIncidents.length);
 
           // Organiser les incidents par statut
           const organizedIncidents: IncidentsData = {
@@ -102,7 +113,7 @@ export default function Incidents() {
             fermes: allIncidents.filter((inc: Incident) => inc.status === 'ferme')
           };
 
-          console.log('📊 [INCIDENTS] Répartition:', {
+          if (__DEV__) console.log('📊 [INCIDENTS] Répartition:', {
             nouveau: organizedIncidents.nonPrisEnCharge.length,
             en_cours: organizedIncidents.enCours.length,
             resolu: organizedIncidents.resolus.length,
@@ -196,7 +207,11 @@ export default function Incidents() {
       >
         {incident.image ? (
           <Image 
-            source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+            source={{
+              uri: imageToken
+                ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
+                : `${API_BASE_URL}/uploads/${incident.image}`,
+            }}
             style={styles.incidentImage}
             resizeMode="cover"
           />
@@ -222,7 +237,9 @@ export default function Incidents() {
           )}
           
           <Text style={styles.incidentDate}>{formatDate(incident.created_at)}</Text>
-          <Text style={styles.incidentStatus}>{getStatusText(incident.status)}</Text>
+          <Text style={[styles.incidentStatus, { color: getIncidentStatusColor(incident.status) }]}>
+            {getStatusText(incident.status)}
+          </Text>
         </View>
       </TouchableOpacity>
     ));
@@ -347,19 +364,11 @@ export default function Incidents() {
               </View>
             )}
 
-                    <TouchableOpacity
-              style={{
-                backgroundColor: '#007AFF',
-                padding: 12,
-                borderRadius: 8,
-                marginTop: 20,
-                alignItems: 'center'
-              }}
+            <TouchableOpacity
+              style={styles.refreshButton}
               onPress={loadIncidents}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                Actualiser
-              </Text>
+              <Text style={styles.refreshButtonText}>Actualiser</Text>
             </TouchableOpacity>
           </ScrollView>
 

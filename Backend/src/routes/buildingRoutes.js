@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { 
     getAllBuildings, 
     getBuildingInfo, 
@@ -9,7 +10,19 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/buildings', getAllBuildings);
+// Liste publique pour l'inscription — limite le scraping sans bloquer l'usage normal.
+const publicBuildingsLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Trop de requêtes. Réessayez dans quelques minutes.',
+    },
+});
+
+router.get('/buildings', publicBuildingsLimiter, getAllBuildings);
 
 router.get('/buildings/:userId', auth, getBuildingInfo);
 router.get('/buildings/:id/details', auth, getBuildingDetails);

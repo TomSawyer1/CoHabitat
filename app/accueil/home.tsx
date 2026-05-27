@@ -17,6 +17,7 @@ import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { apiFetch } from "../../config/api";
 import { useHomeStyle } from "../../hooks/useHomeStyle";
+import { incidentStatusColors } from "../../theme";
 
 const backgroundImage = require("../../assets/images/immeuble.jpg");
 
@@ -85,18 +86,20 @@ export default function Home() {
 
   const isGuardian = userRole === "guardian";
 
+  type IconName = keyof typeof Ionicons.glyphMap;
+
   const actions = [
     {
       key: "incidents",
       label: isGuardian ? "Incidents" : "Mes incidents",
-      icon: "list-outline" as const,
+      icon: "list-outline" as IconName,
       color: "#65ddb7",
       onPress: () => router.push("/signalements/incidents"),
     },
     {
       key: "signaler",
       label: isGuardian ? "Gérer" : "Signaler",
-      icon: (isGuardian ? "warning-outline" : "create-outline") as const,
+      icon: (isGuardian ? "warning-outline" : "create-outline") as IconName,
       color: "#f54888",
       onPress: () =>
         isGuardian
@@ -106,14 +109,14 @@ export default function Home() {
     {
       key: "batiment",
       label: "Mon bâtiment",
-      icon: "business-outline" as const,
+      icon: "business-outline" as IconName,
       color: "#ff8c00",
       onPress: () => router.push("/batiments/mon-batiment"),
     },
     {
       key: "gardien",
       label: isGuardian ? "Mon profil" : "Mon gardien",
-      icon: (isGuardian ? "person-outline" : "shield-outline") as const,
+      icon: (isGuardian ? "person-outline" : "shield-outline") as IconName,
       color: "#e0b115",
       onPress: () =>
         isGuardian
@@ -150,15 +153,15 @@ export default function Home() {
 
             <View style={styles.statsRow}>
               <View style={styles.statCard}>
-                <Text style={[styles.statValue, { color: "#ff9500" }]}>{stats.nouveau}</Text>
+                <Text style={[styles.statValue, { color: incidentStatusColors.nouveau }]}>{stats.nouveau}</Text>
                 <Text style={styles.statLabel}>Nouveaux</Text>
               </View>
               <View style={styles.statCard}>
-                <Text style={[styles.statValue, { color: "#007AFF" }]}>{stats.en_cours}</Text>
+                <Text style={[styles.statValue, { color: incidentStatusColors.en_cours }]}>{stats.en_cours}</Text>
                 <Text style={styles.statLabel}>En cours</Text>
               </View>
               <View style={styles.statCard}>
-                <Text style={[styles.statValue, { color: "#34c759" }]}>{stats.resolu}</Text>
+                <Text style={[styles.statValue, { color: incidentStatusColors.resolu }]}>{stats.resolu}</Text>
                 <Text style={styles.statLabel}>Résolus</Text>
               </View>
             </View>

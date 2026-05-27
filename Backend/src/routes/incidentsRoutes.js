@@ -5,6 +5,7 @@ const {
     getIncidentsByUserId,
     getIncidentById,
     updateIncident,
+    ensureIncidentAccess,
     getIncidentHistory,
     addIncidentComment,
     getIncidentComments,
@@ -26,9 +27,9 @@ router.get('/incidents', getAllIncidents);
 router.get('/incidents/stats', getIncidentStats);
 router.get('/incidents/user/:userId', getIncidentsByUserId);
 
-router.get('/incidents/:id/history', getIncidentHistory);
-router.post('/incidents/:id/comments', addIncidentComment);
-router.get('/incidents/:id/comments', getIncidentComments);
+router.get('/incidents/:id/history', ensureIncidentAccess, getIncidentHistory);
+router.post('/incidents/:id/comments', ensureIncidentAccess, addIncidentComment);
+router.get('/incidents/:id/comments', ensureIncidentAccess, getIncidentComments);
 
 router.get('/incidents/:id', getIncidentById);
 router.put('/incidents/:id', updateIncident);

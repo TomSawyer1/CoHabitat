@@ -1,10 +1,11 @@
 import { StyleSheet } from "react-native";
+import { colors, spacing, typography } from "../theme";
 
 export const useIncidentsListStyle = () => {
-  const styles = StyleSheet.create({
+  return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#fff",
+      backgroundColor: colors.background,
     },
     contentContainer: {
       flex: 1,
@@ -13,7 +14,9 @@ export const useIncidentsListStyle = () => {
       flex: 1,
     },
     scrollViewContent: {
-      padding: 20,
+      paddingTop: spacing.lg,
+      paddingHorizontal: spacing.screenPaddingH,
+      paddingBottom: spacing.screenPaddingBottom,
     },
     sectionHeader: {
       flexDirection: "row",
@@ -21,60 +24,69 @@ export const useIncidentsListStyle = () => {
       alignItems: "center",
       paddingVertical: 15,
       borderBottomWidth: 1,
-      borderBottomColor: "#e1e1e1",
+      borderBottomColor: colors.borderLight,
       marginBottom: 10,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: "#000",
+      ...typography.h3,
+      color: colors.text,
     },
     incidentsContainer: {
       paddingVertical: 10,
     },
     incidentItem: {
       flexDirection: "row",
-      backgroundColor: "#f9f9f9",
-      borderRadius: 8,
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: spacing.radiusSm,
+      borderWidth: 1,
+      borderColor: colors.border,
       padding: 15,
       marginBottom: 10,
     },
     incidentImage: {
       width: 60,
       height: 60,
-      backgroundColor: "#e1e1e1",
-      borderRadius: 8,
+      backgroundColor: colors.imagePlaceholder,
+      borderRadius: spacing.radiusSm,
       marginRight: 15,
     },
     incidentInfo: {
       flex: 1,
     },
     incidentTitle: {
-      fontSize: 16,
-      fontWeight: "600",
+      ...typography.bodySemibold,
       marginBottom: 5,
-      color: "#000",
+      color: colors.text,
     },
     incidentDate: {
-      fontSize: 14,
-      color: "#666",
+      ...typography.caption,
+      color: colors.textMuted,
       marginBottom: 5,
     },
     incidentStatus: {
-      fontSize: 14,
-      color: "#007AFF",
+      ...typography.caption,
+      fontWeight: "600",
     },
     emptyState: {
       alignItems: "center",
       justifyContent: "center",
-      padding: 20,
+      padding: spacing.lg,
     },
     emptyStateText: {
-      fontSize: 16,
-      color: "#666",
+      ...typography.body,
+      color: colors.textMuted,
       textAlign: "center",
     },
+    refreshButton: {
+      backgroundColor: colors.primary,
+      padding: spacing.sm,
+      borderRadius: spacing.radiusSm,
+      marginTop: spacing.lg,
+      alignItems: "center",
+    },
+    refreshButtonText: {
+      color: colors.primaryContrast,
+      ...typography.button,
+    },
   });
-
-  return styles;
-}; 
+};

@@ -22,6 +22,7 @@ import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useSignalementStyle } from "../../hooks/useSignalementStyle";
+import { colors } from "../../theme";
 
 export default function Signalement() {
   const router = useRouter();
@@ -556,7 +557,7 @@ export default function Signalement() {
                   </View>
                 )}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-                  <Text style={{ fontSize: 12, color: '#007AFF', marginRight: 8 }}>
+                  <Text style={{ fontSize: 12, color: colors.primary, marginRight: 8 }}>
                     Appuyez pour sélectionner
                   </Text>
                   {typeSignalement && (

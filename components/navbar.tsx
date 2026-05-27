@@ -28,7 +28,7 @@ export default function Navbar({
       try {
         const role = await AsyncStorage.getItem('userRole');
         setUserRole(role);
-        console.log('📱 [NAVBAR] Rôle utilisateur chargé:', role);
+        if (__DEV__) console.log('📱 [NAVBAR] Rôle utilisateur chargé:', role);
       } catch (error) {
         console.error('❌ [NAVBAR] Erreur chargement rôle:', error);
       }
@@ -75,10 +75,10 @@ export default function Navbar({
     } else if (itemId === 3) {
       // Navigation différente selon le rôle
       if (userRole === 'guardian') {
-        console.log('🛡️ [NAVBAR] Gardien -> Incidents');
+        if (__DEV__) console.log('🛡️ [NAVBAR] Gardien -> Incidents');
         router.push("/signalements/incidents");
       } else {
-        console.log('👤 [NAVBAR] Locataire -> Signalement');
+        if (__DEV__) console.log('👤 [NAVBAR] Locataire -> Signalement');
         router.push("/signalements/signalement");
       }
       setActiveIndex(index);

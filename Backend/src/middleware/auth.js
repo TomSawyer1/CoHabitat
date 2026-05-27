@@ -16,7 +16,8 @@ const auth = (req, res, next) => {
         req.user = {
             id: decoded.id,
             email: decoded.email,
-            role: decoded.role
+            role: decoded.role,
+            building_id: decoded.building_id ?? decoded.batiments_id ?? null,
         };
 
         next();

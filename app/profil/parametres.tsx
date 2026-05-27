@@ -25,7 +25,7 @@ export default function Parametres() {
   const handleChangeLanguage = () => {
     // Logique réelle pour changer la langue de l'application
     setLanguage((prev) => (prev === "Français" ? "Anglais" : "Français"));
-    console.log("Changement de langue vers :", language);
+    if (__DEV__) console.log("Changement de langue vers :", language);
   };
 
   

@@ -28,7 +28,7 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
       try {
         const role = await AsyncStorage.getItem('userRole');
         setUserRole(role);
-        console.log('📱 [SIDEBAR] Rôle utilisateur chargé:', role);
+        if (__DEV__) console.log('📱 [SIDEBAR] Rôle utilisateur chargé:', role);
       } catch (error) {
         console.error('❌ [SIDEBAR] Erreur chargement rôle:', error);
       }
@@ -120,10 +120,10 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
     } else if (itemId === 3) {
       // Navigation différente selon le rôle pour les incidents
       if (userRole === 'guardian') {
-        console.log('🛡️ [SIDEBAR] Gardien -> Gestion des incidents');
+        if (__DEV__) console.log('🛡️ [SIDEBAR] Gardien -> Gestion des incidents');
         router.push("/signalements/gerer-incidents");
       } else {
-        console.log('👤 [SIDEBAR] Locataire -> Liste des incidents');
+        if (__DEV__) console.log('👤 [SIDEBAR] Locataire -> Liste des incidents');
         router.push("/signalements/incidents");
       }
     } else if (itemId === 4) {
@@ -136,7 +136,7 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
     } else if (itemId === 7) {
       handleLogout(); // Appeler la fonction de déconnexion
     }
-    console.log("Menu item pressed:", itemId);
+    if (__DEV__) console.log("Menu item pressed:", itemId);
     onClose(); // Fermer la sidebar après avoir cliqué sur un élément
   };
 

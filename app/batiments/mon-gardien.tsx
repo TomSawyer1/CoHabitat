@@ -42,7 +42,7 @@ export default function MonGardien() {
 
   const loadGuardianData = async () => {
     try {
-      console.log('👮 [MON-GARDIEN] Chargement des données du gardien...');
+      if (__DEV__) console.log('👮 [MON-GARDIEN] Chargement des données du gardien...');
       setLoading(true);
       setError(null);
 
@@ -52,10 +52,7 @@ export default function MonGardien() {
         AsyncStorage.getItem('userId')
       ]);
 
-      console.log('📱 [MON-GARDIEN] Données utilisateur:', { 
-        hasToken: !!token, 
-        userId 
-      });
+      if (__DEV__) console.log('📱 [MON-GARDIEN] Données utilisateur:', { hasToken: !!token, hasUserId: !!userId });
 
       if (!token || !userId) {
         Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
@@ -65,14 +62,14 @@ export default function MonGardien() {
       }
 
       // Appel API pour récupérer les informations du bâtiment (qui contient les infos du gardien)
-      console.log('🌐 [MON-GARDIEN] Récupération depuis API...');
+      if (__DEV__) console.log('🌐 [MON-GARDIEN] Récupération depuis API...');
       const response = await apiFetch(`/api/buildings/${userId}`);
 
-      console.log('📡 [MON-GARDIEN] Réponse API:', response.status);
+      if (__DEV__) console.log('📡 [MON-GARDIEN] Réponse API:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('👮 [MON-GARDIEN] Données reçues:', data);
+        if (__DEV__) console.log('👮 [MON-GARDIEN] Données reçues (success):', { success: data?.success });
 
         if (data.success && data.building && data.building.guardian) {
           const guardian = data.building.guardian;
