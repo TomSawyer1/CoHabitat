@@ -13,7 +13,7 @@ import {
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
-import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useMonBatimentStyle } from "../../hooks/useMonBatimentStyle";
 
 interface BuildingData {
@@ -74,13 +74,7 @@ export default function MonBatiment() {
 
       // Appel API pour récupérer les informations du bâtiment
       console.log('🌐 [MON-BATIMENT] Récupération depuis API...');
-      const response = await fetch(`${API_BASE_URL}/api/buildings/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiFetch(`/api/buildings/${userId}`);
 
       console.log('📡 [MON-BATIMENT] Réponse API:', response.status);
 

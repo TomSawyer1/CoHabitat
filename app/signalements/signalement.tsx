@@ -20,6 +20,7 @@ import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useSignalementStyle } from "../../hooks/useSignalementStyle";
 
 export default function Signalement() {
@@ -251,13 +252,10 @@ export default function Signalement() {
       console.log('🌐 [SIGNALEMENT] Envoi vers:', `${API_BASE_URL}/api/incidents`);
       console.log('🔑 [SIGNALEMENT] Token:', userToken ? 'Présent' : 'Absent');
 
-      const response = await fetch(`${API_BASE_URL}/api/incidents`, {
+      const response = await apiFetch('/api/incidents', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${userToken}`,
-          'Content-Type': 'multipart/form-data',
-        },
         body: formData,
+        isMultipart: true,
       });
 
       console.log('📨 [SIGNALEMENT] Statut de la réponse:', response.status);

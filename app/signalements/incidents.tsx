@@ -16,6 +16,7 @@ import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useIncidentsListStyle } from "../../hooks/useIncidentsListStyle";
 
 interface Incident {
@@ -66,57 +67,22 @@ export default function Incidents() {
       console.log('📋 [INCIDENTS] Chargement des incidents...');
       setIsLoading(true);
 
-      // Récupérer les données utilisateur
-      const [token, userId, userRole, buildingId] = await Promise.all([
-        AsyncStorage.getItem('userToken'),
+      const [userId, userRole, buildingId] = await Promise.all([
         AsyncStorage.getItem('userId'),
         AsyncStorage.getItem('userRole'),
         AsyncStorage.getItem('userBuildingId')
       ]);
 
-      console.log('📱 [INCIDENTS] Données utilisateur:', { 
-        hasToken: !!token, 
-        userId, 
-        userRole, 
-        buildingId 
-      });
-
       setUserRole(userRole);
 
-      if (!token) {
-        Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
-          { text: 'OK', onPress: () => router.replace('/auth/login') }
-        ]);
-        return;
-      }
-
-      // Construire l'URL avec filtres selon le rôle
-      let url = `${API_BASE_URL}/api/incidents`;
-      const params = new URLSearchParams();
-
+      let path = '/api/incidents';
       if (userRole === 'guardian' && buildingId) {
-        // Gardien : incidents de son bâtiment
-        params.append('building_id', buildingId);
-        console.log('🛡️ [INCIDENTS] Gardien - Filtrage par bâtiment:', buildingId);
+        path = `/api/incidents?building_id=${buildingId}`;
       } else if (userRole === 'locataire' && userId) {
-        // Locataire : ses propres incidents
-        url = `${API_BASE_URL}/api/incidents/user/${userId}`;
-        console.log('👤 [INCIDENTS] Locataire - Incidents personnels');
+        path = `/api/incidents/user/${userId}`;
       }
 
-      if (params.toString() && userRole === 'guardian') {
-        url += `?${params.toString()}`;
-      }
-
-      console.log('🌐 [INCIDENTS] URL finale:', url);
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiFetch(path);
 
       console.log('📡 [INCIDENTS] Réponse API:', response.status);
 

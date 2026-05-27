@@ -19,6 +19,7 @@ import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useSuivreSignalStyle } from "../../hooks/useSuivreSignalStyle";
 
 interface Incident {
@@ -104,22 +105,8 @@ export default function SuivreSignal() {
       console.log('📋 [SUIVI] Chargement incident ID:', incidentId);
       setIsLoading(true);
 
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        Alert.alert('Session expirée', 'Veuillez vous reconnecter.', [
-          { text: 'OK', onPress: () => router.replace('/auth/login') }
-        ]);
-        return;
-      }
-
       // Récupérer les détails de l'incident
-      const incidentResponse = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const incidentResponse = await apiFetch(`/api/incidents/${incidentId}`);
 
       if (incidentResponse.ok) {
         const incidentData = await incidentResponse.json();
@@ -133,13 +120,7 @@ export default function SuivreSignal() {
       }
 
       // Récupérer les commentaires
-      const commentsResponse = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/comments`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const commentsResponse = await apiFetch(`/api/incidents/${incidentId}/comments`);
 
       if (commentsResponse.ok) {
         const commentsData = await commentsResponse.json();
@@ -151,13 +132,7 @@ export default function SuivreSignal() {
       }
 
       // Récupérer l'historique
-      const historyResponse = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/history`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const historyResponse = await apiFetch(`/api/incidents/${incidentId}/history`);
 
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
@@ -208,21 +183,9 @@ export default function SuivreSignal() {
       setIsSubmittingComment(true);
       console.log('💬 [SUIVI] Envoi commentaire:', newComment);
 
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        Alert.alert('Session expirée', 'Veuillez vous reconnecter.');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/comments`, {
+      const response = await apiFetch(`/api/incidents/${incidentId}/comments`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          comment: newComment.trim()
-        })
+        body: { comment: newComment.trim() },
       });
 
       const data = await response.json();

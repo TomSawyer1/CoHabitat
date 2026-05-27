@@ -14,7 +14,7 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/Header";
-import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useGuardianRegisterStyle } from "../../hooks/useGuardianRegisterStyle";
 
 export default function GardianRegister() {
@@ -42,10 +42,7 @@ export default function GardianRegister() {
       try {
         console.log('🌐 [GARDIEN] URL API:', API_BASE_URL);
         // Récupérer le token
-        const token = await AsyncStorage.getItem('userToken');
-        const response = await fetch(`${API_BASE_URL}/api/buildings`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
+        const response = await apiFetch('/api/buildings', { auth: false });
         console.log('📡 [GARDIEN] Réponse buildings:', response.status);
         
         if (response.ok) {
@@ -106,13 +103,10 @@ export default function GardianRegister() {
     setIsLoading(true);
 
     try {
-      console.log('🌐 [GARDIEN] Envoi vers:', `${API_BASE_URL}/auth/register/guardian`);
-      const response = await fetch(`${API_BASE_URL}/auth/register/guardian`, {
+      const response = await apiFetch('/auth/register/guardian', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        auth: false,
+        body: {
           email: email.toLowerCase().trim(),
           nom: lastName.trim(),
           prenom: firstName.trim(),
@@ -120,7 +114,7 @@ export default function GardianRegister() {
           batiment: building,
           numeroGardien: guardNumber.trim(),
           password,
-        }),
+        },
       });
 
       console.log('📡 [GARDIEN] Réponse inscription:', response.status);

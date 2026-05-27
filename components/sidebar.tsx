@@ -46,10 +46,19 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userToken'); // Supprimer le token d'authentification
-      // Vous pouvez également supprimer d'autres informations utilisateur si nécessaire
-      router.replace('/accueil'); // Rediriger vers l'écran d'accueil/connexion
-      onClose(); // Fermer la sidebar
+      await AsyncStorage.multiRemove([
+        "userToken",
+        "userId",
+        "userRole",
+        "userEmail",
+        "userName",
+        "userBuildingId",
+        "userBuildingName",
+        "userBuildingAddress",
+        "signalement_draft",
+      ]);
+      router.replace("/accueil");
+      onClose();
     } catch (e) {
       console.error("Erreur lors de la déconnexion:", e);
       Alert.alert("Erreur", "Erreur lors de la déconnexion.");

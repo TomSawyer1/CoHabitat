@@ -17,6 +17,7 @@ import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useProfilStyle } from "../../hooks/useProfilStyle";
 
 export default function Profil() {
@@ -81,13 +82,7 @@ export default function Profil() {
 
       // Récupérer les informations du profil depuis l'API
       console.log('🌐 [PROFIL] Récupération profil depuis API...');
-      const profileResponse = await fetch(`${API_BASE_URL}/auth/profile`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const profileResponse = await apiFetch('/auth/profile');
 
       console.log('📡 [PROFIL] Réponse profil:', profileResponse.status);
 
@@ -120,13 +115,7 @@ export default function Profil() {
 
       // Récupérer les incidents de l'utilisateur
       console.log('🌐 [PROFIL] Récupération incidents...');
-      const incidentsResponse = await fetch(`${API_BASE_URL}/api/incidents/user/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const incidentsResponse = await apiFetch(`/api/incidents/user/${userId}`);
 
       console.log('📡 [PROFIL] Réponse incidents:', incidentsResponse.status);
 
@@ -195,13 +184,9 @@ export default function Profil() {
 
       console.log('📤 [PROFIL] Envoi des données:', requestData);
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await apiFetch(endpoint, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestData),
+        body: requestData,
       });
 
       console.log('📡 [PROFIL] Status réponse:', response.status);
@@ -250,12 +235,8 @@ export default function Profil() {
                         router.replace('/auth/login');
                         return;
                       }
-                      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+                      const response = await apiFetch('/auth/profile', {
                         method: 'DELETE',
-                        headers: {
-                          'Authorization': `Bearer ${token}`,
-                          'Content-Type': 'application/json'
-                        }
                       });
                       const data = await response.json();
                       if (response.ok && data.success) {

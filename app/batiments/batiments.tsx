@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -12,36 +15,65 @@ import {
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
+import { apiFetch } from "../../config/api";
 import { useBatimentsStyle } from "../../hooks/useBatimentsStyle";
 
-// Données fictives pour les bâtiments
-const buildingsData = [
-  {
-    id: 1,
-    name: "Résidence Les Jardins",
-    address: "123 Avenue des Fleurs, 75001 Paris",
-    totalApartments: 24,
-    occupiedApartments: 20,
-    maintenanceStatus: "En bon état",
-    lastInspection: "15/03/2024",
-    incidents: 2,
-  },
-  {
-    id: 2,
-    name: "Immeuble Le Parc",
-    address: "45 Rue du Parc, 75002 Paris",
-    totalApartments: 16,
-    occupiedApartments: 14,
-    maintenanceStatus: "Rénovation en cours",
-    lastInspection: "10/03/2024",
-    incidents: 1,
-  },
-];
+interface BuildingCard {
+  id: number;
+  name: string;
+  address: string;
+  floors: number;
+  totalApartments: number;
+  facilities: string[];
+}
 
 export default function Batiments() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [building, setBuilding] = useState<BuildingCard | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const styles = useBatimentsStyle();
+
+  useEffect(() => {
+    loadBuilding();
+  }, []);
+
+  const loadBuilding = async () => {
+    try {
+      setIsLoading(true);
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) {
+        Alert.alert("Session expirée", "Veuillez vous reconnecter.", [
+          { text: "OK", onPress: () => router.replace("/auth/login") },
+        ]);
+        return;
+      }
+
+      const response = await apiFetch(`/api/buildings/${userId}`);
+      if (!response.ok) {
+        Alert.alert("Erreur", "Impossible de charger les informations du bâtiment.");
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success && data.building) {
+        const b = data.building;
+        setBuilding({
+          id: b.id,
+          name: b.name || "Bâtiment",
+          address: b.address || "",
+          floors: b.floors || 0,
+          totalApartments: b.totalApartments || 0,
+          facilities: Array.isArray(b.facilities) ? b.facilities : [],
+        });
+      }
+    } catch (error) {
+      console.error("[BATIMENTS] Erreur:", error);
+      Alert.alert("Erreur", "Impossible de se connecter au serveur.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -53,84 +85,67 @@ export default function Batiments() {
         disabled={!isSidebarVisible}
       >
         <View style={styles.contentContainer}>
-          <Header subtitle="Mes Bâtiments" showBackButton={false} />
+          <Header subtitle="Mon Bâtiment" showBackButton={false} />
 
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
           >
             <View style={styles.sectionTitleContainer}>
-              <Text style={styles.sectionTitle}>Mes Bâtiments</Text>
+              <Text style={styles.sectionTitle}>Mon Bâtiment</Text>
               <Text style={styles.sectionSubtitle}>
-                Gérez et surveillez vos bâtiments
+                Informations de votre résidence assignée
               </Text>
             </View>
 
-            {buildingsData.map((building) => (
-              <View key={building.id} style={styles.buildingCard}>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#000" style={{ marginTop: 40 }} />
+            ) : !building ? (
+              <Text style={{ textAlign: "center", color: "#666", marginTop: 24 }}>
+                Aucun bâtiment assigné à votre compte.
+              </Text>
+            ) : (
+              <View style={styles.buildingCard}>
                 <View style={styles.buildingHeader}>
                   <Text style={styles.buildingName}>{building.name}</Text>
-                  <TouchableOpacity>
-                    <Ionicons name="ellipsis-vertical" size={20} color="#000" />
-                  </TouchableOpacity>
                 </View>
 
                 <Text style={styles.buildingAddress}>{building.address}</Text>
 
                 <View style={styles.buildingInfo}>
                   <View style={styles.infoItem}>
+                    <Ionicons name="layers-outline" size={16} color="#666" />
+                    <Text style={styles.infoText}>{building.floors} étages</Text>
+                  </View>
+                  <View style={styles.infoItem}>
                     <Ionicons name="home-outline" size={16} color="#666" />
                     <Text style={styles.infoText}>
-                      {building.occupiedApartments}/{building.totalApartments} appartements
-                    </Text>
-                  </View>
-                  <View style={styles.infoItem}>
-                    <Ionicons name="construct-outline" size={16} color="#666" />
-                    <Text style={styles.infoText}>{building.maintenanceStatus}</Text>
-                  </View>
-                  <View style={styles.infoItem}>
-                    <Ionicons name="calendar-outline" size={16} color="#666" />
-                    <Text style={styles.infoText}>
-                      Dernière inspection: {building.lastInspection}
+                      {building.totalApartments} appartements
                     </Text>
                   </View>
                 </View>
 
-                <View style={styles.buildingStats}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{building.incidents}</Text>
-                    <Text style={styles.statLabel}>Incidents</Text>
+                {building.facilities.length > 0 && (
+                  <View style={{ marginTop: 12 }}>
+                    <Text style={{ fontWeight: "600", marginBottom: 8 }}>Équipements</Text>
+                    {building.facilities.map((f, i) => (
+                      <Text key={i} style={styles.infoText}>
+                        • {f}
+                      </Text>
+                    ))}
                   </View>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>
-                      {Math.round((building.occupiedApartments / building.totalApartments) * 100)}%
-                    </Text>
-                    <Text style={styles.statLabel}>Taux d'occupation</Text>
-                  </View>
-                </View>
+                )}
 
                 <View style={styles.buttonsContainer}>
                   <TouchableOpacity
-                    style={[styles.button, styles.secondaryButton]}
-                    onPress={() => {
-                      // Navigation vers les détails du bâtiment
-                      console.log("Voir détails du bâtiment:", building.id);
-                    }}
-                  >
-                    <Text style={styles.secondaryButtonText}>Voir détails</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
                     style={[styles.button, styles.primaryButton]}
-                    onPress={() => {
-                      // Navigation vers la gestion du bâtiment
-                      console.log("Gérer le bâtiment:", building.id);
-                    }}
+                    onPress={() => router.push("/batiments/mon-batiment")}
                   >
-                    <Text style={styles.primaryButtonText}>Gérer</Text>
+                    <Text style={styles.primaryButtonText}>Voir tous les détails</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-            ))}
+            )}
           </ScrollView>
 
           <Navbar
@@ -147,4 +162,4 @@ export default function Batiments() {
       />
     </View>
   );
-} 
+}

@@ -14,7 +14,7 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/Header";
-import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useGardianLoginStyle } from "../../hooks/useGardianLoginStyle";
 
 export default function GardianLogin() {
@@ -42,16 +42,14 @@ export default function GardianLogin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await apiFetch('/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        auth: false,
+        body: {
           email: email.toLowerCase().trim(),
           password,
           role: 'guardian',
-        }),
+        },
       });
 
       const data = await response.json();

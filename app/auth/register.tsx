@@ -14,7 +14,7 @@ import {
     View
 } from "react-native";
 import Header from "../../components/Header";
-import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useRegisterStyle } from "../../hooks/useRegisterStyle";
 
 export default function Register() {
@@ -42,10 +42,7 @@ export default function Register() {
       try {
         console.log('🌐 URL API:', API_BASE_URL);
         // Récupérer le token
-        const token = await AsyncStorage.getItem('userToken');
-        const response = await fetch(`${API_BASE_URL}/api/buildings`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
+        const response = await apiFetch('/api/buildings', { auth: false });
         console.log('📡 Réponse buildings:', response.status);
         
         if (response.ok) {
@@ -107,19 +104,17 @@ export default function Register() {
 
     try {
       console.log('🌐 Envoi vers:', `${API_BASE_URL}/auth/register/locataire`);
-      const response = await fetch(`${API_BASE_URL}/auth/register/locataire`, {
+      const response = await apiFetch('/auth/register/locataire', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        auth: false,
+        body: {
           email: email.toLowerCase().trim(),
           nom: nom.trim(),
           prenom: prenom.trim(),
           telephone: telephone.trim(),
           batiment: selectedBuilding,
           password,
-        }),
+        },
       });
 
       console.log('📡 Réponse inscription:', response.status);

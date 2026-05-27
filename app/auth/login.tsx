@@ -14,7 +14,7 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/Header";
-import { API_BASE_URL } from "../../config";
+import { apiFetch } from "../../config/api";
 import { useLoginStyle } from "../../hooks/useLoginStyle";
 
 export default function Login() {
@@ -42,16 +42,14 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await apiFetch('/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        auth: false,
+        body: {
           email: email.toLowerCase().trim(),
           password,
           role: 'locataire',
-        }),
+        },
       });
 
       const data = await response.json();

@@ -34,6 +34,7 @@ export default function RootLayout() {
           <Stack.Screen name="signalements/signalement" options={{ headerShown: false }} />
           <Stack.Screen name="signalements/gerer-incidents" options={{ headerShown: false }} />
           <Stack.Screen name="signalements/suivresignal" options={{ headerShown: false }} />
+          <Stack.Screen name="signalements/incidents" options={{ headerShown: false }} />
           <Stack.Screen name="profil/profil" options={{ headerShown: false }} />
   
           <Stack.Screen name="accueil/home" options={{ headerShown: false }} />
