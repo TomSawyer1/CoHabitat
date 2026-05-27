@@ -1,108 +1,65 @@
-# 🔐 CoHabitat — Actions de sécurité (à faire avec l'équipe)
+# 🔐 CoHabitat — Actions de sécurité
 
-> Ce fichier liste ce que **l'agent ne peut pas terminer seul** (actions destructives sur Git, rotation de secrets en production).
-> Les correctifs code sont sur la branche `test` ; ces étapes complètent la mise en sécurité.
+> Guide pour compléter la mise en sécurité après les correctifs code (branche `test`).
 
 ---
 
-## ✅ Déjà corrigé dans le code (branche `test`)
+## ✅ Déjà fait (2026-05-27)
 
-- Validation stricte de `JWT_SECRET` au démarrage (plus de fallback en clair)
+### Code (branche `test`)
+
+- Validation stricte de `JWT_SECRET` au démarrage
 - Routes profil protégées + contrôle `req.user.id`
-- Logs sans mots de passe / sans affichage du secret JWT
 - `helmet` + `express-rate-limit` sur `/auth`
 - CORS configurable via `CORS_ORIGINS` dans `Backend/.env`
-- `.env` et `cohabitat.db` retirés du **suivi Git** (voir ci-dessous)
+- Migration frontend vers `apiFetch` (401 global)
+
+### Git
+
+- `git filter-repo` : `Backend/.env`, `Backend/cohabitat.db`, `.env` (racine Expo) purgés de **tout l'historique**
+- Force push sur `main` et `test`
+- Fichiers sensibles absents de `git ls-files`
+
+⚠️ **Re-clonez** le dépôt si vous aviez un clone avant cette date :
+`git fetch origin && git reset --hard origin/test`
+
+### JWT local
+
+- Nouvelle clé 64 bytes dans `Backend/.env` (machine locale uniquement — ne jamais commiter)
 
 ---
 
-## 🔴 Étape 1 — Retirer les secrets de l'historique Git (OBLIGATOIRE)
+## 🔴 À faire manuellement — Railway (5 min)
 
-Les fichiers `Backend/.env` et `Backend/cohabitat.db` ont été **commités par le passé**.
-Les retirer du suivi (`git rm --cached`) ne suffit pas : ils restent dans l'historique.
-
-### 1.1 Installer git-filter-repo (recommandé)
-
-```bash
-pip install git-filter-repo
-# ou : brew install git-filter-repo
-```
-
-### 1.2 Purger les fichiers sensibles de tout l'historique
-
-```bash
-cd CoHabitat
-
-git filter-repo --path Backend/.env --invert-paths
-git filter-repo --path Backend/cohabitat.db --invert-paths
-```
-
-### 1.3 Force push (coordination équipe)
-
-```bash
-git push origin --force --all
-git push origin --force --tags
-```
-
-⚠️ Tous les collaborateurs devront **re-cloner** le dépôt ou `git fetch --all` + reset hard.
+1. [railway.app](https://railway.app) → projet CoHabitat → service backend → **Variables**
+2. Mettre à jour `JWT_SECRET` avec la valeur de votre `Backend/.env` local (ou une clé prod dédiée)
+3. Optionnel : `CORS_ORIGINS` (virgules, sans espaces superflus) :
+   ```env
+   CORS_ORIGINS=https://backend-cohabitat-production.up.railway.app,exp://192.168.x.x:8081
+   ```
+4. Redéployer → tous les utilisateurs devront **se reconnecter**
 
 ---
 
-## 🔴 Étape 2 — Rotation du JWT_SECRET (OBLIGATOIRE)
+## 🟠 Base de données
 
-L'ancien secret a été exposé dans Git (`Backend/.env`). Il faut le considérer **compromis**.
+- `Backend/cohabitat.db` : local uniquement, recréée au `npm run dev`
+- Prod : prévoir PostgreSQL (SQLite non adapté multi-instances)
 
-### 2.1 Générer un nouveau secret
+---
+
+## 🟡 Vérifications post-déploiement
+
+- [ ] `GET /health` → `200` (test local OK le 2026-05-27)
+- [ ] Login locataire + gardien OK
+- [ ] Création d'incident avec photo OK
+- [ ] Aucun `JWT_SECRET` dans les logs Railway
+- [ ] `git ls-files` ne liste pas `Backend/.env` ni `Backend/cohabitat.db`
+
+---
+
+## Référence — regénérer un JWT
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
-
-### 2.2 Mettre à jour les environnements
-
-| Environnement | Action |
-|---|---|
-| **Local** | Coller dans `Backend/.env` (fichier local, jamais commité) |
-| **Railway / prod** | Variables d'environnement du service → `JWT_SECRET` |
-| **Expo** | Pas de changement (le secret reste côté serveur uniquement) |
-
-### 2.3 Conséquence
-
-Tous les utilisateurs connectés devront **se reconnecter** (tokens signés avec l'ancien secret invalides).
-
----
-
-## 🟠 Étape 3 — Base de données locale
-
-`Backend/cohabitat.db` ne doit plus être versionnée.
-
-- Chaque développeur recrée sa DB au premier `npm run dev` (tables + seed auto)
-- En prod : prévoir PostgreSQL / autre SGBD (SQLite n'est pas idéal multi-instances)
-
----
-
-## 🟠 Étape 4 — CORS en production
-
-Dans `Backend/.env` (Railway, etc.) :
-
-```env
-CORS_ORIGINS=https://votre-front.expo.dev,https://backend-cohabitat-production.up.railway.app
-```
-
-Séparer les origines par des **virgules**, sans espaces superflus.
-
----
-
-## 🟡 Étape 5 — Vérifications post-déploiement
-
-- [ ] `GET /health` répond `200`
-- [ ] Login locataire + gardien OK
-- [ ] Création d'incident avec photo OK
-- [ ] Aucun `JWT_SECRET` dans les logs Railway
-- [ ] `.env` absent de `git ls-files`
-
----
-
-## Contact / questions
-
-Si une étape bloque (filter-repo, Railway), reprenez ce fichier avec l'équipe et l'agent Cursor pour avancer pas à pas.
