@@ -5,8 +5,8 @@
   
   **Une application mobile moderne pour simplifier la gestion immobilière et améliorer la communication entre gardiens et locataires.**
 
-  ![React Native](https://img.shields.io/badge/React%20Native-0.74-blue?style=flat-square&logo=react)
-  ![Expo](https://img.shields.io/badge/Expo-51-black?style=flat-square&logo=expo)
+  ![React Native](https://img.shields.io/badge/React%20Native-0.79-blue?style=flat-square&logo=react)
+  ![Expo](https://img.shields.io/badge/Expo-53-black?style=flat-square&logo=expo)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
   ![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=flat-square&logo=node.js)
   ![SQLite](https://img.shields.io/badge/SQLite-Database-blue?style=flat-square&logo=sqlite)
@@ -107,8 +107,8 @@ CoHabitat est une application mobile native développée avec React Native qui r
 
 ### Frontend (Mobile)
 
-- **React Native** `0.74` - Framework mobile cross-platform
-- **Expo** `51` - Plateforme de développement
+- **React Native** `0.79` - Framework mobile cross-platform
+- **Expo** `53` - Plateforme de développement
 - **TypeScript** `5.0` - Typage statique
 - **Expo Router** - Navigation basée sur les fichiers
 - **AsyncStorage** - Stockage local
@@ -169,7 +169,7 @@ CoHabitat/
 ### 1. Cloner le projet
 
 ```bash
-git clone https://github.com/votre-username/CoHabitat.git
+git clone https://github.com/TomSawyer1/CoHabitat.git
 cd CoHabitat
 ```
 
@@ -185,16 +185,28 @@ npm install
 cd ..
 ```
 
-### 3. Configuration
+### 3. Configuration (local uniquement)
 
-Créer un fichier `.env` dans le dossier `Backend/` :
+**Backend** — copier `Backend/.env-exemple` vers `Backend/.env`, puis générer un secret JWT fort :
+
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+Coller le résultat dans `Backend/.env` :
 
 ```env
-# Backend/.env
-JWT_SECRET=votre_secret_jwt_super_secret_2024
+JWT_SECRET=<votre_clé_générée>
 PORT=3000
 NODE_ENV=development
+ENABLE_TEST_DATA=true
 ```
+
+**Frontend** — copier `.env.example` vers `.env` à la racine du projet (PowerShell : `Copy-Item .env.example .env`).
+
+Adapter `EXPO_PUBLIC_API_BASE_URL` selon votre cas (voir [Configuration](#-configuration)).
+
+> Ne jamais commiter `Backend/.env`, `Backend/cohabitat.db` ni `.env`. Voir [SECURITE.md](./SECURITE.md).
 
 ### 4. Lancer l'application
 
@@ -218,22 +230,30 @@ npm start
 
 ## 🔧 Configuration
 
-### Variables d'environnement
+CoHabitat est conçu pour tourner **en local** : backend Node sur votre machine + app Expo sur le même réseau (ou émulateur).
 
-```javascript
-// config/index.ts
-export const API_BASE_URL = __DEV__ 
-  ? 'http://10.0.2.2:3000'    // Android Emulator
-  : 'https://votre-api.com';   // Production
+L’URL de l’API est lue depuis `.env` à la racine (`EXPO_PUBLIC_API_BASE_URL`), puis exposée via `config/index.ts`.
+
+| Contexte | `EXPO_PUBLIC_API_BASE_URL` |
+|----------|----------------------------|
+| **Expo Go / simulateur iOS** (PC = serveur) | `http://localhost:3000` |
+| **Émulateur Android** | `http://10.0.2.2:3000` |
+| **Téléphone physique (Wi‑Fi)** | `http://<IP_du_PC>:3000` (ex. `192.168.1.246`) |
+
+Le PC et le téléphone doivent être sur le **même réseau**. Vérifier que le backend répond : `http://localhost:3000/health`.
+
+### CORS (optionnel)
+
+Par défaut, le backend autorise les origines Expo locales. Pour en ajouter, dans `Backend/.env` :
+
+```env
+CORS_ORIGINS=http://localhost:19006,http://localhost:8081,exp://localhost:19000
 ```
 
-### Configuration de l'API
+### Documentation complémentaire
 
-L'API est automatiquement configurée selon l'environnement :
-
-- **Développement** : `http://localhost:3000`
-- **Émulateur Android** : `http://10.0.2.2:3000`
-- **Production** : À configurer selon votre serveur
+- [SECURITE.md](./SECURITE.md) — bonnes pratiques et vérifications
+- [AUDIT.md](./AUDIT.md) — rapport technique détaillé
 
 ## 📂 Structure du Projet
 
@@ -287,8 +307,8 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 <div align="center">
   <p>Développé avec ❤️ pour simplifier la gestion immobilière</p>
   <p>
-    <a href="https://github.com/votre-username/CoHabitat/issues">🐛 Signaler un bug</a> •
-    <a href="https://github.com/votre-username/CoHabitat/discussions">💬 Discussions</a> •
+    <a href="https://github.com/TomSawyer1/CoHabitat/issues">🐛 Signaler un bug</a> •
+    <a href="https://github.com/TomSawyer1/CoHabitat/discussions">💬 Discussions</a> •
     <a href="mailto:contact@cohabitat.com">📧 Contact</a>
   </p>
 </div>
