@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -24,6 +24,12 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const styles = useLoginStyle();
+
+  useEffect(() => {
+    AsyncStorage.getItem("userToken").then((token) => {
+      if (token) router.replace("/accueil/home");
+    });
+  }, []);
 
   const handleLogin = async () => {
     // Vérification des champs requis

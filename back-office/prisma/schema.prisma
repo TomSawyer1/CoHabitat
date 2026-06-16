@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Tables existantes (app mobile) ─────────────────────────────────────────
+
+model Locataire {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  nom          String
+  prenom       String
+  telephone    String?
+  batiments_id Int?
+  password     String
+  status       String    @default("active")
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
+  batiment     Batiment? @relation(fields: [batiments_id], references: [id])
+  incidents    Incident[]
+
+  @@map("locataire")
+}
+
+model Guardian {
+  id              Int        @id @default(autoincrement())
+  email           String     @unique
+  nom             String
+  prenom          String
+  telephone       String?
+  batiments_id    Int?
+  guardian_number String?    @unique
+  password        String
+  status          String     @default("active")
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @default(now()) @updatedAt
+  batiment        Batiment?  @relation(fields: [batiments_id], references: [id])
+  assignedIncidents Incident[] @relation("AssignedGuardian")
+  batimentsManaged Batiment[] @relation("BuildingGuardian")
+
+  @@map("guardians")
+}
+
+model Batiment {
+  id                   Int        @id @default(autoincrement())
+  nom                  String
+  rue                  String
+  nombre_etage         Int?
+  nombre_appartement   Int?
+  annee_construction   Int?
+  derniere_renovation  Int?
+  equipements          String?
+  reglement            String?
+  id_guardians         Int?
+  created_at           DateTime   @default(now())
+  updated_at           DateTime   @default(now()) @updatedAt
+  guardian             Guardian?  @relation("BuildingGuardian", fields: [id_guardians], references: [id])
+  locataires           Locataire[]
+  guardians            Guardian[]
+  incidents            Incident[]
+
+  @@map("batiments")
+}
+
+model Incident {
+  id                   Int       @id @default(autoincrement())
+  type                 String
+  title                String?
+  description          String
+  date                 String
+  image                String?
+  status               String    @default("nouveau")
+  idUtilisateur        Int
+  idBatiment           Int
+  etage                String?
+  numero_porte         String?
+  assigned_guardian_id Int?
+  resolution_comment   String?
+  resolved_at          DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @default(now()) @updatedAt
+  locataire            Locataire @relation(fields: [idUtilisateur], references: [id])
+  batiment             Batiment  @relation(fields: [idBatiment], references: [id])
+  assignedGuardian     Guardian? @relation("AssignedGuardian", fields: [assigned_guardian_id], references: [id])
+  history              IncidentHistory[]
+  comments             IncidentComment[]
+
+  @@index([idBatiment])
+  @@index([idUtilisateur])
+  @@index([status])
+  @@map("incidents")
+}
+
+model IncidentHistory {
+  id          Int      @id @default(autoincrement())
+  incident_id Int
+  action      String
+  old_status  String?
+  new_status  String?
+  comment     String?
+  user_id     Int
+  user_role   String
+  created_at  DateTime @default(now())
+  incident    Incident @relation(fields: [incident_id], references: [id])
+
+  @@index([incident_id])
+  @@map("incident_history")
+}
+
+model IncidentComment {
+  id          Int      @id @default(autoincrement())
+  incident_id Int
+  user_id     Int
+  user_role   String
+  comment     String
+  created_at  DateTime @default(now())
+  incident    Incident @relation(fields: [incident_id], references: [id])
+
+  @@index([incident_id])
+  @@map("incident_comments")
+}
+
+// ─── Tables back-office ─────────────────────────────────────────────────────
+
+enum StaffRole {
+  super_admin
+  admin
+  operator
+}
+
+model StaffAccount {
+  id                  Int       @id @default(autoincrement())
+  email               String    @unique
+  nom                 String
+  prenom              String
+  password_hash       String
+  role                StaffRole @default(operator)
+  is_active           Boolean   @default(true)
+  totp_secret         String?
+  totp_enabled        Boolean   @default(false)
+  failed_login_count  Int       @default(0)
+  locked_until        DateTime?
+  password_changed_at DateTime  @default(now())
+  last_login_at       DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @default(now()) @updatedAt
+  sessions            StaffSession[]
+  auditLogs           AuditLog[] @relation("AuditActor")
+  passwordResets      PasswordResetToken[]
+
+  @@map("staff_accounts")
+}
+
+model StaffSession {
+  id            Int          @id @default(autoincrement())
+  staff_id      Int
+  token_hash    String       @unique
+  csrf_token    String
+  ip_address    String?
+  user_agent    String?
+  expires_at    DateTime
+  last_active   DateTime     @default(now())
+  created_at    DateTime     @default(now())
+  staff         StaffAccount @relation(fields: [staff_id], references: [id], onDelete: Cascade)
+
+  @@index([staff_id])
+  @@index([expires_at])
+  @@map("staff_sessions")
+}
+
+model AuditLog {
+  id          Int           @id @default(autoincrement())
+  actor_id    Int?
+  actor_email String?
+  action      String
+  target_type String
+  target_id   String?
+  metadata    String?
+  ip_address  String?
+  created_at  DateTime      @default(now())
+  actor       StaffAccount? @relation("AuditActor", fields: [actor_id], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([target_type])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id         Int          @id @default(autoincrement())
+  staff_id   Int
+  token_hash String       @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime     @default(now())
+  staff      StaffAccount @relation(fields: [staff_id], references: [id], onDelete: Cascade)
+
+  @@index([staff_id])
+  @@map("password_reset_tokens")
+}
+
+model LoginAttempt {
+  id         Int      @id @default(autoincrement())
+  email      String
+  ip_address String
+  success    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([email, created_at])
+  @@index([ip_address, created_at])
+  @@map("login_attempts")
+}

@@ -43,6 +43,7 @@ export const useSuivreSignalStyle = () => {
       height: 56,
       borderRadius: 28,
       marginRight: spacing.md,
+      overflow: 'hidden',
     },
     userInfo: {
       flex: 1,
@@ -139,6 +140,7 @@ export const useSuivreSignalStyle = () => {
       height: 40,
       borderRadius: 20,
       marginRight: spacing.sm,
+      overflow: 'hidden',
     },
     updateContent: {
       flex: 1,

@@ -42,61 +42,8 @@ const authLimiter = rateLimit({
 });
 app.use('/auth', authLimiter);
 
-// Servir les images uploadées via une route authentifiée (démo publique).
-// Règle : un utilisateur ne peut accéder qu'aux images d'incidents auxquels il a accès.
-app.get('/uploads/:filename', (req, res) => {
-    // Supporte `Authorization: Bearer ...` (API) et `?token=...` (Image RN).
-    const header = req.header('Authorization') || '';
-    const bearer = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : null;
-    const token = bearer || (typeof req.query.token === 'string' ? req.query.token : null);
-
-    if (!token) {
-        return res.status(401).json({ success: false, message: 'Accès non autorisé. Token manquant.' });
-    }
-
-    let user;
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        user = {
-            id: decoded.id,
-            role: decoded.role,
-            building_id: decoded.building_id ?? decoded.batiments_id ?? null,
-        };
-    } catch (e) {
-        return res.status(401).json({ success: false, message: 'Token invalide ou expiré.' });
-    }
-
-    const raw = req.params.filename;
-    const filename = path.basename(raw);
-    if (!filename || filename !== raw) {
-        return res.status(400).json({ success: false, message: 'Nom de fichier invalide.' });
-    }
-
-    db.get(
-        'SELECT id, idUtilisateur, idBatiment, image FROM incidents WHERE image = ?',
-        [filename],
-        (err, incident) => {
-            if (err) {
-                console.error('Erreur lors de la vérification image:', err);
-                return res.status(500).json({ success: false, message: 'Erreur serveur.' });
-            }
-            if (!incident) {
-                return res.status(404).json({ success: false, message: 'Image introuvable.' });
-            }
-
-            const canAccess =
-                user.role === 'guardian'
-                    ? Number(incident.idBatiment) === Number(user.building_id)
-                    : Number(incident.idUtilisateur) === Number(user.id);
-
-            if (!canAccess) {
-                return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
-            }
-
-            return res.sendFile(path.join(__dirname, '../uploads', filename));
-        }
-    );
-});
+// Servir les images uploadées en statique (les noms de fichiers sont des UUID).
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Middleware de logging détaillé des requêtes (mode développement uniquement)
 // ⚠️ Les champs sensibles (password, currentPassword, newPassword, token, Authorization) sont masqués.

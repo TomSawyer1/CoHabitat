@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
@@ -19,10 +20,8 @@ import {
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
-import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useSignalementStyle } from "../../hooks/useSignalementStyle";
-import { colors } from "../../theme";
 
 export default function Signalement() {
   const router = useRouter();
@@ -46,6 +45,8 @@ export default function Signalement() {
   const [userBuildingId, setUserBuildingId] = useState<number | null>(null);
   const [userBuildingName, setUserBuildingName] = useState<string | null>(null);
   const [showTypeList, setShowTypeList] = useState(false);
+  const [showEtageList, setShowEtageList] = useState(false);
+  const [buildingFloors, setBuildingFloors] = useState(0);
 
   // Charger les données utilisateur au démarrage
   useEffect(() => {
@@ -85,7 +86,15 @@ export default function Signalement() {
         }
         if (buildingName) {
           setUserBuildingName(buildingName);
-          setBatiment(buildingName); // Auto-remplir le champ bâtiment
+          setBatiment(buildingName);
+        }
+        // Récupérer le nombre d'étages du bâtiment pour le sélecteur
+        const buildingRes = await apiFetch(`/api/buildings/${id}`);
+        if (buildingRes.ok) {
+          const buildingData = await buildingRes.json();
+          if (buildingData.success) {
+            setBuildingFloors(buildingData.building.floors ?? 0);
+          }
         }
       } else {
         Alert.alert(
@@ -250,7 +259,6 @@ export default function Signalement() {
         } as any);
       }
 
-      if (__DEV__) console.log('🌐 [SIGNALEMENT] Envoi vers:', `${API_BASE_URL}/api/incidents`);
       if (__DEV__) console.log('🔑 [SIGNALEMENT] Token:', userToken ? 'Présent' : 'Absent');
 
       const response = await apiFetch('/api/incidents', {
@@ -444,14 +452,15 @@ export default function Signalement() {
   ];
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      >
       <TouchableWithoutFeedback
         onPress={() => setIsSidebarVisible(false)}
         disabled={!isSidebarVisible}
@@ -466,179 +475,110 @@ export default function Signalement() {
             showsVerticalScrollIndicator={false}
             bounces={false}
           >
-            <View style={styles.sectionTitleContainer}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
-                  <Text style={styles.sectionSubtitle}>
-                    Décrivez le problème rencontré dans votre résidence.
-                  </Text>
-                </View>
+            {/* En-tête */}
+            <View style={styles.formHeader}>
+              <View style={styles.formHeaderRow}>
+                <Text style={styles.sectionTitle}>Nouveau{'\n'}Signalement</Text>
                 <TouchableOpacity
-                  style={{
-                    backgroundColor: '#ff6b6b',
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    marginLeft: 10,
-                  }}
-                  onPress={async () => {
+                  style={styles.clearButton}
+                  onPress={() =>
                     Alert.alert(
                       'Effacer le brouillon',
-                      'Voulez-vous vraiment effacer toutes les données saisies ?',
+                      'Voulez-vous effacer toutes les données saisies ?',
                       [
                         { text: 'Annuler', style: 'cancel' },
-                        { text: 'Effacer', style: 'destructive', onPress: resetForm }
+                        { text: 'Effacer', style: 'destructive', onPress: resetForm },
                       ]
-                    );
-                  }}
+                    )
+                  }
                 >
-                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
-                    Effacer
-                  </Text>
+                  <Text style={styles.clearButtonText}>Effacer</Text>
                 </TouchableOpacity>
               </View>
+              <Text style={styles.sectionSubtitle}>
+                Décrivez le problème rencontré dans votre résidence.
+              </Text>
+              {batiment ? (
+                <View style={styles.buildingBadge}>
+                  <Ionicons name="business-outline" size={13} color="#0369a1" style={{ marginRight: 5 }} />
+                  <Text style={styles.buildingBadgeText}>{batiment}</Text>
+                </View>
+              ) : null}
             </View>
 
             <View style={styles.inputsContainer}>
+
+              {/* Titre */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Titre de l'incident *</Text>
+                <Text style={styles.inputLabel}>
+                  Titre <Text style={styles.requiredStar}>*</Text>
+                </Text>
                 <View style={styles.inputFieldContainer}>
                   <TextInput
                     style={styles.inputField}
-                    placeholder="Ex: Fuite d'eau dans la salle de bain"
-                    placeholderTextColor="#888"
+                    placeholder="Ex : Fuite d'eau dans la salle de bain"
+                    placeholderTextColor="#9ca3af"
                     value={title}
                     onChangeText={setTitle}
+                    returnKeyType="next"
                   />
                 </View>
               </View>
 
+              {/* Type de signalement */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Type de signalement *</Text>
+                <Text style={styles.inputLabel}>
+                  Type <Text style={styles.requiredStar}>*</Text>
+                </Text>
                 <TouchableOpacity
-                  style={styles.inputFieldContainer}
-                  onPress={() => setShowTypeList(true)}
+                  style={styles.typeSelector}
+                  onPress={() => setShowTypeList(!showTypeList)}
+                  activeOpacity={0.7}
                 >
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingHorizontal: 16,
-                    paddingVertical: 16,
-                  }}>
-                    <Text style={{ 
-                      color: typeSignalement ? '#000' : '#888',
-                      fontSize: 16,
-                      flex: 1,
-                    }}>
-                      {typeSignalement || "Choisissez le type d'incident"}
-                    </Text>
-                    <Text style={{ fontSize: 18, color: '#666' }}>▼</Text>
-                  </View>
+                  <Text style={[
+                    styles.typeSelectorText,
+                    typeSignalement ? styles.typeSelectorValue : styles.typeSelectorPlaceholder,
+                  ]}>
+                    {typeSignalement || "Choisissez un type"}
+                  </Text>
+                  <Ionicons
+                    name={showTypeList ? "chevron-up" : "chevron-down"}
+                    size={18}
+                    color="#6b7280"
+                  />
                 </TouchableOpacity>
                 {showTypeList && (
-                  <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
+                  <View style={styles.typeDropdown}>
                     {signalementTypes.map((type, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={{ padding: 12, borderBottomWidth: index < signalementTypes.length - 1 ? 1 : 0, borderBottomColor: '#eee' }}
-                        onPress={() => {
-                          setTypeSignalement(type);
-                          setShowTypeList(false);
-                        }}
-                      >
-                        <Text style={{ fontSize: 16, color: '#000' }}>{type}</Text>
-                      </TouchableOpacity>
+                      <View key={type}>
+                        <TouchableOpacity
+                          style={styles.typeDropdownItem}
+                          onPress={() => { setTypeSignalement(type); setShowTypeList(false); }}
+                        >
+                          <Text style={styles.typeDropdownItemText}>{type}</Text>
+                        </TouchableOpacity>
+                        {index < signalementTypes.length - 1 && (
+                          <View style={styles.typeDropdownSeparator} />
+                        )}
+                      </View>
                     ))}
-                    <TouchableOpacity onPress={() => setShowTypeList(false)} style={{ padding: 12 }}>
-                      <Text style={{ color: '#d32f2f', textAlign: 'center' }}>Annuler</Text>
+                    <TouchableOpacity style={styles.typeDropdownCancel} onPress={() => setShowTypeList(false)}>
+                      <Text style={styles.typeDropdownCancelText}>Annuler</Text>
                     </TouchableOpacity>
                   </View>
                 )}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-                  <Text style={{ fontSize: 12, color: colors.primary, marginRight: 8 }}>
-                    Appuyez pour sélectionner
-                  </Text>
-                  {typeSignalement && (
-                    <View style={{
-                      backgroundColor: '#e8f5e8',
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                      marginLeft: 'auto'
-                    }}>
-                      <Text style={{ fontSize: 12, color: '#007000' }}>Sélectionné</Text>
-                    </View>
-                  )}
-                </View>
               </View>
 
+              {/* Description */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Étage (optionnel)</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: RDC, 1, 2, 3..."
-                    placeholderTextColor="#888"
-                    value={etage}
-                    onChangeText={setEtage}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Numéro de porte (optionnel)</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: 101, 23A, 5..."
-                    placeholderTextColor="#888"
-                    value={numeroPorte}
-                    onChangeText={setNumeroPorte}
-                    keyboardType="default"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Date et Heure</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: 20/10/2023 14:30"
-                    placeholderTextColor="#888"
-                    value={dateHeure}
-                    onChangeText={setDateHeure}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Bâtiment</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={[styles.inputField, { backgroundColor: '#f5f5f5' }]}
-                    placeholder="Bâtiment non défini"
-                    placeholderTextColor="#888"
-                    value={batiment}
-                    editable={false}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description détaillée *</Text>
-                <View
-                  style={[
-                    styles.inputFieldContainer,
-                    styles.descriptionInputContainer,
-                  ]}
-                >
+                <Text style={styles.inputLabel}>
+                  Description <Text style={styles.requiredStar}>*</Text>
+                </Text>
+                <View style={[styles.inputFieldContainer, styles.descriptionInputContainer]}>
                   <TextInput
                     style={[styles.inputField, styles.descriptionInputField]}
-                    placeholder="Décrivez le problème en détail : que s'est-il passé ? Quand ? Quelles sont les conséquences ?"
-                    placeholderTextColor="#888"
+                    placeholder="Que s'est-il passé ? Depuis quand ? Quelles sont les conséquences ?"
+                    placeholderTextColor="#9ca3af"
                     multiline
                     textAlignVertical="top"
                     value={description}
@@ -647,14 +587,73 @@ export default function Signalement() {
                 </View>
               </View>
 
+              {/* Étage + Numéro de porte sur la même ligne */}
+              <View style={styles.inputRowGroup}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={styles.inputLabel}>Étage</Text>
+                  <TouchableOpacity
+                    style={styles.typeSelector}
+                    onPress={() => setShowEtageList(!showEtageList)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[
+                      styles.typeSelectorText,
+                      etage ? styles.typeSelectorValue : styles.typeSelectorPlaceholder,
+                    ]}>
+                      {etage || "Choisir"}
+                    </Text>
+                    <Ionicons
+                      name={showEtageList ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color="#6b7280"
+                    />
+                  </TouchableOpacity>
+                  {showEtageList && (
+                    <View style={[styles.typeDropdown, { position: 'absolute', top: 72, left: 0, right: 0, zIndex: 10 }]}>
+                      {["RDC", ...Array.from({ length: buildingFloors }, (_, i) => String(i + 1))].map((floor, index, arr) => (
+                        <View key={floor}>
+                          <TouchableOpacity
+                            style={styles.typeDropdownItem}
+                            onPress={() => { setEtage(floor); setShowEtageList(false); }}
+                          >
+                            <Text style={styles.typeDropdownItemText}>
+                              {floor === "RDC" ? "Rez-de-chaussée" : `Étage ${floor}`}
+                            </Text>
+                          </TouchableOpacity>
+                          {index < arr.length - 1 && <View style={styles.typeDropdownSeparator} />}
+                        </View>
+                      ))}
+                      <TouchableOpacity style={styles.typeDropdownCancel} onPress={() => setShowEtageList(false)}>
+                        <Text style={styles.typeDropdownCancelText}>Annuler</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={styles.inputLabel}>N° de porte</Text>
+                  <View style={styles.inputFieldContainer}>
+                    <TextInput
+                      style={styles.inputField}
+                      placeholder="101, 23A…"
+                      placeholderTextColor="#9ca3af"
+                      value={numeroPorte}
+                      onChangeText={setNumeroPorte}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* Photo */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Photo (optionnel)</Text>
-                <TouchableOpacity
-                  style={styles.imagePickerButton}
-                  onPress={pickImage}
-                >
+                <Text style={styles.inputLabel}>Photo</Text>
+                <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+                  <Ionicons
+                    name={selectedImage ? "camera" : "camera-outline"}
+                    size={18}
+                    color="#6b7280"
+                  />
                   <Text style={styles.imagePickerButtonText}>
-                    {selectedImage ? "Changer la photo" : "Ajouter une photo (Appareil ou Galerie)"}
+                    {selectedImage ? "Changer la photo" : "Ajouter une photo"}
                   </Text>
                 </TouchableOpacity>
                 {selectedImage && (
@@ -665,59 +664,50 @@ export default function Signalement() {
                   />
                 )}
               </View>
+
             </View>
 
+            {/* Boutons */}
             <View style={styles.buttonsContainerHorizontal}>
               <TouchableOpacity
-                style={[
-                  styles.buttonHorizontal,
-                  styles.secondaryButtonHorizontal,
-                ]}
+                style={[styles.buttonHorizontal, styles.secondaryButtonHorizontal]}
                 onPress={() => router.back()}
                 disabled={isLoading}
               >
-                <Text style={styles.secondaryButtonHorizontalText}>
-                  Annuler
-                </Text>
+                <Text style={styles.secondaryButtonHorizontalText}>Annuler</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.buttonHorizontal,
-                  styles.primaryButtonHorizontal,
-                  isLoading && { opacity: 0.6 }
-                ]}
+                style={[styles.buttonHorizontal, styles.primaryButtonHorizontal, isLoading && { opacity: 0.6 }]}
                 onPress={handleSubmit}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
-                    <Text style={styles.primaryButtonHorizontalText}>
-                      Envoi en cours...
-                    </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <ActivityIndicator color="white" size="small" />
+                    <Text style={styles.primaryButtonHorizontalText}>Envoi…</Text>
                   </View>
                 ) : (
-                  <Text style={styles.primaryButtonHorizontalText}>
-                    Envoyer le signalement
-                  </Text>
+                  <Text style={styles.primaryButtonHorizontalText}>Envoyer</Text>
                 )}
               </TouchableOpacity>
             </View>
-          </ScrollView>
 
-          <Navbar
-            isSidebarVisible={isSidebarVisible}
-            setIsSidebarVisible={setIsSidebarVisible}
-            router={router}
-          />
+          </ScrollView>
         </View>
       </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
+      <Navbar
+        isSidebarVisible={isSidebarVisible}
+        setIsSidebarVisible={setIsSidebarVisible}
+        router={router}
+      />
 
       <Sidebar
         isSidebarVisible={isSidebarVisible}
         onClose={() => setIsSidebarVisible(false)}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }

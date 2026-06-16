@@ -18,6 +18,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             batiments_id INTEGER,
             guardian_number TEXT UNIQUE,
             password TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (batiments_id) REFERENCES batiments(id)
@@ -37,6 +38,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             telephone TEXT,
             batiments_id INTEGER,
             password TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (batiments_id) REFERENCES batiments(id)
@@ -197,6 +199,22 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 db.run(sql, (idxErr) => {
                     if (idxErr) {
                         console.error('Erreur création index:', idxErr.message);
+                    }
+                });
+            });
+
+            // Migration : colonne status sur locataire/guardians (back-office)
+            ['locataire', 'guardians'].forEach((table) => {
+                db.all(`PRAGMA table_info(${table})`, (err, columns) => {
+                    if (err || !columns) return;
+                    if (!columns.some((col) => col.name === 'status')) {
+                        db.run(`ALTER TABLE ${table} ADD COLUMN status TEXT DEFAULT 'active'`, (alterErr) => {
+                            if (alterErr) {
+                                console.error(`Migration status ${table}:`, alterErr.message);
+                            } else {
+                                console.log(`✅ Colonne status ajoutée à ${table}`);
+                            }
+                        });
                     }
                 });
             });

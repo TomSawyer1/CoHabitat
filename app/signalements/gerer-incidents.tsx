@@ -1,11 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Picker } from "@react-native-picker/picker";
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     Alert,
     Image,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -76,11 +77,11 @@ export default function GererIncidents() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [comment, setComment] = useState("");
   const [incidentStatus, setIncidentStatus] = useState("nouveau");
-  const [imageToken, setImageToken] = useState<string | null>(null);
-
   const [isLoading, setIsLoading] = useState(true);
+  const scrollRef = useRef<ScrollView>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [showStatusList, setShowStatusList] = useState(false);
   const styles = useGererIncidentsStyle();
 
   // Types de signalement (identique à signalement.tsx)
@@ -99,15 +100,6 @@ export default function GererIncidents() {
   const incidentId = params.id as string;
 
   useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const t = await AsyncStorage.getItem("token");
-        setImageToken(t);
-      } catch {
-        setImageToken(null);
-      }
-    };
-    void loadToken();
     if (incidentId) {
       loadIncidentData();
     }
@@ -168,33 +160,47 @@ export default function GererIncidents() {
   };
 
   const handleSendComment = useCallback(async () => {
-    if (!comment.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir un commentaire.');
-      return;
-    }
+    const text = comment.trim();
+    if (!text) return;
+
+    const optimistic: Comment = {
+      id: Date.now(),
+      incident_id: parseInt(incidentId),
+      user_id: 0,
+      user_role: 'guardian',
+      comment: text,
+      created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      user_name: 'Vous',
+    };
+
+    setComments(prev => [...prev, optimistic]);
+    setComment('');
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
     try {
       setIsSubmittingComment(true);
-      if (__DEV__) console.log('💬 [GESTION] Envoi commentaire (len):', comment.trim().length);
+      if (__DEV__) console.log('💬 [GESTION] Envoi commentaire (len):', text.length);
 
       const response = await apiFetch(`/api/incidents/${incidentId}/comments`, {
         method: 'POST',
-        body: { comment: comment.trim() },
+        body: { comment: text },
       });
 
       const data = await response.json();
-      if (__DEV__) console.log('💬 [GESTION] Réponse commentaire (success/message):', { success: data?.success, message: data?.message });
+      if (__DEV__) console.log('💬 [GESTION] Réponse commentaire (success):', data?.success);
 
       if (response.ok && data.success) {
-        setComment('');
-        Alert.alert('Succès', 'Commentaire ajouté avec succès !');
-        // Recharger les données pour afficher le nouveau commentaire
         await loadIncidentData();
+        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
       } else {
+        setComments(prev => prev.filter(c => c.id !== optimistic.id));
+        setComment(text);
         Alert.alert('Erreur', data.message || 'Impossible d\'ajouter le commentaire.');
       }
     } catch (error) {
       console.error('❌ [GESTION] Erreur envoi commentaire:', error);
+      setComments(prev => prev.filter(c => c.id !== optimistic.id));
+      setComment(text);
       Alert.alert('Erreur', 'Impossible d\'envoyer le commentaire.');
     } finally {
       setIsSubmittingComment(false);
@@ -275,14 +281,14 @@ export default function GererIncidents() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const d = new Date(dateString.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return dateString;
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month}/${year} à ${h}h${m}`;
   };
 
   if (isLoading) {
@@ -312,6 +318,11 @@ export default function GererIncidents() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      >
       <TouchableWithoutFeedback
         onPress={() => setIsSidebarVisible(false)}
         disabled={!isSidebarVisible}
@@ -320,8 +331,10 @@ export default function GererIncidents() {
           <Header subtitle="Gérer l'incident" showBackButton={true} />
 
           <ScrollView
+            ref={scrollRef}
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
           >
             <View style={styles.avatarContainer}>
               <Image 
@@ -389,12 +402,8 @@ export default function GererIncidents() {
             {incident.image && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
-                <Image 
-                  source={{
-                    uri: imageToken
-                      ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
-                      : `${API_BASE_URL}/uploads/${incident.image}`,
-                  }}
+                <Image
+                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
                   style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
                   resizeMode="cover"
                 />
@@ -404,18 +413,70 @@ export default function GererIncidents() {
             {/* Section Statut (modifiable) */}
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Modifier le statut</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={incidentStatus}
-                  onValueChange={(itemValue) => setIncidentStatus(itemValue)}
-                  style={styles.pickerStyle}
-                >
-                  <Picker.Item label="En attente" value="nouveau" />
-                  <Picker.Item label="En cours" value="en_cours" />
-                  <Picker.Item label="Résolu" value="resolu" />
-                  <Picker.Item label="Fermé" value="ferme" />
-                </Picker>
-              </View>
+              <TouchableOpacity
+                style={[styles.pickerContainer, {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#d1d5db',
+                  backgroundColor: '#fff',
+                }]}
+                onPress={() => setShowStatusList(!showStatusList)}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 15, color: getIncidentStatusColor(incidentStatus), fontWeight: '500' }}>
+                  {getStatusText(incidentStatus)}
+                </Text>
+                <Ionicons
+                  name={showStatusList ? "chevron-up" : "chevron-down"}
+                  size={18}
+                  color="#6b7280"
+                />
+              </TouchableOpacity>
+              {showStatusList && (
+                <View style={{
+                  marginTop: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#e5e7eb',
+                  backgroundColor: '#fff',
+                  overflow: 'hidden',
+                  zIndex: 20,
+                }}>
+                  {([
+                    { label: 'En attente', value: 'nouveau' },
+                    { label: 'En cours', value: 'en_cours' },
+                    { label: 'Résolu', value: 'resolu' },
+                    { label: 'Fermé', value: 'ferme' },
+                  ] as const).map((item, index, arr) => (
+                    <View key={item.value}>
+                      <TouchableOpacity
+                        style={{
+                          paddingVertical: 12,
+                          paddingHorizontal: 14,
+                          backgroundColor: incidentStatus === item.value ? '#f0f9ff' : '#fff',
+                        }}
+                        onPress={() => { setIncidentStatus(item.value); setShowStatusList(false); }}
+                      >
+                        <Text style={{
+                          fontSize: 15,
+                          color: getIncidentStatusColor(item.value),
+                          fontWeight: incidentStatus === item.value ? '600' : '400',
+                        }}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                      {index < arr.length - 1 && (
+                        <View style={{ height: 1, backgroundColor: '#f3f4f6' }} />
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
 
             <View style={styles.commentInputContainer}>
@@ -526,14 +587,15 @@ export default function GererIncidents() {
               </TouchableOpacity>
             </View>
           </ScrollView>
-
-          <Navbar
-            isSidebarVisible={isSidebarVisible}
-            setIsSidebarVisible={setIsSidebarVisible}
-            router={router}
-          />
         </View>
       </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
+      <Navbar
+        isSidebarVisible={isSidebarVisible}
+        setIsSidebarVisible={setIsSidebarVisible}
+        router={router}
+      />
 
       <Sidebar
         isSidebarVisible={isSidebarVisible}

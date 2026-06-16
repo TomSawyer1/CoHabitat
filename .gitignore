@@ -45,3 +45,6 @@ Backend/cohabitat.db
 Backend/uploads
 
 .env
+
+# Audit interne (ne pas versionner)
+AUDIT.md

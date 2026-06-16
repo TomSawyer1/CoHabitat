@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Alert,
     Image,
@@ -72,6 +72,7 @@ export default function SuivreSignal() {
   const styles = useSuivreSignalStyle();
   const params = useLocalSearchParams();
   
+  const scrollRef = useRef<ScrollView>(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [incident, setIncident] = useState<Incident | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -79,7 +80,6 @@ export default function SuivreSignal() {
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [imageToken, setImageToken] = useState<string | null>(null);
 
   // Types de signalement (identique à signalement.tsx)
   const signalementTypes = [
@@ -97,15 +97,6 @@ export default function SuivreSignal() {
   const incidentId = params.id as string;
 
   useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const t = await AsyncStorage.getItem("token");
-        setImageToken(t);
-      } catch {
-        setImageToken(null);
-      }
-    };
-    void loadToken();
     if (incidentId) {
       loadIncidentData();
     }
@@ -185,33 +176,47 @@ export default function SuivreSignal() {
   };
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim()) {
-      Alert.alert('Erreur', 'Veuillez saisir un commentaire.');
-      return;
-    }
+    const text = newComment.trim();
+    if (!text) return;
+
+    const optimistic: Comment = {
+      id: Date.now(),
+      incident_id: parseInt(incidentId),
+      user_id: 0,
+      user_role: 'locataire',
+      comment: text,
+      created_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      user_name: 'Vous',
+    };
+
+    setComments(prev => [...prev, optimistic]);
+    setNewComment('');
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
     try {
       setIsSubmittingComment(true);
-      if (__DEV__) console.log('💬 [SUIVI] Envoi commentaire (len):', newComment.trim().length);
+      if (__DEV__) console.log('💬 [SUIVI] Envoi commentaire (len):', text.length);
 
       const response = await apiFetch(`/api/incidents/${incidentId}/comments`, {
         method: 'POST',
-        body: { comment: newComment.trim() },
+        body: { comment: text },
       });
 
       const data = await response.json();
-      if (__DEV__) console.log('💬 [SUIVI] Réponse commentaire (success/message):', { success: data?.success, message: data?.message });
+      if (__DEV__) console.log('💬 [SUIVI] Réponse commentaire (success):', data?.success);
 
       if (response.ok && data.success) {
-        setNewComment('');
-        Alert.alert('Succès', 'Commentaire ajouté avec succès !');
-        // Recharger les données pour afficher le nouveau commentaire
         await loadIncidentData();
+        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
       } else {
+        setComments(prev => prev.filter(c => c.id !== optimistic.id));
+        setNewComment(text);
         Alert.alert('Erreur', data.message || 'Impossible d\'ajouter le commentaire.');
       }
     } catch (error) {
       console.error('❌ [SUIVI] Erreur envoi commentaire:', error);
+      setComments(prev => prev.filter(c => c.id !== optimistic.id));
+      setNewComment(text);
       Alert.alert('Erreur', 'Impossible d\'envoyer le commentaire.');
     } finally {
       setIsSubmittingComment(false);
@@ -229,14 +234,14 @@ export default function SuivreSignal() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const d = new Date(dateString.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return dateString;
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month}/${year} à ${h}h${m}`;
   };
 
   if (isLoading) {
@@ -262,14 +267,15 @@ export default function SuivreSignal() {
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      >
       <TouchableWithoutFeedback
         onPress={() => setIsSidebarVisible(false)}
         disabled={!isSidebarVisible}
@@ -278,6 +284,7 @@ export default function SuivreSignal() {
           <Header subtitle="Suivre un incident" showBackButton={false} />
 
           <ScrollView
+            ref={scrollRef}
             contentContainerStyle={styles.scrollViewContent}
             style={styles.scrollView}
             keyboardShouldPersistTaps="handled"
@@ -349,12 +356,8 @@ export default function SuivreSignal() {
             {incident.image && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
-                <Image 
-                  source={{
-                    uri: imageToken
-                      ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
-                      : `${API_BASE_URL}/uploads/${incident.image}`,
-                  }}
+                <Image
+                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
                   style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
                   resizeMode="cover"
                 />
@@ -487,18 +490,20 @@ export default function SuivreSignal() {
             </View>
           </ScrollView>
 
-          <Navbar
-            isSidebarVisible={isSidebarVisible}
-            setIsSidebarVisible={setIsSidebarVisible}
-            router={router}
-          />
         </View>
       </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
+      <Navbar
+        isSidebarVisible={isSidebarVisible}
+        setIsSidebarVisible={setIsSidebarVisible}
+        router={router}
+      />
 
       <Sidebar
         isSidebarVisible={isSidebarVisible}
         onClose={() => setIsSidebarVisible(false)}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }

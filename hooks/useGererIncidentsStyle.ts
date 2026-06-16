@@ -47,6 +47,7 @@ export const useGererIncidentsStyle = () => {
       height: 56,
       borderRadius: 28,
       marginRight: spacing.md,
+      overflow: 'hidden',
     },
     userInfo: {
       flex: 1,

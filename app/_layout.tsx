@@ -28,12 +28,13 @@ export default function RootLayout() {
   useEffect(() => {
     const check = async () => {
       const root = segments?.[0];
-      const isPublic = root === "auth" || root === "accueil";
+      const isPublic = !root || root === "auth" || root === "accueil";
       if (isPublic) return;
 
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("userToken");
+      const role = await AsyncStorage.getItem("userRole");
       if (!token) {
-        router.replace("/auth/login");
+        router.replace(role === "guardian" ? "/auth/gardian-login" : "/auth/login");
       }
     };
     void check();
