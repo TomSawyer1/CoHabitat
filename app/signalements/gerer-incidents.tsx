@@ -207,48 +207,37 @@ export default function GererIncidents() {
     }
   }, [comment, incidentId]);
 
-  const handleUpdateIncident = useCallback(async () => {
-    if (!incident) return;
+  const handleUpdateStatus = useCallback(async (newStatus: string) => {
+    if (!incident || newStatus === incident.status) return;
+
+    setIncidentStatus(newStatus);
+    setShowStatusList(false);
 
     try {
       setIsUpdating(true);
-      if (__DEV__) console.log('🔄 [GESTION] Mise à jour incident (status):', incidentStatus);
-
-      const updateData: any = {};
-      
-      // Seulement envoyer les changements
-      if (incidentStatus !== incident.status) {
-        updateData.status = incidentStatus;
-      }
-
-      // Vérifier qu'il y a quelque chose à mettre à jour
-      if (Object.keys(updateData).length === 0) {
-        Alert.alert('Info', 'Aucune modification à enregistrer.');
-        return;
-      }
+      if (__DEV__) console.log('🔄 [GESTION] Mise à jour statut:', newStatus);
 
       const response = await apiFetch(`/api/incidents/${incidentId}`, {
         method: 'PUT',
-        body: updateData,
+        body: { status: newStatus },
       });
 
       const data = await response.json();
-      if (__DEV__) console.log('🔄 [GESTION] Réponse mise à jour (success/message):', { success: data?.success, message: data?.message });
 
       if (response.ok && data.success) {
-        Alert.alert('Succès', 'Incident mis à jour avec succès !');
-        // Recharger les données pour afficher les changements
         await loadIncidentData();
       } else {
-        Alert.alert('Erreur', data.message || 'Impossible de mettre à jour l\'incident.');
+        setIncidentStatus(incident.status);
+        Alert.alert('Erreur', data.message || 'Impossible de mettre à jour le statut.');
       }
     } catch (error) {
       console.error('❌ [GESTION] Erreur mise à jour:', error);
-      Alert.alert('Erreur', 'Impossible de mettre à jour l\'incident.');
+      setIncidentStatus(incident.status);
+      Alert.alert('Erreur', 'Impossible de mettre à jour le statut.');
     } finally {
       setIsUpdating(false);
     }
-  }, [incidentStatus, incident, incidentId]);
+  }, [incident, incidentId]);
 
   const handleContactTenant = useCallback(() => {
     if (!incident) return;
@@ -328,7 +317,7 @@ export default function GererIncidents() {
         disabled={!isSidebarVisible}
       >
         <View style={styles.contentContainer}>
-          <Header subtitle="Gérer l'incident" showBackButton={true} />
+          <Header subtitle="Gérer l'incident" showBackButton={false} />
 
           <ScrollView
             ref={scrollRef}
@@ -424,9 +413,11 @@ export default function GererIncidents() {
                   borderWidth: 1,
                   borderColor: '#d1d5db',
                   backgroundColor: '#fff',
+                  opacity: isUpdating ? 0.5 : 1,
                 }]}
-                onPress={() => setShowStatusList(!showStatusList)}
+                onPress={() => !isUpdating && setShowStatusList(!showStatusList)}
                 activeOpacity={0.7}
+                disabled={isUpdating}
               >
                 <Text style={{ fontSize: 15, color: getIncidentStatusColor(incidentStatus), fontWeight: '500' }}>
                   {getStatusText(incidentStatus)}
@@ -460,7 +451,7 @@ export default function GererIncidents() {
                           paddingHorizontal: 14,
                           backgroundColor: incidentStatus === item.value ? '#f0f9ff' : '#fff',
                         }}
-                        onPress={() => { setIncidentStatus(item.value); setShowStatusList(false); }}
+                        onPress={() => handleUpdateStatus(item.value)}
                       >
                         <Text style={{
                           fontSize: 15,
@@ -514,51 +505,49 @@ export default function GererIncidents() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.buttonFigma,
-                styles.primaryButtonFigma,
-                { marginVertical: 10 },
-                isUpdating && { opacity: 0.6 }
-              ]}
-              onPress={handleUpdateIncident}
-              disabled={isUpdating}
-            >
-              <Text style={styles.primaryButtonTextFigma}>
-                {isUpdating ? 'Mise à jour...' : 'Mettre à jour l\'incident'}
-              </Text>
-            </TouchableOpacity>
-
             <View style={styles.updatesSection}>
               <Text style={styles.updatesTitle}>Historique et Commentaires</Text>
               
-              {history.map((item, index) => (
+              {history.map((item) => (
                 <View key={`history-${item.id}`} style={styles.updateItem}>
-                  <View style={[styles.updateImagePlaceholder, { backgroundColor: incidentStatusColors.en_cours }]} />
+                  <Image
+                    source={item.user_role === 'guardian'
+                      ? require('../../assets/images/guard.png')
+                      : require('../../assets/images/luigi.png')
+                    }
+                    style={[styles.updateImagePlaceholder, { overflow: 'hidden' }]}
+                    resizeMode="cover"
+                  />
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{formatDate(item.created_at)}</Text>
                     <Text style={styles.updateText}>
                       {item.action}
-                      {item.old_status && item.new_status && 
+                      {item.old_status && item.new_status &&
                         ` : ${getStatusText(item.old_status)} → ${getStatusText(item.new_status)}`
                       }
                     </Text>
                     <Text style={styles.updateSubtitle}>
-                      par {item.user_name || `${item.user_role}`}
+                      par {item.user_name || item.user_role}
                     </Text>
                   </View>
                 </View>
               ))}
 
-              {/* Commentaires */}
-              {comments.map((commentItem, index) => (
+              {comments.map((commentItem) => (
                 <View key={`comment-${commentItem.id}`} style={styles.updateItem}>
-                  <View style={[styles.updateImagePlaceholder, { backgroundColor: incidentStatusColors.resolu }]} />
+                  <Image
+                    source={commentItem.user_role === 'guardian'
+                      ? require('../../assets/images/guard.png')
+                      : require('../../assets/images/luigi.png')
+                    }
+                    style={[styles.updateImagePlaceholder, { overflow: 'hidden' }]}
+                    resizeMode="cover"
+                  />
                   <View style={styles.updateContent}>
                     <Text style={styles.updateDate}>{formatDate(commentItem.created_at)}</Text>
                     <Text style={styles.updateText}>{commentItem.comment}</Text>
                     <Text style={styles.updateSubtitle}>
-                      par {commentItem.user_name || `${commentItem.user_role}`}
+                      par {commentItem.user_name || commentItem.user_role}
                     </Text>
                   </View>
                 </View>
@@ -577,13 +566,6 @@ export default function GererIncidents() {
                 onPress={handleContactTenant}
               >
                 <Text style={styles.primaryButtonTextFigma}>Contacter le locataire</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.buttonFigma, styles.secondaryButtonMuted]}
-                onPress={() => router.back()}
-              >
-                <Text style={styles.primaryButtonTextFigma}>Retour</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

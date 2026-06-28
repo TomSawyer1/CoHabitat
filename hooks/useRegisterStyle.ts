@@ -97,6 +97,7 @@ export const useRegisterStyle = () => {
       flex: 1,
       color: "#000",
       fontSize: 16,
+      backgroundColor: "transparent",
     },
     inputInfo: {
       fontSize: 13,

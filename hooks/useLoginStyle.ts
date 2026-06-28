@@ -10,7 +10,7 @@ export const useLoginStyle = () => {
       flex: 1,
     },
     scrollViewContent: {
-      paddingTop: 120,
+      paddingTop: 24,
       paddingHorizontal: 24,
       paddingBottom: 100,
     },
@@ -44,6 +44,7 @@ export const useLoginStyle = () => {
       flex: 1,
       color: "#000",
       fontSize: 16,
+      backgroundColor: "transparent",
     },
     inputInfo: {
       fontSize: 13,

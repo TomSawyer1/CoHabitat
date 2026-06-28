@@ -57,19 +57,9 @@ export default function Incidents() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [imageToken, setImageToken] = useState<string | null>(null);
   const styles = useIncidentsListStyle();
 
   useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const t = await AsyncStorage.getItem("token");
-        setImageToken(t);
-      } catch {
-        setImageToken(null);
-      }
-    };
-    void loadToken();
     loadIncidents();
   }, []);
 
@@ -149,12 +139,9 @@ export default function Incidents() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    const d = new Date(dateString.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const toggleSection = (section: string) => {
@@ -206,12 +193,8 @@ export default function Incidents() {
         }}
       >
         {incident.image ? (
-          <Image 
-            source={{
-              uri: imageToken
-                ? `${API_BASE_URL}/uploads/${incident.image}?token=${encodeURIComponent(imageToken)}`
-                : `${API_BASE_URL}/uploads/${incident.image}`,
-            }}
+          <Image
+            source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
             style={styles.incidentImage}
             resizeMode="cover"
           />

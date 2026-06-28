@@ -75,7 +75,7 @@ export default function Login() {
           await AsyncStorage.setItem('userBuildingAddress', data.user.building_address || '');
         }
         
-        console.log('✅ [LOGIN] Données stockées:', {
+        if (__DEV__) console.log('✅ [LOGIN] Données stockées:', {
           userId: data.user.id,
           userRole: data.user.role,
           buildingId: data.user.building_id,
@@ -106,12 +106,12 @@ export default function Login() {
   return (
     <KeyboardAvoidingView 
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
       <Header subtitle="Connexion Locataire" showBackButton={false} />
       <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

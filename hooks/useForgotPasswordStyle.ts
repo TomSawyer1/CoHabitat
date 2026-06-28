@@ -85,6 +85,7 @@ export const useForgotPasswordStyle = () => {
       flex: 1,
       color: "#000",
       fontSize: 16,
+      backgroundColor: "transparent",
     },
     buttonsContainerHorizontal: {
       flexDirection: "row",

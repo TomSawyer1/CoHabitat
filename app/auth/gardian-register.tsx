@@ -144,8 +144,7 @@ export default function GardianRegister() {
   return (
     <KeyboardAvoidingView 
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
       <Header 
@@ -153,7 +152,8 @@ export default function GardianRegister() {
         onBackPress={() => router.push("/auth/gardian-login")}
         showBackButton={false}
       />
-      <ScrollView 
+      <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.inputsContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

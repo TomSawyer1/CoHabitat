@@ -2,32 +2,30 @@
 
 **Scope :** `app/`, `Backend/`, `components/`, `hooks/`, `config/`
 **Résumé :** 4 critiques · 19 medium · 23 mineurs — **46 problèmes au total**
+**Corrigés :** AS-01, AIS-01 (×5), AIS-02, SEC-01 (×2) — **8 corrigés le 16/06/2026**
 
 ---
 
 ## Critiques
 
-### AS-01 — Clé `"token"` au lieu de `"userToken"` dans `incidents.tsx`
+### ~~AS-01 — Clé `"token"` au lieu de `"userToken"` dans `incidents.tsx`~~ ✅ CORRIGÉ
 **Fichier :** `app/signalements/incidents.tsx:66`
-La clé AsyncStorage lue est `"token"` — elle n'existe jamais (le token est stocké sous `"userToken"`). `imageToken` est toujours `null` → les images ne se chargent jamais sur cet écran.
-**Fix :** `AsyncStorage.getItem("userToken")`
+Suppression de `imageToken` et `loadToken`. Image servie directement via `/uploads/` public.
+**Fix appliqué le 16/06/2026**
 
 ---
 
-### AIS-02 — `new Date()` sans normalisation SQLite dans `incidents.tsx`
+### ~~AIS-02 — `new Date()` sans normalisation SQLite dans `incidents.tsx`~~ ✅ CORRIGÉ
 **Fichier :** `app/signalements/incidents.tsx:152`
-SQLite retourne les dates au format `"2024-01-15 14:30:00"` (espace, pas `T`). `new Date("2024-01-15 14:30:00")` → `Invalid Date` sur iOS. Les autres écrans font correctement `.replace(' ', 'T')` mais pas celui-ci.
-**Fix :** `new Date(dateString.replace(' ', 'T'))`
+`.replace(' ', 'T')` ajouté dans `formatDate` + guard `isNaN`.
+**Fix appliqué le 16/06/2026**
 
 ---
 
-### SEC-01 — Logs utilisateur sans garde `__DEV__` dans les pages de connexion
+### ~~SEC-01 — Logs utilisateur sans garde `__DEV__` dans les pages de connexion~~ ✅ CORRIGÉ
 **Fichiers :** `app/auth/login.tsx:78`, `app/auth/gardian-login.tsx:78`
-```ts
-console.log('✅ [LOGIN] Données stockées:', { userId, userRole, buildingId, buildingName });
-```
-Ces logs s'exécutent en build de production et exposent des métadonnées utilisateur dans les logs système.
-**Fix :** Entourer de `if (__DEV__) { ... }`
+`if (__DEV__)` ajouté devant les deux `console.log`.
+**Fix appliqué le 16/06/2026**
 
 ---
 
@@ -75,10 +73,10 @@ Les photos sont chargées directement via `/uploads/...` sans token. Le dossier 
 
 ---
 
-### AIS-01 — `KeyboardAvoidingView` avec `behavior="height"` sur Android
+### ~~AIS-01 — `KeyboardAvoidingView` avec `behavior="height"` sur Android~~ ✅ CORRIGÉ
 **Fichiers :** `app/auth/login.tsx`, `register.tsx`, `gardian-login.tsx`, `gardian-register.tsx`, `forgot-password.tsx`
-`behavior="height"` avec un `ScrollView` imbriqué provoque des sauts visuels et du scroll bloqué sur Android.
-**Fix :** `behavior={Platform.OS === 'ios' ? 'padding' : undefined}`
+`behavior={Platform.OS === 'ios' ? 'padding' : undefined}` appliqué sur les 5 fichiers. `keyboardVerticalOffset` Android supprimé également.
+**Fix appliqué le 16/06/2026**
 
 ---
 
@@ -197,11 +195,11 @@ Si le GET incident échoue, l'écran continue de charger commentaires et histori
 ## Priorités suggérées
 
 ### P1 — À corriger immédiatement
-1. **AS-01** `incidents.tsx:66` — `"token"` → `"userToken"` (images jamais chargées)
-2. **AIS-02** `incidents.tsx:152` — `.replace(' ', 'T')` manquant (Invalid Date sur iOS)
-3. **SEC-01** `login.tsx:78` — logs utilisateur en production
+1. ~~**AS-01**~~ ✅ corrigé le 16/06/2026
+2. ~~**AIS-02**~~ ✅ corrigé le 16/06/2026
+3. ~~**SEC-01**~~ ✅ corrigé le 16/06/2026
 4. **BACK-06** `database.js` — `PRAGMA foreign_keys = ON` manquant
-5. **AIS-01** (x5 fichiers) — `behavior="height"` → `undefined` sur Android
+5. ~~**AIS-01** (x5 fichiers)~~ ✅ corrigé le 16/06/2026
 
 ### P2 — Sprint suivant
 6. **AS-02** — Ajouter `"signalement_draft"` dans la purge 401

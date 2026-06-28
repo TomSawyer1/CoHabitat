@@ -18,7 +18,7 @@ export const useGererIncidentsStyle = () => {
     scrollViewContent: {
       paddingTop: spacing.lg,
       paddingHorizontal: spacing.screenPaddingH,
-      paddingBottom: spacing.screenPaddingBottom,
+      paddingBottom: 0,
     },
 
     card: {
@@ -241,7 +241,7 @@ export const useGererIncidentsStyle = () => {
       flexDirection: "row",
       gap: spacing.sm,
       marginTop: spacing.md,
-      marginBottom: spacing.md,
+      marginBottom: 0,
     },
     secondaryButtonMuted: {
       backgroundColor: colors.textMuted,

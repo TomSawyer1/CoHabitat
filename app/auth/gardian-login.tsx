@@ -75,7 +75,7 @@ export default function GardianLogin() {
           await AsyncStorage.setItem('userBuildingAddress', data.user.building_address || '');
         }
         
-        console.log('✅ [GARDIEN LOGIN] Données stockées:', {
+        if (__DEV__) console.log('✅ [GARDIEN LOGIN] Données stockées:', {
           userId: data.user.id,
           userRole: data.user.role,
           buildingId: data.user.building_id,
@@ -106,12 +106,12 @@ export default function GardianLogin() {
   return (
     <KeyboardAvoidingView 
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
       <Header subtitle="Connexion Gardien" showBackButton={false} />
-      <ScrollView 
+      <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
