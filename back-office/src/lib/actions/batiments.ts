@@ -1,7 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { requireSession } from "@/lib/auth/session";
+import { requireRole, requireSession, type SessionData } from "@/lib/auth/session";
+import { logAudit } from "@/lib/audit";
 import { z } from "zod";
 
 const batimentSchema = z.object({
@@ -14,6 +15,14 @@ const batimentSchema = z.object({
   equipements: z.string().optional().nullable(),
   reglement: z.string().optional().nullable(),
 });
+
+async function requireAdmin(): Promise<{ session: SessionData } | { error: string }> {
+  try {
+    return { session: await requireRole("admin") };
+  } catch {
+    return { error: "Accès refusé : rôle administrateur requis." };
+  }
+}
 
 export async function getBatiments() {
   await requireSession();
@@ -32,22 +41,43 @@ export async function getBatiment(id: number) {
 }
 
 export async function createBatiment(data: z.infer<typeof batimentSchema>) {
-  await requireSession();
+  const guard = await requireAdmin();
+  if ("error" in guard) return guard;
   const parsed = batimentSchema.parse(data);
-  await prisma.batiment.create({ data: parsed });
+  const created = await prisma.batiment.create({ data: parsed });
+  await logAudit(guard.session, "batiment.create", "batiment", created.id, { nom: parsed.nom });
   return { success: true };
 }
 
 export async function updateBatiment(id: number, data: z.infer<typeof batimentSchema>) {
-  await requireSession();
+  const guard = await requireAdmin();
+  if ("error" in guard) return guard;
   const parsed = batimentSchema.parse(data);
   await prisma.batiment.update({ where: { id }, data: parsed });
+  await logAudit(guard.session, "batiment.update", "batiment", id);
   return { success: true };
 }
 
 export async function deleteBatiment(id: number) {
-  await requireSession();
+  const guard = await requireAdmin();
+  if ("error" in guard) return guard;
+
+  // Un bâtiment référencé (locataires, gardiens ou incidents) ne peut pas être
+  // supprimé : les FK SQLite feraient échouer la requête avec une 500 illisible.
+  const counts = await prisma.batiment.findUnique({
+    where: { id },
+    select: { _count: { select: { locataires: true, guardians: true, incidents: true } } },
+  });
+  if (!counts) return { error: "Bâtiment introuvable." };
+  const { locataires, guardians, incidents } = counts._count;
+  if (locataires > 0 || guardians > 0 || incidents > 0) {
+    return {
+      error: `Suppression impossible : ce bâtiment a encore ${locataires} locataire(s), ${guardians} gardien(s) et ${incidents} incident(s) rattachés.`,
+    };
+  }
+
   await prisma.batiment.delete({ where: { id } });
+  await logAudit(guard.session, "batiment.delete", "batiment", id);
   return { success: true };
 }
 

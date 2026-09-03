@@ -14,6 +14,8 @@ import {
     TouchableWithoutFeedback,
     View
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import AuthImage from "../../components/AuthImage";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
@@ -84,20 +86,22 @@ export default function GererIncidents() {
   const [showStatusList, setShowStatusList] = useState(false);
   const styles = useGererIncidentsStyle();
 
-  // Types de signalement (identique à signalement.tsx)
-  const signalementTypes = [
-    "Problème de plomberie",
-    "Problème électrique",
-    "Problème de chauffage",
-    "Vandalisme",
-    "Bruit excessif",
-    "Problème d'ascenseur",
-    "Éclairage défaillant",
-    "Problème de sécurité",
-    "Autre"
-  ];
-
   const incidentId = params.id as string;
+
+  // Écran réservé aux gardiens : un locataire qui navigue ici est renvoyé
+  // vers le suivi (le backend refuse déjà les mutations, mais on ne doit pas
+  // afficher l'interface de gestion).
+  useEffect(() => {
+    AsyncStorage.getItem("userRole").then((role) => {
+      if (role !== "guardian") {
+        router.replace(
+          incidentId
+            ? { pathname: "/signalements/suivresignal", params: { id: incidentId } }
+            : "/accueil/home"
+        );
+      }
+    });
+  }, [incidentId, router]);
 
   useEffect(() => {
     if (incidentId) {
@@ -241,8 +245,7 @@ export default function GererIncidents() {
 
   const handleContactTenant = useCallback(() => {
     if (!incident) return;
-    
-    const phoneNumber = incident.user_email; // Ou téléphone si disponible
+
     Alert.alert(
       'Contacter le locataire',
       `Email: ${incident.user_email || 'Non disponible'}\n\nVoulez-vous envoyer un email ?`,
@@ -391,8 +394,8 @@ export default function GererIncidents() {
             {incident.image && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
-                <Image
-                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                <AuthImage
+                  uri={`${API_BASE_URL}/uploads/${incident.image}`}
                   style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
                   resizeMode="cover"
                 />

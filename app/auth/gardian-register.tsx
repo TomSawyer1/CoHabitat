@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
     KeyboardAvoidingView,
     Platform,
@@ -14,7 +14,6 @@ import {
     View,
 } from "react-native";
 import Header from "../../components/Header";
-import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
 import { useGuardianRegisterStyle } from "../../hooks/useGuardianRegisterStyle";
 
@@ -196,12 +195,20 @@ export default function GardianRegister() {
           <TouchableOpacity
             style={[styles.inputField, { minHeight: 48, justifyContent: 'center' }]}
             onPress={() => setShowBuildingList(true)}
+            disabled={buildingsLoading}
           >
-            <Text style={{ color: building ? '#000' : '#00000080', fontSize: 16 }}>
-              {building
-                ? buildings.find(b => b.id.toString() === building)?.nom
-                : 'Sélectionnez votre bâtiment'}
-            </Text>
+            {buildingsLoading ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator size="small" />
+                <Text style={{ color: '#00000080', fontSize: 16 }}>Chargement des bâtiments…</Text>
+              </View>
+            ) : (
+              <Text style={{ color: building ? '#000' : '#00000080', fontSize: 16 }}>
+                {building
+                  ? buildings.find(b => b.id.toString() === building)?.nom
+                  : 'Sélectionnez votre bâtiment'}
+              </Text>
+            )}
           </TouchableOpacity>
           {showBuildingList && (
             <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
@@ -210,7 +217,6 @@ export default function GardianRegister() {
                   key={buildingItem.id}
                   style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
                   onPress={() => {
-                    console.log('🏢 [GARDIEN] Bâtiment sélectionné:', buildingItem.id.toString());
                     setBuilding(buildingItem.id.toString());
                     setShowBuildingList(false);
                   }}
@@ -224,8 +230,10 @@ export default function GardianRegister() {
             </View>
           )}
           <Text style={styles.inputInfo}>
-            {buildings && buildings.length > 0 
-              ? `${buildings.length} bâtiment(s) disponible(s)` 
+            {buildingsLoading
+              ? "Chargement…"
+              : buildings && buildings.length > 0
+              ? `${buildings.length} bâtiment(s) disponible(s)`
               : "Aucun bâtiment trouvé"
             }
           </Text>

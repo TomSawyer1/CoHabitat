@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import Header from "../../components/Header";
 import { apiFetch } from "../../config/api";
+import { getToken, setToken } from "../../config/tokenStorage";
 import { useLoginStyle } from "../../hooks/useLoginStyle";
 
 export default function Login() {
@@ -26,7 +27,7 @@ export default function Login() {
   const styles = useLoginStyle();
 
   useEffect(() => {
-    AsyncStorage.getItem("userToken").then((token) => {
+    getToken().then((token) => {
       if (token) router.replace("/accueil/home");
     });
   }, []);
@@ -61,18 +62,17 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Stocker le token et les informations utilisateur
-        await AsyncStorage.setItem('userToken', data.token);
+        // Stocker le token (stockage sécurisé) et les informations utilisateur
+        await setToken(data.token);
         await AsyncStorage.setItem('userId', data.user.id.toString());
         await AsyncStorage.setItem('userRole', data.user.role);
         await AsyncStorage.setItem('userEmail', data.user.email);
         await AsyncStorage.setItem('userName', `${data.user.prenom} ${data.user.nom}`);
-        
+
         // Stocker les informations du bâtiment si disponibles
         if (data.user.building_id) {
           await AsyncStorage.setItem('userBuildingId', data.user.building_id.toString());
           await AsyncStorage.setItem('userBuildingName', data.user.building_name || '');
-          await AsyncStorage.setItem('userBuildingAddress', data.user.building_address || '');
         }
         
         if (__DEV__) console.log('✅ [LOGIN] Données stockées:', {

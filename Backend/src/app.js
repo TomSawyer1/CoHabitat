@@ -10,6 +10,7 @@ const { JWT_SECRET } = require('./config/env');
 const authRoutes = require('./routes/authRoutes');
 const buildingRoutes = require('./routes/buildingRoutes');
 const incidentsRoutes = require('./routes/incidentsRoutes');
+const auth = require('./middleware/auth');
 const db = require('./db/database');
 
 const app = express();
@@ -42,8 +43,13 @@ const authLimiter = rateLimit({
 });
 app.use('/auth', authLimiter);
 
-// Servir les images uploadées en statique (les noms de fichiers sont des UUID).
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Servir les images uploadées : authentification requise (les photos
+// d'incidents ne sont pas publiques) + cache privé côté client.
+app.use('/uploads', auth, express.static(path.join(__dirname, '../uploads'), {
+    setHeaders: (res) => {
+        res.set('Cache-Control', 'private, max-age=604800');
+    },
+}));
 
 // Middleware de logging détaillé des requêtes (mode développement uniquement)
 // ⚠️ Les champs sensibles (password, currentPassword, newPassword, token, Authorization) sont masqués.

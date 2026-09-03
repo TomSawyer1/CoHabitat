@@ -15,6 +15,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from "react-native";
+import AuthImage from "../../components/AuthImage";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
@@ -81,19 +82,6 @@ export default function SuivreSignal() {
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
-  // Types de signalement (identique à signalement.tsx)
-  const signalementTypes = [
-    "Problème de plomberie",
-    "Problème électrique",
-    "Problème de chauffage",
-    "Vandalisme",
-    "Bruit excessif",
-    "Problème d'ascenseur",
-    "Éclairage défaillant",
-    "Problème de sécurité",
-    "Autre"
-  ];
-
   const incidentId = params.id as string;
 
   useEffect(() => {
@@ -110,16 +98,22 @@ export default function SuivreSignal() {
       // Récupérer les détails de l'incident
       const incidentResponse = await apiFetch(`/api/incidents/${incidentId}`);
 
-      if (incidentResponse.ok) {
-        const incidentData = await incidentResponse.json();
-        if (__DEV__) console.log('📋 [SUIVI] Incident reçu (success):', { success: incidentData?.success });
-        
-        if (incidentData.success) {
-          setIncident(incidentData.incident);
-        }
-      } else {
-        console.error('❌ [SUIVI] Erreur récupération incident:', incidentResponse.status);
+      // Si l'incident est introuvable, inutile de charger commentaires et
+      // historique : on affiche directement l'état "Incident non trouvé".
+      if (!incidentResponse.ok) {
+        if (__DEV__) console.error('❌ [SUIVI] Erreur récupération incident:', incidentResponse.status);
+        setIncident(null);
+        return;
       }
+
+      const incidentData = await incidentResponse.json();
+      if (__DEV__) console.log('📋 [SUIVI] Incident reçu (success):', { success: incidentData?.success });
+
+      if (!incidentData.success) {
+        setIncident(null);
+        return;
+      }
+      setIncident(incidentData.incident);
 
       // Récupérer les commentaires
       const commentsResponse = await apiFetch(`/api/incidents/${incidentId}/comments`);
@@ -356,8 +350,8 @@ export default function SuivreSignal() {
             {incident.image && (
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Photo</Text>
-                <Image
-                  source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                <AuthImage
+                  uri={`${API_BASE_URL}/uploads/${incident.image}`}
                   style={{ width: '100%', height: 200, borderRadius: 8, marginTop: 10 }}
                   resizeMode="cover"
                 />
@@ -367,7 +361,7 @@ export default function SuivreSignal() {
             <View style={styles.updatesSection}>
               <Text style={styles.updatesTitle}>Historique et Commentaires</Text>
               
-              {history.map((item, index) => (
+              {history.map((item) => (
                 <View key={`history-${item.id}`} style={styles.updateItem}>
                   <Image 
                     source={item.user_role === 'guardian' 
@@ -392,7 +386,7 @@ export default function SuivreSignal() {
                 </View>
               ))}
 
-              {comments.map((comment, index) => (
+              {comments.map((comment) => (
                 <View key={`comment-${comment.id}`} style={styles.updateItem}>
                   <Image 
                     source={comment.user_role === 'guardian' 

@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "./index";
+import { getToken, removeToken } from "./tokenStorage";
 
 /**
  * Wrapper `fetch` autour de l'API CoHabitat.
@@ -19,6 +20,8 @@ import { API_BASE_URL } from "./index";
  *
  *   await apiFetch('/api/incidents', { method: 'POST', body: formData, isMultipart: true });
  */
+
+const REQUEST_TIMEOUT_MS = 15_000;
 
 type UnauthorizedHandler = () => void;
 
@@ -54,7 +57,7 @@ export async function apiFetch(
   // Auth header
   if (auth) {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await getToken();
       if (token) {
         finalHeaders["Authorization"] = `Bearer ${token}`;
       }
@@ -90,19 +93,30 @@ export async function apiFetch(
     ? path
     : `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
 
-  const response = await fetch(url, {
-    ...rest,
-    headers: finalHeaders,
-    body: finalBody,
-  });
+  // Timeout : sans ça, un serveur qui ne répond pas laisse l'utilisateur
+  // bloqué indéfiniment sur un loader.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...rest,
+      headers: finalHeaders,
+      body: finalBody,
+      signal: rest.signal ?? controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   // Gestion globale du 401 (token expiré ou invalide).
   // On purge le storage pour éviter qu'un token mort traîne et on délègue
   // la redirection à l'app via le handler enregistré.
   if (response.status === 401 && auth) {
     try {
+      await removeToken();
       await AsyncStorage.multiRemove([
-        "userToken",
         "userId",
         "userRole",
         "userEmail",
@@ -110,6 +124,7 @@ export async function apiFetch(
         "userBuildingId",
         "userBuildingName",
         "userBuildingAddress",
+        "signalement_draft",
       ]);
     } catch {
       // ignore

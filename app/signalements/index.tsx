@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignalementsIndex() {
@@ -19,5 +20,10 @@ export default function SignalementsIndex() {
     redirect();
   }, []);
 
-  return null; // Ne rien afficher pendant la redirection
-} 
+  // Loader visible pendant la lecture AsyncStorage (évite l'écran blanc)
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}

@@ -50,6 +50,35 @@ const upload = multer({
 // Middleware pour un seul fichier
 const uploadSingle = upload.single('image');
 
+// Vérification des magic bytes : l'extension et le MIME type sont fournis par
+// le client et peuvent être falsifiés. On lit les premiers octets du fichier
+// réellement écrit sur disque pour s'assurer que c'est bien une image.
+const MAGIC_SIGNATURES = [
+    { type: 'jpeg', check: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+    { type: 'png', check: (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
+    { type: 'gif', check: (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38 },
+    {
+        type: 'webp',
+        check: (b) =>
+            b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && // "RIFF"
+            b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50, // "WEBP"
+    },
+];
+
+const isRealImage = (filePath) => {
+    let fd;
+    try {
+        fd = fs.openSync(filePath, 'r');
+        const buffer = Buffer.alloc(12);
+        fs.readSync(fd, buffer, 0, 12, 0);
+        return MAGIC_SIGNATURES.some((sig) => sig.check(buffer));
+    } catch {
+        return false;
+    } finally {
+        if (fd !== undefined) fs.closeSync(fd);
+    }
+};
+
 // Middleware wrapper pour une meilleure gestion d'erreurs.
 // On distingue 3 cas :
 //   1. MulterError connue (taille, champ inattendu, …) → 400 explicite
@@ -57,7 +86,19 @@ const uploadSingle = upload.single('image');
 //   3. Toute autre erreur (FS, permissions, …) → 500 sans détail technique
 const uploadMiddleware = (req, res, next) => {
     uploadSingle(req, res, function (err) {
-        if (!err) return next();
+        if (!err) {
+            // Le fichier est déjà sur disque : on valide son contenu réel et on
+            // le supprime immédiatement si ce n'est pas une image.
+            if (req.file && !isRealImage(req.file.path)) {
+                fs.unlink(req.file.path, () => {});
+                req.file = undefined;
+                return res.status(400).json({
+                    success: false,
+                    message: 'Le fichier envoyé n\'est pas une image valide.'
+                });
+            }
+            return next();
+        }
 
         if (err instanceof multer.MulterError) {
             const messages = {

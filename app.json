@@ -5,13 +5,15 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-          "scheme": "cohabitat",
+    "scheme": "cohabitat",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cohabitat.app",
-      "associatedDomains": ["applinks:cohabitat.com"],
+      "associatedDomains": [
+        "applinks:cohabitat.com"
+      ],
       "infoPlist": {
         "NSCameraUsageDescription": "CoHabitat utilise l'appareil photo pour joindre une photo à vos signalements d'incidents.",
         "NSPhotoLibraryUsageDescription": "CoHabitat accède à votre galerie pour joindre une photo à vos signalements d'incidents.",
@@ -34,7 +36,8 @@
           "photosPermission": "CoHabitat accède à votre galerie pour joindre une photo à vos signalements d'incidents.",
           "cameraPermission": "CoHabitat utilise l'appareil photo pour joindre une photo à vos signalements d'incidents."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "web": {
       "bundler": "metro",

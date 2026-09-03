@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { hashPassword, isCompromisedPassword, passwordSchema, verifyPassword } from "@/lib/auth/password";
+import { logAudit } from "@/lib/audit";
 import { z } from "zod";
 
 const changePasswordSchema = z.object({
@@ -27,6 +28,7 @@ export async function changeOwnPassword(data: z.infer<typeof changePasswordSchem
     data: { password_hash: await hashPassword(parsed.newPassword), password_changed_at: new Date() },
   });
 
+  await logAudit(session, "staff.change_own_password", "staff_account", staff.id);
   return { success: true };
 }
 

@@ -17,18 +17,9 @@ import { useParametresStyle } from "../../hooks/useParametresStyle";
 export default function Parametres() {
   const router = useRouter();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-  const [language, setLanguage] = useState("Français");
 
   const styles = useParametresStyle();
 
-  // Fonction pour changer la langue (exemple simple)
-  const handleChangeLanguage = () => {
-    // Logique réelle pour changer la langue de l'application
-    setLanguage((prev) => (prev === "Français" ? "Anglais" : "Français"));
-    if (__DEV__) console.log("Changement de langue vers :", language);
-  };
-
-  
 
   return (
     <View style={styles.container}>
@@ -53,15 +44,14 @@ export default function Parametres() {
               </Text>
             </View>
 
+            {/* Le changement de langue n'est pas encore implémenté : on
+                l'affiche désactivé plutôt que de simuler un réglage factice. */}
             <View style={styles.card}>
-              <TouchableOpacity
-                style={styles.settingItem}
-                onPress={handleChangeLanguage}
-              >
+              <View style={[styles.settingItem, { opacity: 0.5 }]}>
                 <Text style={styles.settingLabel}>Langue</Text>
-                <Text style={styles.settingValue}>{language}</Text>
+                <Text style={styles.settingValue}>Français (bientôt disponible)</Text>
                 <Ionicons name="chevron-forward" size={20} color="#666" />
-              </TouchableOpacity>
+              </View>
             </View>
 
 

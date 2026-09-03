@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { removeToken } from "../config/tokenStorage";
 import { sidebarWidth, useSidebarStyle } from "../hooks/useSidebarStyle";
 
 interface SidebarProps {
@@ -46,8 +47,8 @@ export default function Sidebar({ isSidebarVisible, onClose }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
+      await removeToken();
       await AsyncStorage.multiRemove([
-        "userToken",
         "userId",
         "userRole",
         "userEmail",

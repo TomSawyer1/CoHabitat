@@ -98,7 +98,8 @@ export function BatimentsManager({ batiments, guardians }: { batiments: Batiment
 
   function handleDelete() {
     startTransition(async () => {
-      await deleteBatiment(dialog!.batiment!.id);
+      const result = await deleteBatiment(dialog!.batiment!.id);
+      if ("error" in result) { toast.error(result.error as string); return; }
       toast.success("Bâtiment supprimé");
       setDialog(null);
       router.refresh();

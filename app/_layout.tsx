@@ -3,6 +3,7 @@ import {
     ThemeProvider
 } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getToken } from "../config/tokenStorage";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -24,14 +25,19 @@ export default function RootLayout() {
   }, [router]);
 
   // Garde de navigation globale (démo publique) : empêche l'accès aux écrans
-  // protégés sans session. On laisse passer uniquement `accueil/*` et `auth/*`.
+  // protégés sans session. Seuls `auth/*` et la page d'accueil publique
+  // (`accueil/index`) sont libres ; le tableau de bord `accueil/home` est privé.
   useEffect(() => {
     const check = async () => {
       const root = segments?.[0];
-      const isPublic = !root || root === "auth" || root === "accueil";
+      const sub = segments?.[1];
+      const isPublic =
+        !root ||
+        root === "auth" ||
+        (root === "accueil" && sub !== "home");
       if (isPublic) return;
 
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await getToken();
       const role = await AsyncStorage.getItem("userRole");
       if (!token) {
         router.replace(role === "guardian" ? "/auth/gardian-login" : "/auth/login");
@@ -57,7 +63,6 @@ export default function RootLayout() {
           <Stack.Screen name="profil/profil" options={{ headerShown: false }} />
   
           <Stack.Screen name="accueil/home" options={{ headerShown: false }} />
-          <Stack.Screen name="batiments/batiments" options={{ headerShown: false }} />
           <Stack.Screen name="batiments/mon-batiment" options={{ headerShown: false }} />
           <Stack.Screen name="batiments/mon-gardien" options={{ headerShown: false }} />
           <Stack.Screen name="profil/parametres" options={{ headerShown: false }} />

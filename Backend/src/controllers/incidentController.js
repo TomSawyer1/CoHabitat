@@ -439,10 +439,6 @@ const addIncidentComment = async (req, res) => {
         }
 
         // `ensureIncidentAccess` a déjà vérifié l'accès et attaché `req.incident`.
-        if (req.incident && asInt(req.incident.id) !== incidentId) {
-            return res.status(403).json({ success: false, message: 'Accès non autorisé.' });
-        }
-
         const query = `INSERT INTO incident_comments (incident_id, user_id, user_role, comment) VALUES (?, ?, ?, ?)`;
         
         db.run(query, [incidentId, req.user.id, req.user.role, comment], async function(err) {

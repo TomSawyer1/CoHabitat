@@ -76,6 +76,21 @@ const registerGuardian = async (req, res) => {
     }
     const { email, nom, prenom, telephone, batiment, numeroGardien, password } = parseResult.data;
 
+    // Liste blanche des numéros de gardien (SEC-06) : si GUARDIAN_ALLOWED_NUMBERS
+    // est défini (liste séparée par des virgules), seuls ces numéros peuvent
+    // créer un compte gardien. Sans cette variable, l'inscription reste ouverte
+    // (mode démo) mais un avertissement est loggé au démarrage.
+    const allowedNumbers = (process.env.GUARDIAN_ALLOWED_NUMBERS || '')
+        .split(',')
+        .map((n) => n.trim())
+        .filter(Boolean);
+    if (allowedNumbers.length > 0 && !allowedNumbers.includes(numeroGardien)) {
+        return res.status(403).json({
+            success: false,
+            message: 'Numéro de gardien non reconnu. Contactez l\'administration.'
+        });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -86,16 +101,16 @@ const registerGuardian = async (req, res) => {
             if (err) {
                 console.error('Erreur SQL détaillée:', err);
                 if (err.message.includes('UNIQUE constraint failed: guardians.email')) {
-                    return res.status(409).json({ message: 'Cet email est déjà enregistré.' });
+                    return res.status(409).json({ success: false, message: 'Cet email est déjà enregistré.' });
                 }
                 if (err.message.includes('UNIQUE constraint failed: guardians.guardian_number')) {
-                    return res.status(409).json({ message: 'Ce numéro de gardien est déjà utilisé.' });
+                    return res.status(409).json({ success: false, message: 'Ce numéro de gardien est déjà utilisé.' });
                 }
                 console.error('Erreur lors de l\'insertion du gardien:', err.message);
-                return res.status(500).json({ message: 'Erreur serveur lors de l\'inscription.' });
+                return res.status(500).json({ success: false, message: 'Erreur serveur lors de l\'inscription.' });
             }
             console.log('Gardien inséré avec succès, ID:', this.lastID);
-            res.status(201).json({ message: 'Inscription du gardien réussie!', userId: this.lastID });
+            res.status(201).json({ success: true, message: 'Inscription du gardien réussie!', userId: this.lastID });
         });
     } catch (error) {
         console.error('Erreur complète:', error);
@@ -121,13 +136,13 @@ const registerLocataire = async (req, res) => {
             if (err) {
                 console.error('Erreur SQL détaillée:', err);
                 if (err.message.includes('UNIQUE constraint failed: locataire.email')) {
-                    return res.status(409).json({ message: 'Cet email est déjà enregistré.' });
+                    return res.status(409).json({ success: false, message: 'Cet email est déjà enregistré.' });
                 }
                 console.error('Erreur lors de l\'insertion du locataire:', err.message);
-                return res.status(500).json({ message: 'Erreur serveur lors de l\'inscription.' });
+                return res.status(500).json({ success: false, message: 'Erreur serveur lors de l\'inscription.' });
             }
             console.log('Locataire inséré avec succès, ID:', this.lastID);
-            res.status(201).json({ message: 'Inscription du locataire réussie!', userId: this.lastID });
+            res.status(201).json({ success: true, message: 'Inscription du locataire réussie!', userId: this.lastID });
         });
     } catch (error) {
         console.error('Erreur complète:', error);
@@ -177,6 +192,16 @@ const login = async (req, res) => {
                 return res.status(401).json({
                     success: false,
                     message: 'Email ou mot de passe incorrect'
+                });
+            }
+
+            // Refuser les comptes suspendus ou bannis (gérés via le back-office).
+            // Vérifié après le mot de passe pour ne pas révéler l'existence du
+            // compte à un tiers.
+            if (user.status && user.status !== 'active') {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Ce compte est suspendu ou banni. Contactez l\'administration.'
                 });
             }
 
@@ -463,7 +488,9 @@ const getMyProfile = async (req, res) => {
         const userId = req.user.id;
         const userRole = req.user.role;
         
-        console.log('📱 [PROFILE] Récupération profil:', { userId, userRole });
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('📱 [PROFILE] Récupération profil:', { userId, userRole });
+        }
 
         // Déterminer la table en fonction du rôle
         const table = userRole === 'locataire' ? 'locataire' : 'guardians';
@@ -493,11 +520,10 @@ const getMyProfile = async (req, res) => {
                 });
             }
 
-            console.log('✅ [PROFILE] Profil trouvé:', { 
-                id: user.id, 
-                email: user.email, 
-                building: user.building_name 
-            });
+            if (process.env.NODE_ENV !== 'production') {
+                // Pas d'email ni d'autre donnée personnelle dans les logs.
+                console.log('✅ [PROFILE] Profil trouvé:', { id: user.id });
+            }
 
             // Supprimer le mot de passe de la réponse
             const { password, ...userProfile } = user;
@@ -583,23 +609,50 @@ const getBuildingResidents = async (req, res) => {
     }
 };
 
-// Supprimer le compte de l'utilisateur connecté
+// Supprimer le compte de l'utilisateur connecté (avec cascade : incidents,
+// commentaires et historique associés, pour ne pas laisser de lignes orphelines).
 const deleteMyAccount = async (req, res) => {
     try {
         const userId = req.user.id;
         const userRole = req.user.role;
         const table = userRole === 'locataire' ? 'locataire' : 'guardians';
 
-        const query = `DELETE FROM ${table} WHERE id = ?`;
-        db.run(query, [userId], function(err) {
-            if (err) {
-                console.error('Erreur lors de la suppression du compte:', err);
-                return res.status(500).json({ success: false, message: 'Erreur lors de la suppression du compte.' });
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION');
+
+            if (userRole === 'locataire') {
+                // Purge des données liées aux incidents du locataire, puis des
+                // incidents eux-mêmes, puis de ses commentaires sur d'autres incidents.
+                db.run(`DELETE FROM incident_comments WHERE incident_id IN (SELECT id FROM incidents WHERE idUtilisateur = ?)`, [userId]);
+                db.run(`DELETE FROM incident_history WHERE incident_id IN (SELECT id FROM incidents WHERE idUtilisateur = ?)`, [userId]);
+                db.run(`DELETE FROM incidents WHERE idUtilisateur = ?`, [userId]);
+                db.run(`DELETE FROM incident_comments WHERE user_id = ? AND user_role = 'locataire'`, [userId]);
+            } else {
+                // Un gardien ne possède pas d'incidents : on détache ses références.
+                db.run(`UPDATE incidents SET assigned_guardian_id = NULL WHERE assigned_guardian_id = ?`, [userId]);
+                db.run(`UPDATE batiments SET id_guardians = NULL WHERE id_guardians = ?`, [userId]);
+                db.run(`DELETE FROM incident_comments WHERE user_id = ? AND user_role = 'guardian'`, [userId]);
             }
-            if (this.changes === 0) {
-                return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
-            }
-            res.json({ success: true, message: 'Compte supprimé avec succès.' });
+
+            db.run(`DELETE FROM ${table} WHERE id = ?`, [userId], function (err) {
+                if (err) {
+                    console.error('Erreur lors de la suppression du compte:', err);
+                    db.run('ROLLBACK');
+                    return res.status(500).json({ success: false, message: 'Erreur lors de la suppression du compte.' });
+                }
+                if (this.changes === 0) {
+                    db.run('ROLLBACK');
+                    return res.status(404).json({ success: false, message: 'Utilisateur non trouvé.' });
+                }
+                db.run('COMMIT', (commitErr) => {
+                    if (commitErr) {
+                        console.error('Erreur lors du commit de la suppression:', commitErr);
+                        db.run('ROLLBACK');
+                        return res.status(500).json({ success: false, message: 'Erreur lors de la suppression du compte.' });
+                    }
+                    res.json({ success: true, message: 'Compte supprimé avec succès.' });
+                });
+            });
         });
     } catch (error) {
         console.error('Erreur générale lors de la suppression du compte:', error);

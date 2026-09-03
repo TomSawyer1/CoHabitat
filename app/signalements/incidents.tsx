@@ -5,13 +5,13 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
-    Image,
     ScrollView,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
 } from "react-native";
+import AuthImage from "../../components/AuthImage";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
@@ -193,8 +193,8 @@ export default function Incidents() {
         }}
       >
         {incident.image ? (
-          <Image
-            source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+          <AuthImage
+            uri={`${API_BASE_URL}/uploads/${incident.image}`}
             style={styles.incidentImage}
             resizeMode="cover"
           />

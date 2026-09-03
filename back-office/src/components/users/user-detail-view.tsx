@@ -31,12 +31,13 @@ export function UserDetailView({ detail }: { detail: UserDetail }) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     startTransition(async () => {
-      await updateAppUser(detail.type, user.id, {
+      const result = await updateAppUser(detail.type, user.id, {
         nom: String(fd.get("nom")),
         prenom: String(fd.get("prenom")),
         email: String(fd.get("email")),
         telephone: String(fd.get("telephone") || "") || null,
       });
+      if ("error" in result) { toast.error(result.error); return; }
       toast.success("Profil mis à jour");
       router.refresh();
     });
@@ -44,7 +45,8 @@ export function UserDetailView({ detail }: { detail: UserDetail }) {
 
   function handleStatus(status: "active" | "suspended" | "banned") {
     startTransition(async () => {
-      await setAppUserStatus(detail.type, user.id, status);
+      const result = await setAppUserStatus(detail.type, user.id, status);
+      if ("error" in result) { toast.error(result.error); return; }
       toast.success("Statut mis à jour");
       router.refresh();
     });
@@ -155,7 +157,8 @@ export function UserDetailView({ detail }: { detail: UserDetail }) {
             <Button variant="outline" onClick={() => setShowDelete(false)}>Annuler</Button>
             <Button variant="destructive" onClick={() =>
               startTransition(async () => {
-                await deleteAppUser(detail.type, user.id);
+                const result = await deleteAppUser(detail.type, user.id);
+                if ("error" in result) { toast.error(result.error); return; }
                 toast.success("Utilisateur supprimé");
                 router.push("/users");
               })
@@ -180,7 +183,7 @@ function ResetPasswordForm({ type, userId }: { type: AppUserType; userId: number
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nouveau mot de passe</DialogTitle>
-            <DialogDescription>Le mot de passe sera hashé avec argon2id.</DialogDescription>
+            <DialogDescription>Le mot de passe sera hashé en bcrypt (compatible app mobile).</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -188,7 +191,7 @@ function ResetPasswordForm({ type, userId }: { type: AppUserType; userId: number
               const password = new FormData(e.currentTarget).get("password") as string;
               startTransition(async () => {
                 const result = await resetAppUserPassword(type, userId, password);
-                if (result.error) toast.error(result.error);
+                if ("error" in result) toast.error(result.error);
                 else { toast.success("Mot de passe réinitialisé"); setOpen(false); }
               });
             }}

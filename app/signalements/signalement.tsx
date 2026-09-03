@@ -21,6 +21,7 @@ import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { apiFetch } from "../../config/api";
+import { getToken } from "../../config/tokenStorage";
 import { useSignalementStyle } from "../../hooks/useSignalementStyle";
 
 export default function Signalement() {
@@ -70,7 +71,7 @@ export default function Signalement() {
   const loadUserData = async () => {
     try {
       const [token, id, buildingId, buildingName] = await Promise.all([
-        AsyncStorage.getItem('userToken'),
+        getToken(),
         AsyncStorage.getItem('userId'),
         AsyncStorage.getItem('userBuildingId'),
         AsyncStorage.getItem('userBuildingName')

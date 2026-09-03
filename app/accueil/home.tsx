@@ -34,6 +34,7 @@ export default function Home() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [buildingName, setBuildingName] = useState<string>("");
   const [stats, setStats] = useState<Stats>({ nouveau: 0, en_cours: 0, resolu: 0, total: 0 });
+  const [statsError, setStatsError] = useState(false);
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -63,10 +64,14 @@ export default function Home() {
 
       const url = role === "guardian" ? `/api/incidents` : `/api/incidents/user/${userId}`;
       const res = await apiFetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        setStatsError(true);
+        return;
+      }
       const data = await res.json();
       const list: { status: string }[] = data?.incidents ?? [];
 
+      setStatsError(false);
       setStats({
         nouveau: list.filter((i) => i.status === "nouveau").length,
         en_cours: list.filter((i) => i.status === "en_cours").length,
@@ -74,7 +79,8 @@ export default function Home() {
         total: list.length,
       });
     } catch (error) {
-      console.error("[HOME] Erreur chargement données:", error);
+      if (__DEV__) console.error("[HOME] Erreur chargement données:", error);
+      setStatsError(true);
     }
   };
 
@@ -165,6 +171,14 @@ export default function Home() {
                 <Text style={styles.statLabel}>Résolus</Text>
               </View>
             </View>
+
+            {statsError && (
+              <TouchableOpacity onPress={loadUserData}>
+                <Text style={{ color: "#f54888", textAlign: "center", marginTop: 8, fontSize: 13 }}>
+                  Impossible de charger les statistiques. Appuyez pour réessayer.
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={styles.actionsTitle}>Accès rapides</Text>
             <View style={styles.actionsGrid}>

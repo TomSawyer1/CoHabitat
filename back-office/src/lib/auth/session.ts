@@ -1,26 +1,30 @@
 import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { generateCsrfToken, generateToken, hashToken } from "@/lib/auth/tokens";
-import type { StaffAccount } from "@prisma/client";
+import { generateToken, hashToken } from "@/lib/auth/tokens";
+import type { StaffAccount, StaffRole } from "@prisma/client";
 
 export const SESSION_COOKIE = "cohabitat_session";
 
 export type SessionStaff = Pick<
   StaffAccount,
-  "id" | "email" | "nom" | "prenom" | "role" | "totp_enabled" | "is_active"
+  "id" | "email" | "nom" | "prenom" | "role" | "is_active"
 >;
 
 export type SessionData = {
   staff: SessionStaff;
 };
 
+export async function getRequestIp(): Promise<string> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? "unknown";
+}
+
 export async function createSession(staffId: number): Promise<{ token: string }> {
   const token = generateToken();
   const tokenHash = hashToken(token);
-  const csrfToken = generateCsrfToken();
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? "unknown";
+  const ip = await getRequestIp();
   const userAgent = h.get("user-agent") ?? undefined;
   const expiresAt = new Date(Date.now() + env.SESSION_MAX_AGE * 1000);
 
@@ -28,7 +32,6 @@ export async function createSession(staffId: number): Promise<{ token: string }>
     data: {
       staff_id: staffId,
       token_hash: tokenHash,
-      csrf_token: csrfToken,
       ip_address: ip,
       user_agent: userAgent,
       expires_at: expiresAt,
@@ -78,7 +81,6 @@ export async function getSession(): Promise<SessionData | null> {
           nom: true,
           prenom: true,
           role: true,
-          totp_enabled: true,
           is_active: true,
         },
       },
@@ -110,5 +112,22 @@ export async function getSession(): Promise<SessionData | null> {
 export async function requireSession(): Promise<SessionData> {
   const session = await getSession();
   if (!session) throw new Error("UNAUTHORIZED");
+  return session;
+}
+
+// Hiérarchie des rôles staff : un rôle donne accès à tout ce qui est en
+// dessous de lui. `operator` = lecture + gestion des incidents ;
+// `admin` = gestion des utilisateurs et bâtiments ; `super_admin` = tout.
+const ROLE_LEVEL: Record<StaffRole, number> = {
+  operator: 1,
+  admin: 2,
+  super_admin: 3,
+};
+
+export async function requireRole(minRole: StaffRole): Promise<SessionData> {
+  const session = await requireSession();
+  if (ROLE_LEVEL[session.staff.role] < ROLE_LEVEL[minRole]) {
+    throw new Error("FORBIDDEN");
+  }
   return session;
 }

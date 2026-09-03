@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
+import { logAudit } from "@/lib/audit";
 import { z } from "zod";
+
+// Statuts alignés sur le CHECK de la table `incidents` côté Backend Express.
+const incidentStatusSchema = z.enum(["nouveau", "en_cours", "resolu", "ferme"]);
 
 const incidentFilterSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -42,19 +46,62 @@ export async function getIncidents(params: z.input<typeof incidentFilterSchema>)
 }
 
 export async function updateIncidentStatus(id: number, status: string, comment?: string) {
-  await requireSession();
-  await prisma.incident.update({
-    where: { id },
-    data: {
-      status,
-      ...(status === "resolu" ? { resolved_at: new Date(), resolution_comment: comment ?? null } : {}),
-    },
-  });
+  const session = await requireSession();
+  const parsedStatus = incidentStatusSchema.safeParse(status);
+  if (!parsedStatus.success) return { error: "Statut d'incident invalide." };
+
+  const incident = await prisma.incident.findUnique({ where: { id }, select: { status: true } });
+  if (!incident) return { error: "Incident introuvable." };
+
+  // L'app mobile affiche l'historique des transitions : on journalise dans
+  // incident_history comme le fait le Backend Express, sinon les interventions
+  // du back-office y sont invisibles.
+  await prisma.$transaction([
+    prisma.incident.update({
+      where: { id },
+      data: {
+        status: parsedStatus.data,
+        ...(parsedStatus.data === "resolu" ? { resolved_at: new Date(), resolution_comment: comment ?? null } : {}),
+      },
+    }),
+    prisma.incidentHistory.create({
+      data: {
+        incident_id: id,
+        action: "Statut modifié (back-office)",
+        old_status: incident.status,
+        new_status: parsedStatus.data,
+        comment: comment ?? null,
+        user_id: session.staff.id,
+        user_role: "staff",
+      },
+    }),
+  ]);
+
+  await logAudit(session, "incident.set_status", "incident", id, { from: incident.status, to: parsedStatus.data });
   return { success: true };
 }
 
 export async function assignIncident(id: number, guardianId: number | null) {
-  await requireSession();
-  await prisma.incident.update({ where: { id }, data: { assigned_guardian_id: guardianId, status: guardianId ? "en_cours" : "nouveau" } });
+  const session = await requireSession();
+
+  const incident = await prisma.incident.findUnique({ where: { id }, select: { status: true } });
+  if (!incident) return { error: "Incident introuvable." };
+
+  const newStatus = guardianId ? "en_cours" : "nouveau";
+  await prisma.$transaction([
+    prisma.incident.update({ where: { id }, data: { assigned_guardian_id: guardianId, status: newStatus } }),
+    prisma.incidentHistory.create({
+      data: {
+        incident_id: id,
+        action: guardianId ? "Gardien assigné (back-office)" : "Assignation retirée (back-office)",
+        old_status: incident.status,
+        new_status: newStatus,
+        user_id: session.staff.id,
+        user_role: "staff",
+      },
+    }),
+  ]);
+
+  await logAudit(session, "incident.assign", "incident", id, { guardianId });
   return { success: true };
 }

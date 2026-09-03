@@ -46,7 +46,8 @@ export function IncidentDetail({ incident, guardians }: { incident: Incident; gu
 
   function handleStatusChange() {
     startTransition(async () => {
-      await updateIncidentStatus(incident.id, selectedStatus);
+      const result = await updateIncidentStatus(incident.id, selectedStatus);
+      if (result && "error" in result) { toast.error(result.error as string); return; }
       toast.success("Statut mis à jour");
       router.refresh();
     });
@@ -54,7 +55,8 @@ export function IncidentDetail({ incident, guardians }: { incident: Incident; gu
 
   function handleAssign() {
     startTransition(async () => {
-      await assignIncident(incident.id, selectedGuardian ? Number(selectedGuardian) : null);
+      const result = await assignIncident(incident.id, selectedGuardian ? Number(selectedGuardian) : null);
+      if (result && "error" in result) { toast.error(result.error as string); return; }
       toast.success("Gardien assigné");
       router.refresh();
     });

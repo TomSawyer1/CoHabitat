@@ -7,7 +7,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error('Erreur lors de l\'ouverture de la base de données:', err.message);
     } else {
         console.log('Connecté à la base de données SQLite cohabitat.db');
-        
+
+        // Contraintes référentielles : SQLite les ignore silencieusement tant que
+        // ce PRAGMA n'est pas activé sur la connexion.
+        db.run('PRAGMA foreign_keys = ON');
+        // La base est partagée avec le back-office (Prisma) : WAL + busy_timeout
+        // évitent les erreurs "database is locked" en cas d'écritures concurrentes.
+        db.run('PRAGMA journal_mode = WAL');
+        db.run('PRAGMA busy_timeout = 5000');
+
         // Création des tables si elles n'existent pas
         db.run(`CREATE TABLE IF NOT EXISTS guardians (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,33 +126,23 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 console.log('Table incidents créée ou déjà existante.');
                 
                 // Migration : Ajouter la colonne title si elle n'existe pas
-                db.run(`PRAGMA table_info(incidents)`, (err, rows) => {
+                db.all(`PRAGMA table_info(incidents)`, (err, columns) => {
                     if (err) {
-                        console.error('Erreur lors de la vérification de la structure de la table incidents:', err.message);
+                        console.error('Erreur lors de la récupération des colonnes:', err.message);
                         return;
                     }
-                    
-                    // Vérifier si la colonne title existe déjà
-                    db.all(`PRAGMA table_info(incidents)`, (err, columns) => {
-                        if (err) {
-                            console.error('Erreur lors de la récupération des colonnes:', err.message);
-                            return;
-                        }
-                        
-                        const hasTitle = columns.some(col => col.name === 'title');
-                        if (!hasTitle) {
-                            console.log('🔄 [MIGRATION] Ajout de la colonne title à la table incidents...');
-                            db.run(`ALTER TABLE incidents ADD COLUMN title TEXT`, (err) => {
-                                if (err) {
-                                    console.error('❌ [MIGRATION] Erreur lors de l\'ajout de la colonne title:', err.message);
-                                } else {
-                                    console.log('✅ [MIGRATION] Colonne title ajoutée avec succès à la table incidents.');
-                                }
-                            });
-                        } else {
-                            console.log('✅ [MIGRATION] Colonne title déjà présente dans la table incidents.');
-                        }
-                    });
+
+                    const hasTitle = columns.some(col => col.name === 'title');
+                    if (!hasTitle) {
+                        console.log('🔄 [MIGRATION] Ajout de la colonne title à la table incidents...');
+                        db.run(`ALTER TABLE incidents ADD COLUMN title TEXT`, (err) => {
+                            if (err) {
+                                console.error('❌ [MIGRATION] Erreur lors de l\'ajout de la colonne title:', err.message);
+                            } else {
+                                console.log('✅ [MIGRATION] Colonne title ajoutée avec succès à la table incidents.');
+                            }
+                        });
+                    }
                 });
             }
         });

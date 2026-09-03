@@ -1,215 +1,143 @@
-# Audit CoHabitat — 16 juin 2026
+# Audit CoHabitat — 6 juillet 2026
 
-**Scope :** `app/`, `Backend/`, `components/`, `hooks/`, `config/`
-**Résumé :** 4 critiques · 19 medium · 23 mineurs — **46 problèmes au total**
-**Corrigés :** AS-01, AIS-01 (×5), AIS-02, SEC-01 (×2) — **8 corrigés le 16/06/2026**
+**Scope :** `app/`, `Backend/`, `components/`, `hooks/`, `config/`, `back-office/`
+**Résumé :** 6 critiques · 26 medium · 29 mineurs — **61 problèmes au total**
+**Corrigés :** 8 le 16/06/2026 · **53 le 06/07/2026 → 61/61 traités** ✅
 
----
-
-## Critiques
-
-### ~~AS-01 — Clé `"token"` au lieu de `"userToken"` dans `incidents.tsx`~~ ✅ CORRIGÉ
-**Fichier :** `app/signalements/incidents.tsx:66`
-Suppression de `imageToken` et `loadToken`. Image servie directement via `/uploads/` public.
-**Fix appliqué le 16/06/2026**
+> Mise à jour du 06/07/2026 (soir) : l'intégralité des problèmes ouverts a été corrigée.
+> Vérifications effectuées : `node --check` sur tous les fichiers Backend modifiés, `tsc --noEmit` propre sur le back-office et sur l'app Expo, `prisma db push` appliqué, smoke-test HTTP (health 200, `/uploads` sans token → 401, login vide → 400).
 
 ---
 
-### ~~AIS-02 — `new Date()` sans normalisation SQLite dans `incidents.tsx`~~ ✅ CORRIGÉ
-**Fichier :** `app/signalements/incidents.tsx:152`
-`.replace(' ', 'T')` ajouté dans `formatDate` + guard `isNaN`.
-**Fix appliqué le 16/06/2026**
+## Critiques — tous corrigés ✅
+
+### ~~AS-01 — Clé `"token"` au lieu de `"userToken"` dans `incidents.tsx`~~ ✅ (16/06)
+### ~~AIS-02 — `new Date()` sans normalisation SQLite~~ ✅ (16/06)
+### ~~SEC-01 — Logs utilisateur sans garde `__DEV__` (login)~~ ✅ (16/06)
+
+### ~~SEC-08 — Risque de commit accidentel du secret JWT backend~~ ✅ CORRIGÉ 06/07
+Hook `.githooks/pre-commit` ajouté : bloque tout commit contenant un fichier `.env` (hors `.example`/`.exemple`). `core.hooksPath` configuré sur ce clone. Couvre `Backend/.env`, `.env` racine et `back-office/.env`.
+⚠️ À refaire sur chaque nouveau clone : `git config core.hooksPath .githooks`.
+
+### ~~BO-01 — Reset de mot de passe back-office incompatible avec le login mobile~~ ✅ CORRIGÉ 06/07
+`hashAppUserPassword` (`back-office/src/lib/auth/password.ts`) hash désormais en **bcrypt** (10 rounds), le format que le Backend Express sait vérifier. Argon2id reste réservé aux comptes staff. Texte du dialog de reset mis à jour.
+
+### ~~BO-02 — Suspension/bannissement sans effet sur l'app mobile~~ ✅ CORRIGÉ 06/07
+- `authController.js` (login) : refus 403 si `status !== 'active'` (vérifié après le mot de passe pour ne pas révéler l'existence du compte).
+- `middleware/auth.js` : l'utilisateur est revérifié en BDD à **chaque requête** → les JWT déjà émis sont invalidés dès la suspension.
 
 ---
 
-### ~~SEC-01 — Logs utilisateur sans garde `__DEV__` dans les pages de connexion~~ ✅ CORRIGÉ
-**Fichiers :** `app/auth/login.tsx:78`, `app/auth/gardian-login.tsx:78`
-`if (__DEV__)` ajouté devant les deux `console.log`.
-**Fix appliqué le 16/06/2026**
+## Medium — tous corrigés ✅
+
+### ~~N-01 — `accueil/home` considéré comme route publique~~ ✅ CORRIGÉ 06/07
+`app/_layout.tsx` : la garde vérifie le sous-segment — `accueil/index` reste public, `accueil/home` exige un token.
+
+### ~~N-02 / SEC-04 — Aucun guard de rôle frontend sur `gerer-incidents`~~ ✅ CORRIGÉ 06/07
+`gerer-incidents.tsx` : un non-gardien est redirigé vers `suivresignal` (ou l'accueil) avant affichage de l'interface de gestion.
+
+### ~~NET-01 — Aucun timeout sur les requêtes fetch~~ ✅ CORRIGÉ 06/07
+`config/api.ts` : `AbortController` avec timeout de 15 s sur toutes les requêtes (un `signal` fourni par l'appelant reste prioritaire).
+
+### ~~NET-02 — IP locale hardcodée dans `.env`~~ ✅ TRAITÉ 06/07
+Le fichier n'est pas suivi par git et le hook pre-commit (SEC-08) bloque désormais tout commit de `.env`.
+
+### ~~NET-04 / SEC-05 — Images d'incidents / `/uploads` sans authentification~~ ✅ CORRIGÉ 06/07
+- Backend : `app.use('/uploads', auth, express.static(...))` — vérifié par smoke-test (401 sans token).
+- App : nouveau composant `components/AuthImage.tsx` qui charge les images avec le header `Authorization` (utilisé dans `incidents.tsx`, `gerer-incidents.tsx`, `suivresignal.tsx`, `profil.tsx`).
+
+### ~~AIS-01 — `KeyboardAvoidingView` `behavior="height"` sur Android~~ ✅ (16/06)
+
+### ~~AS-02 — Brouillon non effacé lors d'une expiration 401~~ ✅ CORRIGÉ 06/07
+`"signalement_draft"` ajouté à la purge 401 de `config/api.ts` (et à la purge de suppression de compte).
+
+### ~~BACK-02 — `building_id` gardien lu depuis le JWT sans vérification BDD~~ ✅ CORRIGÉ 06/07
+Le middleware `auth.js` charge désormais `batiments_id` depuis la BDD et écrase la valeur du token. `incidentController` en hérite automatiquement.
+
+### ~~BACK-05 — Suppression de compte sans cascade~~ ✅ CORRIGÉ 06/07
+`deleteMyAccount` : transaction SQLite — locataire : commentaires + historique + incidents supprimés ; gardien : incidents désassignés, bâtiments détachés, commentaires purgés.
+
+### ~~BACK-06 — `PRAGMA foreign_keys` jamais activé~~ ✅ CORRIGÉ 06/07
+`database.js` : `PRAGMA foreign_keys = ON` à l'ouverture de la connexion.
+
+### ~~BACK-08 — Extension extraite du nom client, non du contenu~~ ✅ CORRIGÉ 06/07
+`middleware/upload.js` : validation des **magic bytes** (JPEG/PNG/GIF/WebP) du fichier écrit sur disque ; suppression immédiate + 400 si le contenu n'est pas une image.
+
+### ~~SEC-02 — Emails loggés en production côté backend~~ ✅ CORRIGÉ 06/07
+Logs profil gardés derrière `NODE_ENV !== 'production'` et expurgés de l'email.
+
+### ~~SEC-03 — JWT stocké en clair dans AsyncStorage~~ ✅ CORRIGÉ 06/07
+Nouveau module `config/tokenStorage.ts` basé sur **expo-secure-store** (Keychain/Keystore), fallback AsyncStorage sur web, migration automatique des anciens tokens. Tous les points de lecture/écriture du token migrés (login ×2, layout, api, profil, signalement, mon-batiment, mon-gardien, sidebar).
+
+### ~~SEC-06 — Inscription gardien sans validation du numéro~~ ✅ CORRIGÉ 06/07
+Liste blanche `GUARDIAN_ALLOWED_NUMBERS` (env, documentée dans `.env-exemple`). Si définie, seuls ces numéros peuvent s'inscrire (403 sinon). Sans la variable, comportement démo inchangé.
+
+### ~~UX-01 / AS-04 — Sélecteur de bâtiment sans indicateur de chargement~~ ✅ CORRIGÉ 06/07
+`register.tsx` + `gardian-register.tsx` : `ActivityIndicator` + texte « Chargement des bâtiments… », sélecteur désactivé pendant le chargement.
+
+### ~~UX-03 — Chargement de commentaires sur un incident `null`~~ ✅ CORRIGÉ 06/07
+`suivresignal.tsx` : si le GET incident échoue, on court-circuite le chargement des commentaires/historique.
+
+### ~~BO-03 — Aucune protection brute-force sur le login staff~~ ✅ CORRIGÉ 06/07
+`loginAction` : compteur `failed_login_count`, verrouillage `locked_until` 15 min après 5 échecs, journalisation de chaque tentative dans `login_attempts`.
+
+### ~~BO-04 — Aucun contrôle de rôle (RBAC)~~ ✅ CORRIGÉ 06/07
+Helper `requireRole` (hiérarchie operator < admin < super_admin). Mutations utilisateurs/bâtiments + export CSV réservés aux **admins** (retour `{ error }` propre, toasts côté UI). Les opérateurs conservent la lecture et la gestion des incidents.
+
+### ~~BO-05 — Table `AuditLog` jamais alimentée~~ ✅ CORRIGÉ 06/07
+Nouveau `src/lib/audit.ts` (`logAudit`) : toutes les mutations (users, bâtiments, incidents, login, changement de mot de passe) écrivent acteur, action, cible, métadonnées et IP.
+
+### ~~BO-06 — SQLite partagé sans configuration de concurrence~~ ✅ CORRIGÉ 06/07
+- Express : `PRAGMA journal_mode = WAL` + `busy_timeout = 5000`.
+- Prisma : `?connection_limit=1&socket_timeout=5` sur `DATABASE_URL` (`.env` + `.env.example`).
+
+### ~~BO-07 — Statut d'incident non validé et historique contourné~~ ✅ CORRIGÉ 06/07
+`z.enum(["nouveau","en_cours","resolu","ferme"])` + écriture `incident_history` (transaction) sur chaque changement de statut / assignation depuis le back-office.
+
+### ~~BO-08 — Suppressions sans gestion des FK~~ ✅ CORRIGÉ 06/07
+`deleteAppUser` : cascade explicite en `$transaction`. `deleteBatiment` : refus propre avec décompte des locataires/gardiens/incidents rattachés.
+
+### ~~BO-09 — Token CSRF généré mais jamais vérifié~~ ✅ CORRIGÉ 06/07
+Code et colonne `csrf_token` supprimés (les Server Actions Next.js vérifient l'`Origin` nativement ; le cookie est `SameSite=strict`). Schéma synchronisé via `prisma db push`.
 
 ---
 
-### SEC-08 — Risque de commit accidentel du secret JWT backend
-**Fichier :** `Backend/.env`
-Un commit accidentel du `.env` nécessiterait une régénération immédiate du JWT secret et l'invalidation de toutes les sessions actives.
-**Fix :** Ajouter un hook pre-commit (`git-secrets` ou `.githooks/pre-commit`) pour bloquer les fichiers `.env`.
+## Mineurs — tous corrigés ✅ (06/07/2026)
+
+| ID | Fix appliqué |
+|---|---|
+| N-03 | Route morte supprimée : `app/batiments/batiments.tsx` + `hooks/useBatimentsStyle.ts` + entrée Stack. |
+| N-04 | `signalements/index.tsx` : `ActivityIndicator` pendant la redirection. |
+| N-05 | `+not-found.tsx` traduit en français. |
+| AS-03 | `userBuildingAddress` n'est plus écrit au login (reste dans les purges pour nettoyer les anciennes installations). |
+| NET-03 / DEAD-01 | Import `API_BASE_URL` inutilisé supprimé de `register.tsx` (+ import `AsyncStorage` mort). |
+| NET-05 | `config/index.ts` : tous les logs derrière `__DEV__`. |
+| NET-06 / DEAD-03 | `BACKEND_PORT` supprimé. |
+| AIS-03 | `/uploads` servi avec `Cache-Control: private, max-age=604800`. |
+| BACK-03 | Check mort supprimé dans `addIncidentComment`. |
+| BACK-04 | `success: false` ajouté aux 409/500 des inscriptions (+ `success: true` sur les 201). |
+| BACK-07 | `db.run('PRAGMA table_info')` mort supprimé — seul le `db.all` correct subsiste. |
+| UX-02 | `home.tsx` : état `statsError` + message « Appuyez pour réessayer ». |
+| UX-04 | Toggle de langue factice remplacé par une ligne désactivée « Français (bientôt disponible) ». |
+| UX-05 | Variable `phoneNumber` mal nommée supprimée. |
+| UX-06 | `mon-batiment` / `mon-gardien` : `ActivityIndicator` pendant le rechargement. |
+| DEAD-02 | `signalementTypes` supprimé de `suivresignal.tsx` et `gerer-incidents.tsx`. |
+| DEAD-04 | `jwt-decode` désinstallé. |
+| DEAD-05 | Paramètres `index` inutilisés supprimés des `.map()`. |
+| SEC-07 | `AsyncStorage.clear()` remplacé par `removeToken()` + `multiRemove` ciblé. |
+| BO-10 | Export CSV : cellules commençant par `= + - @` préfixées d'un `'` (anti-injection Excel). |
+| BO-11 | Pagination poussée en SQL pour les filtres mono-type ; le cas « tous types » (fusion 2 tables) reste trié en mémoire mais avec un `select` minimal — limitation documentée dans le code. |
+| BO-12 | Collision email (`P2002`) → « Cet email est déjà utilisé » au lieu d'une 500. |
+| BO-13 | `bulkSetAppUserStatus` : `updateMany` par type dans une `$transaction`. |
+| BO-14 | Dossier vide `back-office/Backend/` supprimé. |
+| BO-15 | Schéma mort supprimé (`totp_secret`, `totp_enabled`, modèle `PasswordResetToken`) ; `LoginAttempt`, `failed_login_count` et `locked_until` sont désormais réellement utilisés (BO-03). |
 
 ---
 
-## Medium
+## Limitations / points d'attention restants
 
-### N-01 — `accueil/home` considéré comme route publique
-**Fichier :** `app/_layout.tsx:31`
-```ts
-const isPublic = !root || root === "auth" || root === "accueil";
-```
-Le tableau de bord (`/accueil/home`) est dans le segment `accueil` → la garde le laisse passer. Un utilisateur non authentifié peut y accéder brièvement avant que les appels API ne retournent 401.
-**Fix :** Vérifier le sous-segment ou séparer `accueil/index` (public) de `accueil/home` (privé).
-
----
-
-### N-02 — Aucun guard de rôle côté frontend sur `gerer-incidents`
-**Fichiers :** `app/signalements/gerer-incidents.tsx`, `app/signalements/signalement.tsx`
-Un locataire peut naviguer vers `/signalements/gerer-incidents` et voir l'interface de gestion. Le backend refuse les mutations (403) mais l'écran et les données de l'incident sont affichés.
-
----
-
-### NET-01 — Aucun timeout sur les requêtes fetch
-**Fichier :** `config/api.ts`
-Pas d'`AbortController`. Si le serveur ne répond pas, l'utilisateur reste bloqué sur un loader indéfiniment.
-**Fix :** Ajouter un `AbortController` avec `setTimeout` de 15s.
-
----
-
-### NET-02 — IP locale hardcodée dans `.env`
-**Fichier :** `.env:4`
-`EXPO_PUBLIC_API_BASE_URL=http://192.168.1.246:3000` — expose l'adresse IP du développeur si le fichier est commité par erreur.
-
----
-
-### NET-04 — Images d'incidents sans authentification
-**Fichiers :** `gerer-incidents.tsx:389`, `suivresignal.tsx:344`, `profil.tsx:426`
-Les photos sont chargées directement via `/uploads/...` sans token. Le dossier est en static public.
-
----
-
-### ~~AIS-01 — `KeyboardAvoidingView` avec `behavior="height"` sur Android~~ ✅ CORRIGÉ
-**Fichiers :** `app/auth/login.tsx`, `register.tsx`, `gardian-login.tsx`, `gardian-register.tsx`, `forgot-password.tsx`
-`behavior={Platform.OS === 'ios' ? 'padding' : undefined}` appliqué sur les 5 fichiers. `keyboardVerticalOffset` Android supprimé également.
-**Fix appliqué le 16/06/2026**
-
----
-
-### AS-02 — Brouillon de signalement non effacé lors d'une expiration 401
-**Fichiers :** `config/api.ts:104`, `components/sidebar.tsx:49`
-La purge 401 dans `api.ts` n'inclut pas `"signalement_draft"`. Le brouillon persiste pour un autre utilisateur sur le même appareil.
-**Fix :** Ajouter `"signalement_draft"` dans le `multiRemove` de `api.ts`.
-
----
-
-### BACK-02 — `building_id` gardien lu depuis le JWT sans vérification BDD
-**Fichier :** `Backend/src/controllers/incidentController.js:274`
-`guardianBuildingId` vient du JWT uniquement. Un token mal généré ou compromis permettrait des mutations cross-bâtiment.
-**Fix :** `SELECT batiments_id FROM guardians WHERE id = req.user.id` et comparer.
-
----
-
-### BACK-05 — Suppression de compte sans cascade des incidents
-**Fichier :** `Backend/src/controllers/authController.js:587`
-Les incidents d'un locataire supprimé restent en BDD avec `idUtilisateur` orphelin. Les gardiens continuent de les voir.
-**Fix :** `DELETE FROM incidents WHERE idUtilisateur = ?` avant de supprimer l'utilisateur.
-
----
-
-### BACK-06 — `PRAGMA foreign_keys` jamais activé
-**Fichier :** `Backend/src/db/database.js`
-SQLite n'enforce les foreign keys que si `PRAGMA foreign_keys = ON` est exécuté à chaque connexion. Absent ici : toutes les contraintes référentielles déclarées dans le schéma sont silencieusement ignorées.
-**Fix :** Ajouter `db.run('PRAGMA foreign_keys = ON')` juste après l'ouverture de la connexion.
-
----
-
-### BACK-08 — Extension de fichier extraite du nom client, non du MIME réel
-**Fichier :** `Backend/src/middleware/upload.js:20`
-```js
-const ext = path.extname(file.originalname); // fourni par le client
-```
-Le client peut falsifier le MIME type.
-**Fix :** Utiliser `file-type` pour déduire l'extension depuis les magic bytes.
-
----
-
-### SEC-02 — Emails utilisateur loggés en production côté backend
-**Fichier :** `Backend/src/controllers/authController.js:466`
-```js
-console.log('✅ [PROFILE] Profil trouvé:', { id: user.id, email: user.email });
-```
-Sans condition `NODE_ENV !== 'production'` → email dans les logs à chaque consultation de profil.
-
----
-
-### SEC-03 — JWT stocké en clair dans AsyncStorage non chiffré
-**Fichiers :** `app/auth/login.tsx:65`, `app/auth/gardian-login.tsx:65`
-Sur Android rooté ou émulateur, le JWT et les données de profil sont lisibles. Mitigation partielle : expiration JWT à 24h.
-
----
-
-### SEC-04 — Pas de vérification de rôle frontend sur `gerer-incidents`
-**Fichier :** `app/signalements/gerer-incidents.tsx`
-Un locataire voit l'interface de gestion et les données de l'incident via le GET. Seules les mutations échouent en 403.
-
----
-
-### SEC-05 — `/uploads` accessible sans authentification
-**Fichier :** `Backend/src/app.js:46`
-Les photos d'incidents sont servies publiquement via `express.static`. Les noms de fichiers apparaissent dans les réponses API, annulant la protection par obscurité.
-
----
-
-### SEC-06 — Inscription gardien sans validation du numéro gardien
-**Fichier :** `Backend/src/controllers/authController.js`
-N'importe qui peut créer un compte gardien avec un `numeroGardien` arbitraire. Pas de liste pré-approuvée ni de code d'invitation.
-
----
-
-### UX-01 — Sélecteur de bâtiment sans indicateur de chargement
-**Fichiers :** `app/auth/register.tsx:35`, `app/auth/gardian-register.tsx:36`
-`buildingsLoading` est mis à jour mais jamais rendu. L'utilisateur voit le sélecteur vide.
-
----
-
-### UX-03 — Chargement de commentaires sur un incident `null`
-**Fichier :** `app/signalements/suivresignal.tsx:119`
-Si le GET incident échoue, l'écran continue de charger commentaires et historique avant d'afficher "Incident non trouvé" sans contexte.
-
----
-
-## Mineurs
-
-| ID | Fichier | Description |
-|---|---|---|
-| N-03 | `app/batiments/batiments.tsx` | Route déclarée dans le Stack mais aucun lien ne pointe vers elle. Code mort. |
-| N-04 | `app/signalements/index.tsx` | Retourne `null` pendant la lecture AsyncStorage → écran blanc sans loader. |
-| N-05 | `app/+not-found.tsx:13` | Texte anglais dans une app en français. |
-| AS-03 | `login.tsx:75` | `userBuildingAddress` stocké à chaque connexion mais jamais lu. |
-| AS-04 | `register.tsx:35` | `buildingsLoading` déclaré mais jamais rendu dans l'UI. |
-| NET-03 | `register.tsx:17` | `API_BASE_URL` importé mais non utilisé. |
-| NET-05 | `config/index.ts:39` | `console.log` URL API sans garde `__DEV__`, s'exécutent en prod. |
-| NET-06 | `config/index.ts:42` | `BACKEND_PORT` exporté mais jamais importé. |
-| AIS-03 | `Backend/src/app.js:46` | `/uploads` sans header `Cache-Control`. |
-| BACK-03 | `incidentController.js:442` | Check `req.incident.id !== incidentId` toujours faux après `ensureIncidentAccess`. Code mort. |
-| BACK-04 | `authController.js:88` | Erreurs 409/500 sans `success: false`, incohérent avec le reste de l'API. |
-| BACK-07 | `database.js:121` | `db.run('PRAGMA table_info(...)')` retourne toujours `undefined` — il faut `db.all`. |
-| UX-02 | `app/accueil/home.tsx:76` | Erreur stats loggée en console uniquement, compteurs à 0 sans feedback. |
-| UX-04 | `app/profil/parametres.tsx:25` | Toggle Français/Anglais sans effet. Fonctionnalité factice. |
-| UX-05 | `gerer-incidents.tsx:240` | `const phoneNumber = incident.user_email` — variable mal nommée, jamais utilisée. |
-| UX-06 | `mon-batiment.tsx`, `mon-gardien.tsx` | Bouton "Réessayer" sans loader pendant le rechargement. |
-| DEAD-01 | `register.tsx:17` | `API_BASE_URL` importé mais inutilisé. |
-| DEAD-02 | `suivresignal.tsx:84`, `gerer-incidents.tsx:86` | `signalementTypes` déclaré mais non utilisé dans ces composants. |
-| DEAD-03 | `config/index.ts:42` | `BACKEND_PORT` exporté mais jamais consommé. |
-| DEAD-04 | `package.json` | `"jwt-decode": "^4.0.0"` installé mais non importé nulle part. |
-| DEAD-05 | `gerer-incidents.tsx:466`, `suivresignal.tsx:354` | Variable `index` dans `.map((item, index) => ...)` jamais utilisée. |
-| SEC-07 | `app/profil/profil.tsx:233` | `AsyncStorage.clear()` efface tout le storage. Préférer `multiRemove` explicite. |
-
----
-
-## Priorités suggérées
-
-### P1 — À corriger immédiatement
-1. ~~**AS-01**~~ ✅ corrigé le 16/06/2026
-2. ~~**AIS-02**~~ ✅ corrigé le 16/06/2026
-3. ~~**SEC-01**~~ ✅ corrigé le 16/06/2026
-4. **BACK-06** `database.js` — `PRAGMA foreign_keys = ON` manquant
-5. ~~**AIS-01** (x5 fichiers)~~ ✅ corrigé le 16/06/2026
-
-### P2 — Sprint suivant
-6. **AS-02** — Ajouter `"signalement_draft"` dans la purge 401
-7. **NET-01** — Timeout sur `apiFetch` avec `AbortController`
-8. **BACK-05** — Cascade DELETE sur suppression de compte
-9. **UX-01** — Indicateur de chargement pour le sélecteur de bâtiment
-10. **SEC-06** — Validation ou code d'invitation pour l'inscription gardien
-
-### P3 — Backlog
-- Nettoyage du code mort (DEAD-01 à DEAD-05)
-- Suppression des imports inutilisés
-- Internationalisation de `+not-found.tsx`
-- Page paramètres réelle (UX-04)
+1. **SEC-06** : la liste blanche gardien n'est active que si `GUARDIAN_ALLOWED_NUMBERS` est défini — à configurer avant toute mise en production.
+2. **SEC-08** : `git config core.hooksPath .githooks` doit être exécuté sur chaque nouveau clone.
+3. **BO-11** : le tri fusionné « tous types » reste en mémoire (acceptable au volume actuel ; passer à une vue SQL `UNION` si la base grossit).
+4. **Sessions back-office** : la suppression de la colonne `csrf_token` a invalidé les sessions staff existantes — reconnexion nécessaire (une fois).
+5. Les mots de passe app-mobile déjà réinitialisés en argon2 **avant** ce correctif (s'il y en a) doivent être re-réinitialisés depuis le back-office pour redevenir utilisables sur mobile.

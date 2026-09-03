@@ -119,7 +119,13 @@ export function UsersTable({ data, total, page, pageSize, totalPages, filters }:
 
   function handleExport() {
     startTransition(async () => {
-      const csv = await exportAppUsersCsv();
+      let csv: string;
+      try {
+        csv = await exportAppUsersCsv();
+      } catch {
+        toast.error("Export refusé : rôle administrateur requis.");
+        return;
+      }
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -134,7 +140,8 @@ export function UsersTable({ data, total, page, pageSize, totalPages, filters }:
   function handleBulkStatus(status: "active" | "suspended" | "banned") {
     if (!selected.length) return;
     startTransition(async () => {
-      await bulkSetAppUserStatus(selected, status);
+      const result = await bulkSetAppUserStatus(selected, status);
+      if ("error" in result) { toast.error(result.error); return; }
       toast.success(`${selected.length} utilisateur(s) mis à jour`);
       window.location.reload();
     });
@@ -234,7 +241,8 @@ export function UsersTable({ data, total, page, pageSize, totalPages, filters }:
             <Button variant="destructive" disabled={pending} onClick={() => {
               if (!confirmDelete) return;
               startTransition(async () => {
-                await deleteAppUser(confirmDelete.type, confirmDelete.id);
+                const result = await deleteAppUser(confirmDelete.type, confirmDelete.id);
+                if ("error" in result) { toast.error(result.error); return; }
                 toast.success("Utilisateur supprimé");
                 setConfirmDelete(null);
                 window.location.reload();

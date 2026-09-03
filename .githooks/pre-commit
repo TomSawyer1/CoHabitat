@@ -1,0 +1,16 @@
+#!/bin/sh
+# Bloque tout commit contenant un fichier .env (secrets JWT, SESSION_SECRET, IP locales).
+# Activation (une fois par clone) : git config core.hooksPath .githooks
+
+staged=$(git diff --cached --name-only)
+
+blocked=$(echo "$staged" | grep -E '(^|/)\.env(\..*)?$' | grep -v -E '\.(example|exemple)$' || true)
+
+if [ -n "$blocked" ]; then
+    echo "⛔ Commit bloqué : fichier(s) .env détecté(s) dans le staging :" >&2
+    echo "$blocked" | sed 's/^/   - /' >&2
+    echo "Retirez-les avec : git restore --staged <fichier>" >&2
+    exit 1
+fi
+
+exit 0

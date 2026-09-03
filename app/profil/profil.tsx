@@ -13,11 +13,13 @@ import {
     TouchableWithoutFeedback,
     View
 } from "react-native";
+import AuthImage from "../../components/AuthImage";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { API_BASE_URL } from "../../config";
 import { apiFetch } from "../../config/api";
+import { getToken, removeToken } from "../../config/tokenStorage";
 import { useProfilStyle } from "../../hooks/useProfilStyle";
 
 export default function Profil() {
@@ -58,7 +60,7 @@ export default function Profil() {
 
       // Récupérer les données depuis AsyncStorage
       const [token, userId, userRole, userBuildingName, userBuildingId] = await Promise.all([
-        AsyncStorage.getItem('userToken'),
+        getToken(),
         AsyncStorage.getItem('userId'),
         AsyncStorage.getItem('userRole'),
         AsyncStorage.getItem('userBuildingName'),
@@ -147,7 +149,7 @@ export default function Profil() {
     try {
       if (__DEV__) console.log('💾 [PROFIL] Sauvegarde en cours...');
 
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await getToken();
       const userRole = await AsyncStorage.getItem('userRole');
       
       if (!token) {
@@ -218,7 +220,7 @@ export default function Profil() {
                 { text: "Annuler", style: "cancel" },
                 { text: "Supprimer", style: "destructive", onPress: async () => {
                     try {
-                      const token = await AsyncStorage.getItem('userToken');
+                      const token = await getToken();
                       if (!token) {
                         Alert.alert("Session expirée", "Veuillez vous reconnecter.");
                         router.replace('/auth/login');
@@ -230,7 +232,19 @@ export default function Profil() {
                       const data = await response.json();
                       if (response.ok && data.success) {
                         Alert.alert("Compte supprimé", "Votre compte a bien été supprimé.");
-                        await AsyncStorage.clear();
+                        // Purge ciblée : AsyncStorage.clear() effacerait aussi
+                        // des données d'autres fonctionnalités (brouillons, préférences).
+                        await removeToken();
+                        await AsyncStorage.multiRemove([
+                          "userId",
+                          "userRole",
+                          "userEmail",
+                          "userName",
+                          "userBuildingId",
+                          "userBuildingName",
+                          "userBuildingAddress",
+                          "signalement_draft",
+                        ]);
                         router.replace('/auth/login');
                       } else {
                         Alert.alert("Erreur", data.message || "Erreur lors de la suppression du compte.");
@@ -422,8 +436,8 @@ export default function Profil() {
                       }
                     >
                       {incident.image ? (
-                        <Image
-                          source={{ uri: `${API_BASE_URL}/uploads/${incident.image}` }}
+                        <AuthImage
+                          uri={`${API_BASE_URL}/uploads/${incident.image}`}
                           style={styles.incidentImage}
                           resizeMode="cover"
                         />

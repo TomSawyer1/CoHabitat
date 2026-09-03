@@ -4,6 +4,7 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
     ScrollView,
     Text,
@@ -14,6 +15,7 @@ import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
 import { apiFetch } from "../../config/api";
+import { getToken } from "../../config/tokenStorage";
 import { useMonBatimentStyle } from "../../hooks/useMonBatimentStyle";
 
 interface BuildingData {
@@ -56,7 +58,7 @@ export default function MonBatiment() {
 
       // Récupérer les données utilisateur depuis AsyncStorage
       const [token, userId] = await Promise.all([
-        AsyncStorage.getItem('userToken'),
+        getToken(),
         AsyncStorage.getItem('userId')
       ]);
 
@@ -120,6 +122,7 @@ export default function MonBatiment() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" style={{ marginBottom: 12 }} />
         <Text style={{ color: '#666', fontSize: 16 }}>Chargement des informations du bâtiment...</Text>
       </View>
     );

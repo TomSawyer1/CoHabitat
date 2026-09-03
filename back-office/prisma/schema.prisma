@@ -140,8 +140,6 @@ model StaffAccount {
   password_hash       String
   role                StaffRole @default(operator)
   is_active           Boolean   @default(true)
-  totp_secret         String?
-  totp_enabled        Boolean   @default(false)
   failed_login_count  Int       @default(0)
   locked_until        DateTime?
   password_changed_at DateTime  @default(now())
@@ -150,7 +148,6 @@ model StaffAccount {
   updated_at          DateTime  @default(now()) @updatedAt
   sessions            StaffSession[]
   auditLogs           AuditLog[] @relation("AuditActor")
-  passwordResets      PasswordResetToken[]
 
   @@map("staff_accounts")
 }
@@ -159,7 +156,6 @@ model StaffSession {
   id            Int          @id @default(autoincrement())
   staff_id      Int
   token_hash    String       @unique
-  csrf_token    String
   ip_address    String?
   user_agent    String?
   expires_at    DateTime
@@ -188,19 +184,6 @@ model AuditLog {
   @@index([target_type])
   @@index([created_at])
   @@map("audit_logs")
-}
-
-model PasswordResetToken {
-  id         Int          @id @default(autoincrement())
-  staff_id   Int
-  token_hash String       @unique
-  expires_at DateTime
-  used_at    DateTime?
-  created_at DateTime     @default(now())
-  staff      StaffAccount @relation(fields: [staff_id], references: [id], onDelete: Cascade)
-
-  @@index([staff_id])
-  @@map("password_reset_tokens")
 }
 
 model LoginAttempt {

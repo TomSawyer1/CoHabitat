@@ -52,6 +52,13 @@ export async function verifyAnyPassword(
   return bcrypt.compare(password, hash);
 }
 
+/**
+ * Hash pour les comptes de l'app mobile (locataires / gardiens).
+ * ⚠️ Le Backend Express vérifie exclusivement avec `bcrypt.compare` : un hash
+ * argon2 rendrait la connexion mobile définitivement impossible. On reste donc
+ * en bcrypt pour ces comptes (argon2 est réservé aux comptes staff).
+ */
 export async function hashAppUserPassword(password: string): Promise<string> {
-  return hashPassword(password);
+  const bcrypt = await import("bcryptjs");
+  return bcrypt.hash(password, 10);
 }
