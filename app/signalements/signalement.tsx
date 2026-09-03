@@ -17,6 +17,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import Navbar from "../../components/navbar";
 import Sidebar from "../../components/sidebar";
@@ -444,280 +445,292 @@ export default function Signalement() {
   ];
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
-      <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar style="light" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StatusBar style="light" backgroundColor="#000" />
 
-      <TouchableWithoutFeedback
-        onPress={() => setIsSidebarVisible(false)}
-        disabled={!isSidebarVisible}
-      >
-        <View style={styles.contentContainer}>
-          <Header subtitle="Signalement" showBackButton={false} />
+        <TouchableWithoutFeedback
+          onPress={() => setIsSidebarVisible(false)}
+          disabled={!isSidebarVisible}
+        >
+          <View style={styles.contentContainer}>
+            <Header subtitle="Signalement" showBackButton={false} />
 
-          <ScrollView
-            contentContainerStyle={styles.scrollViewContent}
-            style={styles.scrollView}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-            <View style={styles.sectionTitleContainer}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
-                  <Text style={styles.sectionSubtitle}>
-                    Décrivez le problème rencontré dans votre résidence.
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#ff6b6b',
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    marginLeft: 10,
-                  }}
-                  onPress={async () => {
-                    Alert.alert(
-                      'Effacer le brouillon',
-                      'Voulez-vous vraiment effacer toutes les données saisies ?',
-                      [
-                        { text: 'Annuler', style: 'cancel' },
-                        { text: 'Effacer', style: 'destructive', onPress: resetForm }
-                      ]
-                    );
-                  }}
-                >
-                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
-                    Effacer
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.inputsContainer}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Titre de l'incident *</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: Fuite d'eau dans la salle de bain"
-                    placeholderTextColor="#888"
-                    value={title}
-                    onChangeText={setTitle}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Type de signalement *</Text>
-                <TouchableOpacity
-                  style={styles.inputFieldContainer}
-                  onPress={() => setShowTypeList(true)}
-                >
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingHorizontal: 16,
-                    paddingVertical: 16,
-                  }}>
-                    <Text style={{ 
-                      color: typeSignalement ? '#000' : '#888',
-                      fontSize: 16,
-                      flex: 1,
-                    }}>
-                      {typeSignalement || "Choisissez le type d'incident"}
-                    </Text>
-                    <Text style={{ fontSize: 18, color: '#666' }}>▼</Text>
-                  </View>
-                </TouchableOpacity>
-                {showTypeList && (
-                  <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
-                    {signalementTypes.map((type, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={{ padding: 12, borderBottomWidth: index < signalementTypes.length - 1 ? 1 : 0, borderBottomColor: '#eee' }}
-                        onPress={() => {
-                          setTypeSignalement(type);
-                          setShowTypeList(false);
-                        }}
-                      >
-                        <Text style={{ fontSize: 16, color: '#000' }}>{type}</Text>
-                      </TouchableOpacity>
-                    ))}
-                    <TouchableOpacity onPress={() => setShowTypeList(false)} style={{ padding: 12 }}>
-                      <Text style={{ color: '#d32f2f', textAlign: 'center' }}>Annuler</Text>
+            <KeyboardAvoidingView 
+              style={{ flex: 1 }}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={0}
+            >
+              <ScrollView
+                contentContainerStyle={[styles.scrollViewContent, { paddingBottom: 100 }]}
+                style={styles.scrollView}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+              >
+                <View style={styles.sectionTitleContainer}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.sectionTitle}>Nouveau Signalement</Text>
+                      <Text style={styles.sectionSubtitle}>
+                        Décrivez le problème rencontré dans votre résidence.
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: '#ff6b6b',
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                        marginLeft: 10,
+                      }}
+                      onPress={async () => {
+                        Alert.alert(
+                          'Effacer le brouillon',
+                          'Voulez-vous vraiment effacer toutes les données saisies ?',
+                          [
+                            { text: 'Annuler', style: 'cancel' },
+                            { text: 'Effacer', style: 'destructive', onPress: resetForm }
+                          ]
+                        );
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                        Effacer
+                      </Text>
                     </TouchableOpacity>
                   </View>
-                )}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-                  <Text style={{ fontSize: 12, color: '#007AFF', marginRight: 8 }}>
-                    Appuyez pour sélectionner
-                  </Text>
-                  {typeSignalement && (
-                    <View style={{
-                      backgroundColor: '#e8f5e8',
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                      marginLeft: 'auto'
-                    }}>
-                      <Text style={{ fontSize: 12, color: '#007000' }}>Sélectionné</Text>
+                </View>
+
+                <View style={styles.inputsContainer}>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Titre de l'incident *</Text>
+                    <View style={styles.inputFieldContainer}>
+                      <TextInput
+                        style={styles.inputField}
+                        placeholder="Ex: Fuite d'eau dans la salle de bain"
+                        placeholderTextColor="#888"
+                        value={title}
+                        onChangeText={setTitle}
+                      />
                     </View>
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Étage (optionnel)</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: RDC, 1, 2, 3..."
-                    placeholderTextColor="#888"
-                    value={etage}
-                    onChangeText={setEtage}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Numéro de porte (optionnel)</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: 101, 23A, 5..."
-                    placeholderTextColor="#888"
-                    value={numeroPorte}
-                    onChangeText={setNumeroPorte}
-                    keyboardType="default"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Date et Heure</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={styles.inputField}
-                    placeholder="Ex: 20/10/2023 14:30"
-                    placeholderTextColor="#888"
-                    value={dateHeure}
-                    onChangeText={setDateHeure}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Bâtiment</Text>
-                <View style={styles.inputFieldContainer}>
-                  <TextInput
-                    style={[styles.inputField, { backgroundColor: '#f5f5f5' }]}
-                    placeholder="Bâtiment non défini"
-                    placeholderTextColor="#888"
-                    value={batiment}
-                    editable={false}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Description détaillée *</Text>
-                <View
-                  style={[
-                    styles.inputFieldContainer,
-                    styles.descriptionInputContainer,
-                  ]}
-                >
-                  <TextInput
-                    style={[styles.inputField, styles.descriptionInputField]}
-                    placeholder="Décrivez le problème en détail : que s'est-il passé ? Quand ? Quelles sont les conséquences ?"
-                    placeholderTextColor="#888"
-                    multiline
-                    textAlignVertical="top"
-                    value={description}
-                    onChangeText={setDescription}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Photo (optionnel)</Text>
-                <TouchableOpacity
-                  style={styles.imagePickerButton}
-                  onPress={pickImage}
-                >
-                  <Text style={styles.imagePickerButtonText}>
-                    {selectedImage ? "Changer la photo" : "Ajouter une photo (Appareil ou Galerie)"}
-                  </Text>
-                </TouchableOpacity>
-                {selectedImage && (
-                  <Image
-                    source={{ uri: selectedImage }}
-                    style={styles.selectedImage}
-                    resizeMode="cover"
-                  />
-                )}
-              </View>
-            </View>
-
-            <View style={styles.buttonsContainerHorizontal}>
-              <TouchableOpacity
-                style={[
-                  styles.buttonHorizontal,
-                  styles.secondaryButtonHorizontal,
-                ]}
-                onPress={() => router.back()}
-                disabled={isLoading}
-              >
-                <Text style={styles.secondaryButtonHorizontalText}>
-                  Annuler
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.buttonHorizontal,
-                  styles.primaryButtonHorizontal,
-                  isLoading && { opacity: 0.6 }
-                ]}
-                onPress={handleSubmit}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
-                    <Text style={styles.primaryButtonHorizontalText}>
-                      Envoi en cours...
-                    </Text>
                   </View>
-                ) : (
-                  <Text style={styles.primaryButtonHorizontalText}>
-                    Envoyer le signalement
-                  </Text>
-                )}
-              </TouchableOpacity>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Type de signalement *</Text>
+                    <TouchableOpacity
+                      style={styles.inputFieldContainer}
+                      onPress={() => setShowTypeList(true)}
+                    >
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingHorizontal: 16,
+                        paddingVertical: 16,
+                      }}>
+                        <Text style={{ 
+                          color: typeSignalement ? '#000' : '#888',
+                          fontSize: 16,
+                          flex: 1,
+                        }}>
+                          {typeSignalement || "Choisissez le type d'incident"}
+                        </Text>
+                        <Text style={{ fontSize: 18, color: '#666' }}>▼</Text>
+                      </View>
+                    </TouchableOpacity>
+                    {showTypeList && (
+                      <View style={{ backgroundColor: '#fff', borderRadius: 8, marginTop: 8, elevation: 4, borderWidth: 1, borderColor: '#eee' }}>
+                        {signalementTypes.map((type, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={{ padding: 12, borderBottomWidth: index < signalementTypes.length - 1 ? 1 : 0, borderBottomColor: '#eee' }}
+                            onPress={() => {
+                              setTypeSignalement(type);
+                              setShowTypeList(false);
+                            }}
+                          >
+                            <Text style={{ fontSize: 16, color: '#000' }}>{type}</Text>
+                          </TouchableOpacity>
+                        ))}
+                        <TouchableOpacity onPress={() => setShowTypeList(false)} style={{ padding: 12 }}>
+                          <Text style={{ color: '#d32f2f', textAlign: 'center' }}>Annuler</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                      <Text style={{ fontSize: 12, color: '#007AFF', marginRight: 8 }}>
+                        Appuyez pour sélectionner
+                      </Text>
+                      {typeSignalement && (
+                        <View style={{
+                          backgroundColor: '#e8f5e8',
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          borderRadius: 12,
+                          marginLeft: 'auto'
+                        }}>
+                          <Text style={{ fontSize: 12, color: '#007000' }}>Sélectionné</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Étage (optionnel)</Text>
+                    <View style={styles.inputFieldContainer}>
+                      <TextInput
+                        style={styles.inputField}
+                        placeholder="Ex: RDC, 1, 2, 3..."
+                        placeholderTextColor="#888"
+                        value={etage}
+                        onChangeText={setEtage}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Numéro de porte (optionnel)</Text>
+                    <View style={styles.inputFieldContainer}>
+                      <TextInput
+                        style={styles.inputField}
+                        placeholder="Ex: 101, 23A, 5..."
+                        placeholderTextColor="#888"
+                        value={numeroPorte}
+                        onChangeText={setNumeroPorte}
+                        keyboardType="default"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Date et Heure</Text>
+                    <View style={styles.inputFieldContainer}>
+                      <TextInput
+                        style={styles.inputField}
+                        placeholder="Ex: 20/10/2023 14:30"
+                        placeholderTextColor="#888"
+                        value={dateHeure}
+                        onChangeText={setDateHeure}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Bâtiment</Text>
+                    <View style={styles.inputFieldContainer}>
+                      <TextInput
+                        style={[styles.inputField, { backgroundColor: '#f5f5f5' }]}
+                        placeholder="Bâtiment non défini"
+                        placeholderTextColor="#888"
+                        value={batiment}
+                        editable={false}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Description détaillée *</Text>
+                    <View
+                      style={[
+                        styles.inputFieldContainer,
+                        styles.descriptionInputContainer,
+                      ]}
+                    >
+                      <TextInput
+                        style={[styles.inputField, styles.descriptionInputField]}
+                        placeholder="Décrivez le problème en détail : que s'est-il passé ? Quand ? Quelles sont les conséquences ?"
+                        placeholderTextColor="#888"
+                        multiline
+                        textAlignVertical="top"
+                        value={description}
+                        onChangeText={setDescription}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Photo (optionnel)</Text>
+                    <TouchableOpacity
+                      style={styles.imagePickerButton}
+                      onPress={pickImage}
+                    >
+                      <Text style={styles.imagePickerButtonText}>
+                        {selectedImage ? "Changer la photo" : "Ajouter une photo (Appareil ou Galerie)"}
+                      </Text>
+                    </TouchableOpacity>
+                    {selectedImage && (
+                      <Image
+                        source={{ uri: selectedImage }}
+                        style={styles.selectedImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.buttonsContainerHorizontal}>
+                  <TouchableOpacity
+                    style={[
+                      styles.buttonHorizontal,
+                      styles.secondaryButtonHorizontal,
+                    ]}
+                    onPress={() => router.back()}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.secondaryButtonHorizontalText}>
+                      Annuler
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.buttonHorizontal,
+                      styles.primaryButtonHorizontal,
+                      isLoading && { opacity: 0.6 }
+                    ]}
+                    onPress={handleSubmit}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
+                        <Text style={styles.primaryButtonHorizontalText}>
+                          Envoi en cours...
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.primaryButtonHorizontalText}>
+                        Envoyer 
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </KeyboardAvoidingView>
+
+            <View style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#000',
+            }}>
+              <Navbar
+                isSidebarVisible={isSidebarVisible}
+                setIsSidebarVisible={setIsSidebarVisible}
+                router={router}
+              />
             </View>
-          </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
 
-          <Navbar
-            isSidebarVisible={isSidebarVisible}
-            setIsSidebarVisible={setIsSidebarVisible}
-            router={router}
-          />
-        </View>
-      </TouchableWithoutFeedback>
-
-      <Sidebar
-        isSidebarVisible={isSidebarVisible}
-        onClose={() => setIsSidebarVisible(false)}
-      />
-    </KeyboardAvoidingView>
+        <Sidebar
+          isSidebarVisible={isSidebarVisible}
+          onClose={() => setIsSidebarVisible(false)}
+        />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

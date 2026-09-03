@@ -15,6 +15,8 @@
 ## 📋 Table des Matières
 
 - [🎯 À propos](#-à-propos)
+- [🌐 Liens utiles](#-liens-utiles)
+- [📚 Ressources supplémentaires](#-ressources-supplémentaires)
 - [✨ Fonctionnalités](#-fonctionnalités)
 - [🛠️ Technologies](#️-technologies)
 - [🏗️ Architecture](#️-architecture)
@@ -35,6 +37,23 @@ CoHabitat est une application mobile native développée avec React Native qui r
 - **Centraliser** la gestion des incidents et signalements
 - **Optimiser** le suivi des tâches de maintenance
 - **Améliorer** l'expérience utilisateur dans la gestion immobilière
+
+## 🌐 Liens utiles
+
+- **🌍 Landing Page** : [https://cohabitat.netlify.app](https://cohabitat.netlify.app) - Découvrez CoHabitat en ligne
+- **📱 Application Mobile** : Ce repository contient l'application mobile React Native
+- **🎨 Landing Page Repository** : [https://github.com/TomSawyer1/LpCoHabitat](https://github.com/TomSawyer1/LpCoHabitat) - Code source de la landing page
+
+## 📚 Ressources supplémentaires
+
+Vous pouvez également consulter les ressources suivantes dans le dossier `Doc annex/` :
+
+- **🎥 Vidéo de démonstration** : Découvrez l'application en action avec le rôle locataire
+- **📋 Cahier des charges** : Documentation complète du projet et des spécifications
+- **📊 Business Model Canvas** : Modèle économique et stratégie business
+- **🎯 Présentation** : Slides de présentation du projet CoHabitat
+
+Ces documents vous aideront à mieux comprendre la vision, les objectifs et l'implémentation du projet.
 
 ## ✨ Fonctionnalités
 
@@ -287,6 +306,8 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 <div align="center">
   <p>Développé avec ❤️ pour simplifier la gestion immobilière</p>
   <p>
+    <a href="https://cohabitat.netlify.app">🌍 Landing Page</a> •
+    <a href="https://github.com/TomSawyer1/LpCoHabitat">🎨 Landing Page Repo</a> •
     <a href="https://github.com/votre-username/CoHabitat/issues">🐛 Signaler un bug</a> •
     <a href="https://github.com/votre-username/CoHabitat/discussions">💬 Discussions</a> •
     <a href="mailto:contact@cohabitat.com">📧 Contact</a>
